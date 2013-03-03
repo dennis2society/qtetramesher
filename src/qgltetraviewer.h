@@ -1,0 +1,57 @@
+/*
+ * interface.h
+ *
+ *  Created on: Sep 10, 2011
+ *      Author: Dennis Luebke
+ */
+
+#ifndef Q_TETRA_VIEWER_H_
+#define Q_TETRA_VIEWER_H_
+
+#include <QGLViewer/qglviewer.h>
+#include "QGLTetraMesh.h"
+
+class QGLTetraViewer : public QGLViewer
+{
+
+	Q_OBJECT;
+
+public :
+#if QT_VERSION < 0x040000
+  QGLTetraViewer(QWidget *parent, const char *name);
+#else
+  QGLTetraViewer(QWidget *parent);
+#endif
+
+  QGLTetraMesh* tMesh;
+
+  public slots:
+	void ToggleTetraVis(int i);
+	void ToggleTriangleVis(int i);
+	void ToggleBBox(int i);
+	void SetCutPlane(int i);
+	void ShowStatusMessage(const QString& msg_, int duration_ = 2000);
+    void loadSurface();
+    void loadGMSH();
+    void saveGMSH();
+    void saveSurface();
+    void selectSurfaceColor();
+    void selectSurfaceColorWireframe();
+    void selectTetraColor();
+    void selectTetraColorWireframe();
+    void scale10();
+    void scale01();
+
+    const float getMaxBBox();
+
+signals:
+    void onLoad();
+
+protected :
+    virtual void draw();
+    virtual QString helpString() const;
+
+    float _maxBBox; // maximum value in BBox lengths to determine suggested tetra size
+};
+
+#endif /* Q_TETRA_VIEWER_H_ */
