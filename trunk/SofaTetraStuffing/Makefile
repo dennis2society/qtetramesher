@@ -11,7 +11,7 @@ ttmDir:= ../TetraMeshTools
 ttmLibDir:= $(ttmDir)/lib
 
 # SOFA root dir (change to where your own SOFA instance is living)
-sofaDir:= ../../../sofa_linux
+sofaDir:= ../../sofa
 sofaLibDir:=$(sofaDir)/lib
 
 outputDir:= lib

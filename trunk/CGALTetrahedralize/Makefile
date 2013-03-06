@@ -13,7 +13,7 @@ ttmLibDir:= $(ttmDir)/lib
 outputDir:= lib
 outputName:= libCGALTetrahedralize.so
 
-CFLAGS:=        -O2 -pipe 
+CFLAGS:=        -O2 -pipe -frounding-math
 CFLAGS+=        -fopenmp
 #CFLAGS+=       -g
 #CFLAGS+=       -O0
