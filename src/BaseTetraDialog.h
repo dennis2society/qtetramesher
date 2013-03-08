@@ -1,7 +1,12 @@
 /**
+ * BaseTetraDialog.h
+ *
  *  Base class for tetra meshing dialogs
  *  This will provide some basic functions necessary for the tetra meshing dialog functionality,
  *  such as signals and slots.
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
  */
 
 #ifndef BASETETRADIALOG_H

@@ -1,3 +1,10 @@
+/*
+ * cgaltetrahedralizedialog.h
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+
 #include "cgaltetrahedralizedialog.h"
 #include "ui_CGALTetrahedralizeDialog.h"
 #include <QTime>

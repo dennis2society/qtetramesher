@@ -1,6 +1,6 @@
 README for QTetraMesher
 
-Copyright (C) 2013 Dennis Lübke, dennis (at) dennis2society.de
+Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
 
 Usage instructions available at http://qtm.dennis2society.de.
 Sourcecode available at: http://code.google.com/p/qtetramesher/
@@ -34,7 +34,7 @@ Features
 
 Dependencies / 3rd Party Libraries
 
-  This program is using the following 3rd-party libraries: (Name/URL, Version, License)
+  This program is using the following 3rd-party libraries: (Name, Version, License, URL)
 
     libQGLViewer (2.3.16), GPL, http://www.libqglviewer.com/
     SOFA Framework (1.0), GPL/LGPL, http://www.sofa-framework.org/

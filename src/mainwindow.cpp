@@ -1,3 +1,10 @@
+/*
+ * mainwindow.cpp
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 

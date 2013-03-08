@@ -1,5 +1,5 @@
 /*
- * interface.h
+ * qgltetraviewer.h
  *
  *  Created on: Sep 10, 2011
  *      Author: Dennis Luebke

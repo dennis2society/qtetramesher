@@ -1,3 +1,10 @@
+/*
+ * tetrastuffingdialog.cpp
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+ 
 #include "tetrastuffingdialog.h"
 #include "ui_tetrastuffingdialog.h"
 #include "SofaTetraStuffing.h"

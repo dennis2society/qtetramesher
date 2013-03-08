@@ -6,7 +6,7 @@ dirSrc:= src
 dirTrimesh2:= trimesh2
 # local headers
 incDir:= include
-# local headers with direct path
+# local headers
 ttmDir:= include/TetraMeshTools
 
 outputDir:= lib

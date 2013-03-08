@@ -1,3 +1,10 @@
+/*
+ * main.cpp
+ *
+ *  Created 2011
+ *      Author: Dennis Luebke
+ */
+ 
 #include <QApplication>
 #include "mainwindow.h"
 

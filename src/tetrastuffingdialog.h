@@ -1,3 +1,10 @@
+/*
+ * tetrastuffingdialog.h
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+ 
 #ifndef TETRASTUFFINGDIALOG_H
 #define TETRASTUFFINGDIALOG_H
 
