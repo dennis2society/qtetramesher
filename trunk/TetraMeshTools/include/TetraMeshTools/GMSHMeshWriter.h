@@ -1,5 +1,8 @@
 /**
  *	Class for writing GMSH files (.msh)
+ *
+ *  Created on: Aug 21, 2011
+ *      Author: Dennis Luebke
  */
 
 #ifndef GMSH_MESH_WRITER_H_

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\sofa\extlibs\miniBoost;..\..\..\sofa\framework;..\..\..\sofa\modules;..\include;..\TetraMeshTools\include;include"
+				AdditionalIncludeDirectories="..\..\..\Sofa_2013\extlibs\miniBoost;..\..\..\Sofa_2013\framework;..\..\..\Sofa_2013\modules;..\include;..\TetraMeshTools\include;include"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -114,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\..\sofa\extlibs\miniBoost;..\..\..\sofa\framework;..\..\..\sofa\modules;..\include;..\TetraMeshTools\include;include"
+				AdditionalIncludeDirectories="..\..\..\Sofa_2013\extlibs\miniBoost;..\..\..\Sofa_2013\framework;..\..\..\Sofa_2013\modules;..\include;..\TetraMeshTools\include;include"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"

@@ -1,3 +1,10 @@
+/*
+ * mainwindow.h
+ *
+ *  Created 2011
+ *      Author: Dennis Luebke
+ */
+ 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

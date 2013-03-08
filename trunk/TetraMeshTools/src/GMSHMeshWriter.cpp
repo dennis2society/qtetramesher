@@ -1,3 +1,10 @@
+/*
+ * GMSHMeshWriter.cpp
+ *
+ *  Created on: Aug 21, 2011
+ *      Author: Dennis Luebke
+ */
+ 
 #include "TetraMeshTools/GMSHMeshWriter.h"
 
 bool TetraTools::GMSHMeshWriter::SaveToFile(const std::string& fileName_, const std::vector<Vec3f>& verts, const std::vector<Tetrahedron>& tetras)

@@ -1,3 +1,12 @@
+/*
+ * qgltetraviewer.cpp
+ *
+ * Derived from QGLViewer to allow custom mesh drawing.
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+
 #include "qgltetraviewer.h"
 #include <math.h>
 #include <sstream>

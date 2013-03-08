@@ -1,3 +1,10 @@
+/*
+ * SofaTetraStuffing.cpp
+ *
+ *  Created on: Nov 26, 2011
+ *      Author: Dennis Luebke
+ */
+
 #include "SofaTetraStuffing.h"
 #ifdef _WIN32
 #include <windows.h>

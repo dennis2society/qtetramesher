@@ -1,3 +1,10 @@
+/**
+ * BaseTetraDialog.cpp
+ *
+ *  Created 2012
+ *      Author: Dennis Luebke
+ */
+
 #include "BaseTetraDialog.h"
 #include <QTime>
 #include <sstream>
