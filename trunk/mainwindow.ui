@@ -352,7 +352,7 @@
                 <item>
                  <widget class="QPushButton" name="tetraWireframeColorButton">
                   <property name="text">
-                   <string>Tetras Wireframe COlor</string>
+                   <string>Tetras Wireframe Color</string>
                   </property>
                  </widget>
                 </item>
@@ -512,7 +512,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Mar 6 21:18:29 2013
+** Created: Sat Mar 16 00:22:44 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -416,7 +416,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 21));
+        menuBar->setGeometry(QRect(0, 0, 1024, 25));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -536,7 +536,7 @@ public:
          << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
         );
         tetraSolidColorButton->setText(QApplication::translate("MainWindow", "Tetras Solid Color", 0, QApplication::UnicodeUTF8));
-        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe COlor", 0, QApplication::UnicodeUTF8));
+        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe Color", 0, QApplication::UnicodeUTF8));
         cutPlaneLabel->setText(QApplication::translate("MainWindow", "Cut Plane", 0, QApplication::UnicodeUTF8));
         boundingVisLabel->setText(QApplication::translate("MainWindow", "Bounding Box ", 0, QApplication::UnicodeUTF8));
         boundingBoxCombo->clear();
