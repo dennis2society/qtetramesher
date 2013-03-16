@@ -29,6 +29,7 @@
 #endif
 
 #include "TetraMeshTools/TetrahedronTopology.h"
+#include "TetraMeshTools/Octree.h"
 #include <string>
 #include <vector>
 #include <QColor>
@@ -49,6 +50,7 @@ private:
     int bboxMode; 	// 0 = hide, 1 = bounding box
     int tetraMode;	// 0 = solid, 1 = wireframe, 2 = hidden
     int surfaceMode;	// 0 = solid, 1 = wireframe, 2 = hidden
+    int octreeMode; // 0 = hidden, 1 = visible
 
 	float cutPlaneOffset;
 
@@ -58,10 +60,14 @@ private:
 
 	void DrawTetrahedron(const unsigned int tetraIndex);
 
+    void DrawOctree();
+
     Vec3f surfaceColorSolid;
     Vec3f tetraColorSolid;
     Vec3f surfaceColorWireframe;
     Vec3f tetraColorWireframe;
+
+    Octree* oct;
 
 public:
 	QGLTetraMesh();
@@ -134,14 +140,17 @@ public:
 	void ToggleBBox(int i)
 	{
 		bboxMode = i;
-		showBoundingBox = !showBoundingBox;
 	}
 
 	void ToggleTetraMesh(int i)
 	{
 		tetraMode = i;
-		drawTetraMesh = !drawTetraMesh;
 	}
+
+    void ToggelOctreeVis(int i)
+    {
+        octreeMode = i;
+    }
 
 	void ToggleDrawSolid()
 	{
@@ -151,7 +160,6 @@ public:
 	void ToggleTriangleMesh(int i)
 	{
 		surfaceMode = i;
-		drawTriangleMesh = !drawTriangleMesh;
 	}
 
 	void ToggleTetraSurface()
@@ -260,6 +268,8 @@ public:
     {
         return QColor(tetraColorWireframe.x * 255.0f, tetraColorWireframe.y * 255.0f, tetraColorWireframe.z * 255.0f);
     }
+
+    void generateOctree(const unsigned int depth_);
 
 };
 

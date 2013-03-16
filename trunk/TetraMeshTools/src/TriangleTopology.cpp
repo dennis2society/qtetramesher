@@ -252,7 +252,6 @@ void TetraTools::TriangleTopology::GenerateBoundingBox()
 
 void TetraTools::TriangleTopology::GenerateBoundingBox(const std::vector<Vec3f>& vertices_)
 {
-	const float lbcModifier = 1.0f; /// how much length should be added to the larger bounding cube
 	std::vector<Vec3f>::const_iterator it;
 	/// generate Bounding Box
 	std::cout<<"Generating BoundingBox ..."<<std::endl;
@@ -284,6 +283,7 @@ void TetraTools::TriangleTopology::GenerateBoundingBox(const std::vector<Vec3f>&
 	maxDist = (maxDist > dz) ? maxDist : dz;
 	bc.size = maxDist;
 	bc.center = Vec3f(b.min.x + dx/2, b.min.y + dy/2, b.min.z + dz / 2);
+	const float lbcModifier = maxDist * 0.1f; /// add 10% volume for the larger bounding cube
 	lbc.size = maxDist + lbcModifier;
 	lbc.center = Vec3f(b.min.x + dx/2, b.min.y + dy/2, b.min.z + dz / 2);
 	//std::cout<<"dx/dy/dz: "<<dx<<"/"<<dy<<"/"<<dz<<"; bc: "<<maxDist<<std::endl;

@@ -14,7 +14,7 @@
 class QGLTetraViewer : public QGLViewer
 {
 
-	Q_OBJECT;
+    Q_OBJECT
 
 public :
 #if QT_VERSION < 0x040000
@@ -25,9 +25,12 @@ public :
 
   QGLTetraMesh* tMesh;
 
+  void generateOctree(int d);
+
   public slots:
 	void ToggleTetraVis(int i);
 	void ToggleTriangleVis(int i);
+    void ToggleOctreeVis(int i);
 	void ToggleBBox(int i);
 	void SetCutPlane(int i);
 	void ShowStatusMessage(const QString& msg_, int duration_ = 2000);
