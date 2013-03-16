@@ -29,6 +29,7 @@ public slots:
     void toggleFullScreen(bool value);
     void showTetraStuffingDialog();
     void showCGALDialog();
+    void generateOctree();
     void displayMessage(QString msg_, unsigned int time_);
     void notifyDone(QString msg_, unsigned int time_);
     void clearTetraOptions();   // call this when loading a new mesh to reset the settings
@@ -41,6 +42,9 @@ private:
 protected:
     // override main window close event to close all child dialogs
     void closeEvent(QCloseEvent * event);
+
+private slots:
+    void on_viewer_onLoad();
 };
 
 #endif // MAINWINDOW_H

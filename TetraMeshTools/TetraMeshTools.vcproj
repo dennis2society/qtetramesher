@@ -182,6 +182,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Octree.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OctreeNode.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\TetrahedronTopology.cpp"
 				>
 			</File>
@@ -312,6 +320,14 @@
 				</File>
 				<File
 					RelativePath=".\include\TetraMeshTools\GMSHMeshWriter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\TetraMeshTools\Octree.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\TetraMeshTools\OctreeNode.h"
 					>
 				</File>
 				<File

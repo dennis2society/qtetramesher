@@ -64,6 +64,12 @@ void MainWindow::showCGALDialog()
     ctd->show();
 }
 
+void MainWindow::generateOctree()
+{
+    std::cout<<"MainWindow: Generating octree..."<<std::endl;
+    ui->viewer->generateOctree(ui->octreeDepthSpinbox->value());
+}
+
 void MainWindow::displayMessage(QString msg_, unsigned int time_)
 {
     ui->viewer->ShowStatusMessage(msg_, time_);
@@ -94,4 +100,9 @@ void MainWindow::clearTetraOptions()
 void MainWindow::closeEvent(QCloseEvent * event)
 {
     clearTetraOptions();
+}
+
+void MainWindow::on_viewer_onLoad()
+{
+
 }

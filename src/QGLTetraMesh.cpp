@@ -34,6 +34,7 @@ QGLTetraMesh::QGLTetraMesh() :	drawSolid(false),
     tetraColorSolid = Vec3f(0.7f, 0.7f , 0.1f);
     surfaceColorWireframe = Vec3f(0.1f, 0.8f , 0.1f);
     tetraColorWireframe = Vec3f(0.8f, 0.8f , 0.1f);
+    oct = NULL;
 }
 
 QGLTetraMesh::~QGLTetraMesh()
@@ -55,7 +56,7 @@ void QGLTetraMesh::Draw()
     glEnable(GL_CULL_FACE);
     static const float zero[4] = { 0.0f, 0.0f, 0.0f  };
     static const float diff[4] = { 0.8f, 0.8f, 0.85f };
-    static const float spec[4] = { 0.7f, 0.7f, 0.7f };
+    static const float spec[4] = { 0.6f, 0.6f, 0.6f };
     glMaterialfv(GL_FRONT, GL_AMBIENT,   zero);
     glMaterialfv(GL_FRONT, GL_DIFFUSE,   diff);
     glMaterialfv(GL_FRONT, GL_SPECULAR,  spec);
@@ -244,12 +245,14 @@ void QGLTetraMesh::Draw()
     		case 1:	// show bounding box
 				DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
 				break;
+            /*
     		case 2:	// show bounding cube
     			bb.min = Vec3f(c.center.x-c.size/2, c.center.y-c.size/2, c.center.z-c.size/2);
     			bb.max = Vec3f(c.center.x+c.size/2, c.center.y+c.size/2, c.center.z+c.size/2);
     			DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
     			break;
-    		case 3:	// show larger bounding cube
+            */
+            case 2:	// show larger bounding cube
     			bb.min = Vec3f(c.center.x-c.size/2, c.center.y-c.size/2, c.center.z-c.size/2);
     			bb.max = Vec3f(c.center.x+c.size/2, c.center.y+c.size/2, c.center.z+c.size/2);
     			DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
@@ -366,6 +369,19 @@ void QGLTetraMesh::DrawTetrahedron(const unsigned int tetraIndex)
 	glEnd();
 }
 
+void QGLTetraMesh::DrawOctree()
+{
+    if (oct != NULL)
+    {
+        const OctreeNode* root = oct->getRootNode();
+        const std::vector<OctreeNode*> children = root->getChildren();
+        for (int i=0; i<children.size(); ++i)
+        {
+            const OctreeNode* node = children[i];
+        }
+    }
+}
+
 void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f>& verts_, std::vector<Tetrahedron>& tetras_)
 {
 	isReady = false;
@@ -389,6 +405,11 @@ void QGLTetraMesh::ClearSurface()
 		delete surf;
 		surf = NULL;
 	}
+    if (oct != NULL)
+    {
+        oct->clear();
+        delete oct;
+    }
 }
 
 
@@ -405,6 +426,11 @@ void QGLTetraMesh::LoadGMSH(const std::string& fileName_)
 		delete surf;
 		surf = NULL;
 	}
+    if (oct != NULL)
+    {
+        oct->clear();
+        delete oct;
+    }
 	Timer t;
 	t.start();
 	TetraTools::GMSHMeshLoader* gloader = new TetraTools::GMSHMeshLoader();
@@ -438,6 +464,11 @@ void QGLTetraMesh::LoadSurface(const std::string& fileName_)
 		delete top;
 		top = NULL;
 	}
+    if (oct != NULL)
+    {
+        oct->clear();
+        delete oct;
+    }
 	Timer t;
 	t.start();
     TetraTools::TriMeshLoader gloader;
@@ -554,4 +585,23 @@ void QGLTetraMesh::scalex01()
         UpdateTetraMesh(tv, tt);
     }
     isReady = true;
+}
+
+void QGLTetraMesh::generateOctree(const unsigned int depth_)
+{
+    if (oct != NULL)
+    {
+        oct->clear();
+        delete oct;
+    }
+    if (surf == NULL)
+    {
+        std::cerr<<"Error on Octree generation: Surface is empty..."<<std::endl;
+        return;
+    }
+    Timer t;
+    t.start();
+    oct = new Octree(depth_, &(surf->GetVertices()));
+    t.stop();
+    std::cout<<"Octree generated in "<<t.getElapsedTimeInMilliSec()<<" ms."<<std::endl;
 }

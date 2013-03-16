@@ -123,6 +123,13 @@ void QGLTetraViewer::ToggleTriangleVis(int i)
 	updateGL();
 }
 
+void QGLTetraViewer::ToggleOctreeVis(int i)
+{
+    std::cout<<"Octree Vis toggled..."<<std::endl;
+    tMesh->ToggelOctreeVis(i);
+    updateGL();
+}
+
 void QGLTetraViewer::ToggleBBox(int i)
 {
 	tMesh->ToggleBBox(i);
@@ -181,6 +188,12 @@ void QGLTetraViewer::scale01()
     updateGL();
     //this->camera()->showEntireScene();
     //this->ShowStatusMessage("Mesh successfully scale by 0.1", 3000);
+}
+
+void QGLTetraViewer::generateOctree(int d)
+{
+    std::cout<<"Generating Octree from surface..."<<std::endl;
+    tMesh->generateOctree((unsigned int)d);
 }
 
 void QGLTetraViewer::loadSurface()

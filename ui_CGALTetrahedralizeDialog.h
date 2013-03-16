@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'CGALTetrahedralizeDialog.ui'
 **
-** Created: Wed Mar 6 21:18:29 2013
-**      by: Qt User Interface Compiler version 4.8.3
+** Created: Sat 16. Mar 22:44:43 2013
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
