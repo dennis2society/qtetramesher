@@ -22,13 +22,11 @@ Octree::Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_) : _i
 
 Octree::~Octree()
 {
-	clear();
-}
-
-void Octree::clear()
-{
-	_root->clear();
-	delete _root;
+	if (_root != NULL)
+	{
+		delete _root;
+		_root = NULL;
+	}
 }
 
 void Octree::generateBoundingCube()
@@ -76,7 +74,7 @@ void Octree::generateBoundingCube()
 	std::cout<<"\tBC: "<<_minBC<<" ; "<<_maxBC<<std::endl;
 }
 
-const OctreeNode* Octree::getRootNode() const
+OctreeNode* Octree::getRootNode()
 {
 	if (_root != NULL)
 	{

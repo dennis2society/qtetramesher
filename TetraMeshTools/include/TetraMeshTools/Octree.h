@@ -25,8 +25,12 @@ private:
 public:
 	Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_);
 	~Octree();
-	void clear();
 
-	const OctreeNode* getRootNode() const;
+	OctreeNode* getRootNode();
+
+	const unsigned int getDepth() const
+	{
+		return _maxDepth;
+	}
 	
 };

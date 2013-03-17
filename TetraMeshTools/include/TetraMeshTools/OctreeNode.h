@@ -12,12 +12,13 @@
 #include <vector>
 #include "TetraToolsExports.h"
 #include "GeometryTypes.h"
+//#include <vld.h>
 
 struct PointQuadrant
 {
-	bool left;
-	bool back;
-	bool top;
+	int left;
+	int back;
+	int top;
 	unsigned int result;
 };
 
@@ -35,6 +36,9 @@ private:
 	
 	void buildNode();
 
+	// tmp children for return....
+	std::vector<OctreeNode*>	_tmpChildren;
+
 public:
 	// only necessary for root node
 	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& _minBC, const Vec3f& _maxBC);
@@ -42,6 +46,9 @@ public:
 	OctreeNode(const OctreeNode* parent_, const Vec3f& _minBC, const Vec3f& _maxBC, const unsigned int depth_, const int quadrant_);
 	~OctreeNode();
 
+	/**
+	 *	Returns NULL if querying the root node
+	 */
 	const OctreeNode* getParent() const;
 
 	const std::vector<OctreeNode*>& getChildren() const;
@@ -50,7 +57,21 @@ public:
 
 	const Vec3f& getMaxBC() const;
 
-	void clear();
+	// returns true if the current node has children
+	const bool hasChildren() const;
+
+	// returns the smalles children i.e. the "leafs" as a recursively generated list
+	const std::vector<OctreeNode*>& getLeafs();
+
+	const unsigned int getDepth() const
+	{
+		return _depth;
+	}
+
+	const unsigned int getQuadrant() const
+	{
+		return _quadrant;
+	}
 
 };
  

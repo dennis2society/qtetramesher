@@ -260,6 +260,15 @@ void QGLTetraMesh::Draw()
     		default:
     			break;
     	}
+        switch (octreeMode)
+        {
+            case 0:	// hide octree
+                break;
+            case 1:	// show octree
+                //DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
+                DrawOctree();
+                break;
+        }
 	}
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
@@ -373,12 +382,18 @@ void QGLTetraMesh::DrawOctree()
 {
     if (oct != NULL)
     {
-        const OctreeNode* root = oct->getRootNode();
-        const std::vector<OctreeNode*> children = root->getChildren();
-        for (int i=0; i<children.size(); ++i)
+        OctreeNode* root = oct->getRootNode();
+        const std::vector<OctreeNode*>& leafs = root->getLeafs();
+        for (unsigned int k=0; k<leafs.size(); ++k)
         {
-            const OctreeNode* node = children[i];
+            //std::cout<<"Drawing octree node #"<<k<<" with depth "<<leafs[k]->getDepth()<<"/"<<leafs[k]->getQuadrant()<<std::endl;
+            OctreeNode* on = leafs[k];
+            BoundingBox bt;
+            bt.min = on->getMinBC();
+            bt.max = on->getMaxBC();
+            DrawBoundingVolume(bt, Vec3f(0.8f, 0.8f, 0.1f));
         }
+        //std::cout<<"Done drawing Octree..."<<std::endl;
     }
 }
 
@@ -407,7 +422,6 @@ void QGLTetraMesh::ClearSurface()
 	}
     if (oct != NULL)
     {
-        oct->clear();
         delete oct;
     }
 }
@@ -428,8 +442,8 @@ void QGLTetraMesh::LoadGMSH(const std::string& fileName_)
 	}
     if (oct != NULL)
     {
-        oct->clear();
         delete oct;
+        oct = NULL;
     }
 	Timer t;
 	t.start();
@@ -466,8 +480,8 @@ void QGLTetraMesh::LoadSurface(const std::string& fileName_)
 	}
     if (oct != NULL)
     {
-        oct->clear();
         delete oct;
+		oct = NULL;
     }
 	Timer t;
 	t.start();
@@ -591,8 +605,8 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_)
 {
     if (oct != NULL)
     {
-        oct->clear();
         delete oct;
+        oct = NULL;
     }
     if (surf == NULL)
     {
