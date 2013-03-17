@@ -36,8 +36,8 @@ FORMS    += mainwindow.ui \
 
 INCLUDEPATH += $$PWD/src
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/release/ -lQGLViewer2 -L$$PWD/../../trimesh2/Release -lTriMesh2
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/debug/ -lQGLViewerd2 -L$$PWD/../../trimesh2/Debug -lTriMesh2d
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/release/ -lQGLViewer2
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/debug/ -lQGLViewerd2
 else:symbian: LIBS += -lQGLViewer2
 else:unix: LIBS += -L/usr/lib/i386-linux-gnu -lqglviewer-qt4
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sat 16. Mar 22:49:06 2013
+** Created: Sun 17. Mar 22:43:10 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -564,6 +564,7 @@ public:
         QObject::connect(actionExport_GMSH_2, SIGNAL(triggered()), viewer, SLOT(saveGMSH()));
         QObject::connect(actionExport_Surface, SIGNAL(triggered()), viewer, SLOT(saveSurface()));
         QObject::connect(actionGenerate_Octree, SIGNAL(triggered()), MainWindow, SLOT(generateOctree()));
+        QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi

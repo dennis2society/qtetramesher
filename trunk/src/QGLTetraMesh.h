@@ -147,7 +147,7 @@ public:
 		tetraMode = i;
 	}
 
-    void ToggelOctreeVis(int i)
+    void ToggleOctreeVis(int i)
     {
         octreeMode = i;
     }

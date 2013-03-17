@@ -1329,6 +1329,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>octreeCombo</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>viewer</receiver>
+   <slot>ToggleOctreeVis(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>915</x>
+     <y>689</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>406</x>
+     <y>419</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>toggleFullScreen(bool)</slot>

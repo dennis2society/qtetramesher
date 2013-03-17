@@ -125,8 +125,7 @@ void QGLTetraViewer::ToggleTriangleVis(int i)
 
 void QGLTetraViewer::ToggleOctreeVis(int i)
 {
-    std::cout<<"Octree Vis toggled..."<<std::endl;
-    tMesh->ToggelOctreeVis(i);
+    tMesh->ToggleOctreeVis(i);
     updateGL();
 }
 

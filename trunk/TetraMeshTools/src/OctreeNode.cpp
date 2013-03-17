@@ -13,6 +13,7 @@ unsigned int OctreeNode::_maxDepth = 0;
 
 OctreeNode::OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_) : _minBC(minBC_), _maxBC(maxBC_), _quadrant(-1)
 {
+	_parent = NULL;
 	OctreeNode::_points = inPoints_;
 	OctreeNode::_maxDepth = maxDepth_;
 	_depth = 0;
@@ -36,7 +37,20 @@ OctreeNode::OctreeNode(const OctreeNode* parent_, const Vec3f& minBC_, const Vec
 
 OctreeNode::~OctreeNode()
 {
-	clear();
+	//for (unsigned int i=0; i<_depth; ++i)
+	//{
+	//	std::cout<<"\t";
+	//}
+	//std::cout<<"Octree: Destructing level "<<_depth<<", node: "<<_quadrant<<std::endl;
+	for (unsigned int i=0; i<8; ++i)
+	{
+		if (_nodes[i] != NULL)
+		{
+			delete _nodes[i];
+			_nodes[i] = NULL;
+		}
+	}
+	_tmpChildren.clear();
 }
 
 const OctreeNode* OctreeNode::getParent() const
@@ -59,21 +73,6 @@ const Vec3f& OctreeNode::getMaxBC() const
 	return _maxBC;
 }
 
-void OctreeNode::clear()
-{
-	while (!_nodes.empty())
-	{
-		OctreeNode* on = _nodes.back();
-		if (on != NULL)
-		{
-			on->clear();
-			delete on;
-		}
-		_nodes.pop_back();
-	}
-	//_pointsInSelf.clear();
-}
-
 void OctreeNode::buildNode()
 {
 	if (_depth < OctreeNode::_maxDepth)
@@ -94,9 +93,46 @@ void OctreeNode::buildNode()
 			Vec3f* p = &(_points->at(i));
 			//_pointsInSelf.push_back(p);
 			// determine child quadrant
-			pq.left = (p->x < center.x);
-			pq.top = (p->y > center.y);
-			pq.back = (p->z < center.z);
+			// left
+			if ((p->x <= center.x) && (p->x >=_minBC.x))
+			{
+				pq.left = 1;
+			}
+			else if ((p->x >= center.x) && (p->x <=_maxBC.x))
+			{
+				pq.left = 0;
+			}
+			else
+			{
+				pq.left = -1;
+			}
+			//pq.left = ((p->x < center.x) && (p->x >=_minBC.x));
+			if ((p->y >= _minBC.y) && (p->y <= center.y))
+			{
+				pq.top = 0;
+			}
+			else if ((p->y >= center.y) && (p->y <= _maxBC.y))
+			{
+				pq.top = 1;
+			}
+			else
+			{
+				pq.top = -1;
+			}
+			//pq.top = (p->y > center.y);
+			if ((p->z >= _minBC.z) && (p->z <= center.z))
+			{
+				pq.back = 1;
+			}
+			else if ((p->z >= center.z) && (p->y <= _maxBC.z))
+			{
+				pq.back = 0;
+			}
+			else
+			{
+				pq.back = -1;
+			}
+			//pq.back = (p->z < center.z);
 			// determine quadrant index 
 			// the sub-volumes will be ordered as followed: (ordered by priority)
 			// top->bottom; back->front; left->right;
@@ -113,11 +149,48 @@ void OctreeNode::buildNode()
 			//  |   6   |   7   | +
             //  |       |       |/
 			//  +   -   +   -   +
-			pq.result = (pq.top) ? 0 : 4;
-			pq.result += (pq.back) ? 0 : 2;
-			pq.result += (pq.left) ? 0 : 1;
+			if (pq.top == 1)
+			{
+				pq.result = 4;
+			}
+			else if (pq.top == 0)
+			{
+				pq.result = 0;
+			}
+			else 
+			{
+				pq.result = -1;
+			}
+			if (pq.back == 1)
+			{
+				pq.result += 2;
+			}
+			else if (pq.back == 0)
+			{
+				pq.result += 0;
+			}
+			else
+			{
+				pq.result = -1;
+			}
+			if (pq.left == 1)
+			{
+				pq.result += 1;
+			}
+			else if (pq.left == 0)
+			{
+				pq.result += 0;
+			}
+			else
+			{
+				pq.result = -1;
+			}
+
 			//inPointsList[pq.result].push_back(p);
-			usedQuadrants[pq.result] = true;
+			if (pq.result >= 0)
+			{
+				usedQuadrants[pq.result] = true;
+			}
 		}
 		// Add the 8 nodes to our child list.
 		// Ignore the qudrant if empty i.e. if it has no points
@@ -163,5 +236,40 @@ void OctreeNode::buildNode()
 			OctreeNode* on7 = new OctreeNode(this, Vec3f(center.x, _minBC.y, center.z), Vec3f(_maxBC.x, center.y, _maxBC.z), _depth+1, 7);
 			_nodes[7] = on7;
 		}
+	}
+}
+
+const bool OctreeNode::hasChildren() const
+{
+	for (unsigned int i=0; i<8; ++i)
+	{
+		if (_nodes[i] != NULL)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+const std::vector<OctreeNode*>& OctreeNode::getLeafs()
+{
+	_tmpChildren.clear();
+	if (this->hasChildren())
+	{
+		for (unsigned int i=0; i<_nodes.size(); ++i)
+		{
+			if (_nodes[i] != NULL)
+			{
+				const std::vector<OctreeNode*>& childLeafs = _nodes[i]->getLeafs();
+				_tmpChildren.insert(_tmpChildren.end(), childLeafs.begin(), childLeafs.end());
+			}
+		}
+		return _tmpChildren;
+	}
+	else
+
+	{
+		_tmpChildren.push_back(this);
+		return _tmpChildren;
 	}
 }
