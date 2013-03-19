@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sun 17. Mar 22:43:10 2013
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Tue Mar 19 20:56:19 2013
+**      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -350,7 +350,7 @@ public:
         octreeFrame->setFrameShadow(QFrame::Sunken);
         verticalLayoutWidget = new QWidget(octreeFrame);
         verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
-        verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 108));
+        verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 109));
         octreeVisLayout = new QVBoxLayout(verticalLayoutWidget);
         octreeVisLayout->setSpacing(1);
         octreeVisLayout->setContentsMargins(1, 1, 1, 1);
@@ -398,8 +398,8 @@ public:
         octreeDepthSpinbox->setLayoutDirection(Qt::LeftToRight);
         octreeDepthSpinbox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         octreeDepthSpinbox->setMinimum(1);
-        octreeDepthSpinbox->setMaximum(8);
-        octreeDepthSpinbox->setValue(5);
+        octreeDepthSpinbox->setMaximum(16);
+        octreeDepthSpinbox->setValue(6);
 
         octreeVisLayout->addWidget(octreeDepthSpinbox);
 
@@ -492,7 +492,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 21));
+        menuBar->setGeometry(QRect(0, 0, 1024, 25));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -565,6 +565,9 @@ public:
         QObject::connect(actionExport_Surface, SIGNAL(triggered()), viewer, SLOT(saveSurface()));
         QObject::connect(actionGenerate_Octree, SIGNAL(triggered()), MainWindow, SLOT(generateOctree()));
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
+
+        octreeCombo->setCurrentIndex(1);
+
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi

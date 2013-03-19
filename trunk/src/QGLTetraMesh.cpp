@@ -617,5 +617,5 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_)
     t.start();
     oct = new Octree(depth_, &(surf->GetVertices()));
     t.stop();
-    std::cout<<"Octree generated in "<<t.getElapsedTimeInMilliSec()<<" ms."<<std::endl;
+    std::cout<<"Octree Level "<<oct->getDepth()<<" generated in "<<t.getElapsedTimeInMilliSec()<<" ms."<<std::endl;
 }

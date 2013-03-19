@@ -66,8 +66,8 @@ void MainWindow::showCGALDialog()
 
 void MainWindow::generateOctree()
 {
-    std::cout<<"MainWindow: Generating octree..."<<std::endl;
     ui->viewer->generateOctree(ui->octreeDepthSpinbox->value());
+    ui->viewer->updateGL();
 }
 
 void MainWindow::displayMessage(QString msg_, unsigned int time_)

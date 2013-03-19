@@ -77,9 +77,6 @@ void OctreeNode::buildNode()
 {
 	if (_depth < OctreeNode::_maxDepth)
 	{
-		//std::vector<std::vector<Vec3f*> > inPointsList;
-		//inPointsList.resize(8);
-		// prepare 8 possible children
 		Vec3f center = _minBC + _maxBC;
 		center /= 2.0f;
 		bool usedQuadrants[8];
@@ -89,10 +86,26 @@ void OctreeNode::buildNode()
 		}
 		for (unsigned int i=0; i<_points->size(); ++i)
 		{
+			// dirty test to avoid iterating over all vertices when all nodes are occupied already...
+			int setCount = 0;
+			for (unsigned int k=0; k<8; ++k)
+			{
+				if (usedQuadrants[k])
+				{
+					++setCount;
+				}
+			}
+			if (setCount == 8)
+			{
+				break;
+			}
+
 			PointQuadrant pq;
+			pq.left = -1;
+			pq.back = -1;
+			pq.top = -1;
+			pq.result = -1;
 			Vec3f* p = &(_points->at(i));
-			//_pointsInSelf.push_back(p);
-			// determine child quadrant
 			// left
 			if ((p->x <= center.x) && (p->x >=_minBC.x))
 			{
@@ -106,25 +119,23 @@ void OctreeNode::buildNode()
 			{
 				pq.left = -1;
 			}
-			//pq.left = ((p->x < center.x) && (p->x >=_minBC.x));
 			if ((p->y >= _minBC.y) && (p->y <= center.y))
 			{
-				pq.top = 0;
+				pq.top = 1;
 			}
 			else if ((p->y >= center.y) && (p->y <= _maxBC.y))
 			{
-				pq.top = 1;
+				pq.top = 0;
 			}
 			else
 			{
 				pq.top = -1;
 			}
-			//pq.top = (p->y > center.y);
 			if ((p->z >= _minBC.z) && (p->z <= center.z))
 			{
 				pq.back = 1;
 			}
-			else if ((p->z >= center.z) && (p->y <= _maxBC.z))
+			else if ((p->z >= center.z) && (p->z <= _maxBC.z))
 			{
 				pq.back = 0;
 			}
@@ -132,22 +143,21 @@ void OctreeNode::buildNode()
 			{
 				pq.back = -1;
 			}
-			//pq.back = (p->z < center.z);
 			// determine quadrant index 
 			// the sub-volumes will be ordered as followed: (ordered by priority)
 			// top->bottom; back->front; left->right;
-            //      +   -   +   -   +
-            //     /   0   /   1   /|
-            //    +   -   +   -   + |   
-            //   /   2   /   3   /|1|
-            //  +   -   +   -   + | +
-            //  |       |       |3|/| 
-			//  |   2   |   3   | + |
-            //  |       |       |/|5|
-			//  +   -   +   -   + | +
-            //  |       |       |7|/ 
-			//  |   6   |   7   | +
-            //  |       |       |/
+                        //      +   -   +   -   +
+                        //     /   0   /   1   /|
+                        //    +   -   +   -   + |   
+                        //   /   2   /   3   /|1|
+                        //  +   -   +   -   + | +
+                        //  |       |       |3|/| 
+                        //  |   2   |   3   | + |
+                        //  |       |       |/|5|
+                        //  +   -   +   -   + | +
+                        //  |       |       |7|/ 
+                        //  |   6   |   7   | +
+                        //  |       |       |/
 			//  +   -   +   -   +
 			if (pq.top == 1)
 			{
@@ -163,11 +173,11 @@ void OctreeNode::buildNode()
 			}
 			if (pq.back == 1)
 			{
-				pq.result += 2;
+				pq.result += 0;
 			}
 			else if (pq.back == 0)
 			{
-				pq.result += 0;
+				pq.result += 2;
 			}
 			else
 			{
@@ -175,20 +185,23 @@ void OctreeNode::buildNode()
 			}
 			if (pq.left == 1)
 			{
-				pq.result += 1;
+				pq.result += 0;
 			}
 			else if (pq.left == 0)
 			{
-				pq.result += 0;
+				pq.result += 1;
 			}
 			else
 			{
 				pq.result = -1;
 			}
 
-			//inPointsList[pq.result].push_back(p);
-			if (pq.result >= 0)
+			if ((pq.result >= 0) && (pq.result < 8) && (pq.top != -1) && (pq.left != -1) && (pq.back != -1))
 			{
+				if ((p->x < _minBC.x) || (p->x > _maxBC.x) || (p->y < _minBC.y) || (p->y > _maxBC.y) || (p->z < _minBC.z) || (p->z > _maxBC.z))
+				{
+					std::cerr<<"ERROR! Point: "<<*p<<" NOT in "<<_minBC.x<<"/"<<_minBC.y<<"/"<<_minBC.z<<" and "<<_maxBC.x<<"/"<<_maxBC.y<<"/"<<_maxBC.z<<std::endl;
+				}
 				usedQuadrants[pq.result] = true;
 			}
 		}
@@ -261,9 +274,13 @@ const std::vector<OctreeNode*>& OctreeNode::getLeafs()
 			if (_nodes[i] != NULL)
 			{
 				const std::vector<OctreeNode*>& childLeafs = _nodes[i]->getLeafs();
-				_tmpChildren.insert(_tmpChildren.end(), childLeafs.begin(), childLeafs.end());
+				if (!childLeafs.empty())
+				{
+					_tmpChildren.insert(_tmpChildren.end(), childLeafs.begin(), childLeafs.end());
+				}
 			}
 		}
+		_tmpChildren.push_back(this);
 		return _tmpChildren;
 	}
 	else
