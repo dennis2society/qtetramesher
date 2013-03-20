@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Tue Mar 19 20:56:19 2013
+** Created: Wed Mar 20 21:13:03 2013
 **      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -92,7 +92,9 @@ public:
     QLabel *octreeVisLabel;
     QComboBox *octreeCombo;
     QLabel *octreeDepthLabel;
+    QHBoxLayout *horizontalLayout_5;
     QSpinBox *octreeDepthSpinbox;
+    QPushButton *octreeGenerateButton;
     QFrame *tetraVisFrame;
     QHBoxLayout *horizontalLayout;
     QVBoxLayout *verticalLayout;
@@ -345,12 +347,12 @@ public:
         octreeFrame->setObjectName(QString::fromUtf8("octreeFrame"));
         sizePolicy3.setHeightForWidth(octreeFrame->sizePolicy().hasHeightForWidth());
         octreeFrame->setSizePolicy(sizePolicy3);
-        octreeFrame->setMinimumSize(QSize(0, 110));
+        octreeFrame->setMinimumSize(QSize(0, 120));
         octreeFrame->setFrameShape(QFrame::Box);
         octreeFrame->setFrameShadow(QFrame::Sunken);
         verticalLayoutWidget = new QWidget(octreeFrame);
         verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
-        verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 109));
+        verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 112));
         octreeVisLayout = new QVBoxLayout(verticalLayoutWidget);
         octreeVisLayout->setSpacing(1);
         octreeVisLayout->setContentsMargins(1, 1, 1, 1);
@@ -386,6 +388,9 @@ public:
 
         octreeVisLayout->addWidget(octreeDepthLabel);
 
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setSpacing(6);
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
         octreeDepthSpinbox = new QSpinBox(verticalLayoutWidget);
         octreeDepthSpinbox->setObjectName(QString::fromUtf8("octreeDepthSpinbox"));
         QSizePolicy sizePolicy4(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -401,7 +406,16 @@ public:
         octreeDepthSpinbox->setMaximum(16);
         octreeDepthSpinbox->setValue(6);
 
-        octreeVisLayout->addWidget(octreeDepthSpinbox);
+        horizontalLayout_5->addWidget(octreeDepthSpinbox);
+
+        octreeGenerateButton = new QPushButton(verticalLayoutWidget);
+        octreeGenerateButton->setObjectName(QString::fromUtf8("octreeGenerateButton"));
+        octreeGenerateButton->setFont(font2);
+
+        horizontalLayout_5->addWidget(octreeGenerateButton);
+
+
+        octreeVisLayout->addLayout(horizontalLayout_5);
 
 
         gridLayout_2->addWidget(octreeFrame, 5, 0, 1, 1);
@@ -565,6 +579,7 @@ public:
         QObject::connect(actionExport_Surface, SIGNAL(triggered()), viewer, SLOT(saveSurface()));
         QObject::connect(actionGenerate_Octree, SIGNAL(triggered()), MainWindow, SLOT(generateOctree()));
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
+        QObject::connect(octreeGenerateButton, SIGNAL(released()), MainWindow, SLOT(generateOctree()));
 
         octreeCombo->setCurrentIndex(1);
 
@@ -625,6 +640,7 @@ public:
          << QApplication::translate("MainWindow", "Visible", 0, QApplication::UnicodeUTF8)
         );
         octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", 0, QApplication::UnicodeUTF8));
+        octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", 0, QApplication::UnicodeUTF8));
         tetraVisLabel->setText(QApplication::translate("MainWindow", "TetraMesh Visualization", 0, QApplication::UnicodeUTF8));
         tetraCombo->clear();
         tetraCombo->insertItems(0, QStringList()
