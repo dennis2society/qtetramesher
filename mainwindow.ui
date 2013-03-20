@@ -361,7 +361,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>110</height>
+               <height>120</height>
               </size>
              </property>
              <property name="frameShape">
@@ -376,7 +376,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>201</width>
-                <height>109</height>
+                <height>112</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="octreeVisLayout" stretch="0,0,0,0">
@@ -471,41 +471,58 @@
                 </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="octreeDepthSpinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>80</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="layoutDirection">
-                  <enum>Qt::LeftToRight</enum>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>16</number>
-                 </property>
-                 <property name="value">
-                  <number>6</number>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item>
+                  <widget class="QSpinBox" name="octreeDepthSpinbox">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>80</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>16</number>
+                   </property>
+                   <property name="value">
+                    <number>6</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="octreeGenerateButton">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Generate</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -1345,6 +1362,22 @@
     <hint type="destinationlabel">
      <x>406</x>
      <y>419</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>octreeGenerateButton</sender>
+   <signal>released()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>generateOctree()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>968</x>
+     <y>740</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>413</y>
     </hint>
    </hints>
   </connection>
