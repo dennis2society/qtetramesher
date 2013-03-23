@@ -7,6 +7,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->viewer->setFPSIsDisplayed(true);
     ui->viewer->setAxisIsDrawn(true);
     ui->viewer->setGridIsDrawn(true);
+    this->setAcceptDrops(true);
+    ui->viewer->setAcceptDrops(true);
     tsd = NULL;
     ctd = NULL;
 }
@@ -105,4 +108,36 @@ void MainWindow::closeEvent(QCloseEvent * event)
 void MainWindow::on_viewer_onLoad()
 {
 
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event_)
+{
+    if (event_->mimeData()->hasFormat("text/uri-list"))
+    {
+        event_->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* event_)
+{
+    QList<QUrl> urls = event_->mimeData()->urls();
+    if (urls.isEmpty())
+        return;
+
+    QString fileName = urls.first().toLocalFile();
+    if (fileName.isEmpty())
+        return;
+    if (fileName.endsWith("msh", Qt::CaseInsensitive))
+    {
+        std::cout<<"Dropped GMSH file "<<fileName.toStdString()<<" on mainwindow..."<<std::endl;
+        ui->viewer->loadGMSH(fileName);
+    }
+    if (fileName.endsWith("obj", Qt::CaseInsensitive) ||
+        fileName.endsWith("stl", Qt::CaseInsensitive) ||
+        fileName.endsWith("ply", Qt::CaseInsensitive) ||
+        fileName.endsWith("off", Qt::CaseInsensitive))
+    {
+        std::cout<<"Dropped surface file "<<fileName.toStdString()<<" on mainwindow..."<<std::endl;
+        ui->viewer->loadSurface(fileName);
+    }
 }

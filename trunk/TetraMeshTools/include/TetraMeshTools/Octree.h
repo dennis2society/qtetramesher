@@ -17,13 +17,14 @@ private:
 	OctreeNode*					_root;
 	const unsigned int			_maxDepth;
 	const std::vector<Vec3f>*	_inPoints;	// surface points for which we want to build the Octree
+	const std::vector<Triangle>* _inTris;	// surface triangle indices
 	Vec3f						_minBC, _maxBC;
 
 	void generateBoundingCube();
 
 
 public:
-	Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_);
+	Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, std::vector<Triangle>* inTris_);
 	~Octree();
 
 	OctreeNode* getRootNode();

@@ -9,6 +9,7 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+#include <limits>
 #ifndef WIN32
 #include <cfloat>
 #include <math.h>
@@ -256,8 +257,10 @@ void TetraTools::TriangleTopology::GenerateBoundingBox(const std::vector<Vec3f>&
 	/// generate Bounding Box
 	std::cout<<"Generating BoundingBox ..."<<std::endl;
 	BoundingBox b;
-	b.min = Vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
-	b.max = Vec3f(FLT_MIN, FLT_MIN, FLT_MIN);
+	//b.min = Vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
+	b.min = Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+	//b.max = Vec3f(FLT_MIN, FLT_MIN, FLT_MIN);
+	b.max = Vec3f(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 	float dist = 0;
 	for (it=vertices_.begin(); it!=vertices_.end(); ++it)
 	{

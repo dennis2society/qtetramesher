@@ -134,7 +134,8 @@ public:
 	}
 	// convenience [] operator for iterating over elements
 	// this might be helpful for 3x3 matrices that consist of three Vec3fs
-	float operator[](unsigned int index) {
+	const float operator[](unsigned int index) const 
+	{
 		switch (index) {
 		case 0:
 			return x;
@@ -148,7 +149,24 @@ public:
 		default:
 			break;
 		}
-		return 0;
+		return 0.0f;
+	}
+
+	float& operator[](unsigned int index) 
+	{
+		switch (index) {
+		case 0:
+			return x;
+			break;
+		case 1:
+			return y;
+			break;
+		case 2:
+			return z;
+			break;
+		default:
+			break;
+		}
 	}
 
 	friend std::ostream& operator<<( std::ostream& out, const Vec3f& vec)
