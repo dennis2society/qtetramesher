@@ -7,6 +7,7 @@
 
 #include "Octree.h"
 #include <algorithm>
+#include <limits>
 #ifndef WIN32
 #include <cfloat>
 #include <math.h>
@@ -14,7 +15,7 @@
 #include <float.h>
 #endif
 
-Octree::Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_) : _inPoints(inPoints_), _maxDepth(maxDepth_)
+Octree::Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, std::vector<Triangle>* inTris_) : _inPoints(inPoints_), _maxDepth(maxDepth_), _inTris(inTris_)
 {
 	generateBoundingCube();
 	_root = new OctreeNode(maxDepth_, inPoints_, _minBC, _maxBC);
@@ -35,8 +36,8 @@ void Octree::generateBoundingCube()
 	/// generate Bounding Box
 	std::cout<<"Octree: Generating cubic bounding volume ..."<<std::endl;
 	BoundingBox b;
-	b.min = Vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
-	b.max = Vec3f(FLT_MIN, FLT_MIN, FLT_MIN);
+	b.min = Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+	b.max = Vec3f(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 	float dist = 0;
 	for (it=_inPoints->begin(); it!=_inPoints->end(); ++it)
 	{

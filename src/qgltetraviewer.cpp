@@ -195,12 +195,20 @@ void QGLTetraViewer::generateOctree(int d)
     tMesh->generateOctree((unsigned int)d);
 }
 
-void QGLTetraViewer::loadSurface()
+void QGLTetraViewer::loadSurface(const QString& fileName_)
 {
-    QFileDialog* qfd = new QFileDialog(this, "Select mesh File", "", tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
-    QString s = qfd->getOpenFileName(this, "Select mesh File", "", tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+    QString s;
+    if (fileName_.compare("") != 0)
+    {
+        s = fileName_;
+    }
+    else
+    {
+        QFileDialog* qfd = new QFileDialog(this, "Select mesh File", "", tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+        s = qfd->getOpenFileName(this, "Select mesh File", "", tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+        delete qfd;
+    }
     std::cout<<"Loading Surface Mesh... "<<s.toStdString()<<std::endl;
-    delete qfd;
     if (s.toStdString().empty())
         return;
     ShowStatusMessage("Loading Surface...");
@@ -218,12 +226,20 @@ void QGLTetraViewer::loadSurface()
     emit onLoad();
 }
 
-void QGLTetraViewer::loadGMSH()
+void QGLTetraViewer::loadGMSH(const QString& fileName_)
 {
-    QFileDialog* qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
-    QString s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
+    QString s;
+    if (fileName_.compare("") != 0)
+    {
+        s = fileName_;
+    }
+    else
+    {
+        QFileDialog* qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
+        QString s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
+        delete qfd;
+    }
     std::cout<<"Loading GMSH Mesh... "<<s.toStdString()<<std::endl;
-    delete qfd;
     if (s.toStdString().empty())
         return;
     ShowStatusMessage("Loading GMSH...");

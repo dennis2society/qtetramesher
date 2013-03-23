@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\SATriangleBoxIntersection.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\TetrahedronTopology.cpp"
 				>
 			</File>
@@ -328,6 +332,10 @@
 				</File>
 				<File
 					RelativePath=".\include\TetraMeshTools\OctreeNode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\include\TetraMeshTools\SATriangleBoxIntersection.h"
 					>
 				</File>
 				<File

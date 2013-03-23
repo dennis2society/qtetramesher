@@ -34,8 +34,8 @@ public :
 	void ToggleBBox(int i);
 	void SetCutPlane(int i);
 	void ShowStatusMessage(const QString& msg_, int duration_ = 2000);
-    void loadSurface();
-    void loadGMSH();
+    void loadSurface(const QString& fileName_ = "");
+    void loadGMSH(const QString& fileName_ = "");
     void saveGMSH();
     void saveSurface();
     void selectSurfaceColor();
