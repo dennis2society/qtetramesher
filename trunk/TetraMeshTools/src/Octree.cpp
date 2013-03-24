@@ -18,7 +18,7 @@
 Octree::Octree(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, std::vector<Triangle>* inTris_) : _inPoints(inPoints_), _maxDepth(maxDepth_), _inTris(inTris_)
 {
 	generateBoundingCube();
-	_root = new OctreeNode(maxDepth_, inPoints_, _minBC, _maxBC);
+	_root = new OctreeNode(maxDepth_, inPoints_, _minBC, _maxBC, inTris_);
 }
 
 Octree::~Octree()
