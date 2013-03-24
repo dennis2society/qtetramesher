@@ -2,7 +2,7 @@ README for QTetraMesher
 
 Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
 
-Usage instructions available at http://qtm.dennis2society.de.
+Usage and build instructions available at http://qtm.dennis2society.de.
 Sourcecode available at: http://code.google.com/p/qtetramesher/
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
@@ -58,6 +58,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see here. http://www.gnu.org/licenses/licenses.html#GPL
+along with this program.  If not, see here: http://www.gnu.org/licenses/gpl.html
 
 
