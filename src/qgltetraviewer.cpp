@@ -103,12 +103,37 @@ void QGLTetraViewer::draw()
 
 QString QGLTetraViewer::helpString() const
 {
-  QString text("<h2>dennis2society.de QGL Tetra Mesh Viewer</h2>");
-  text += "<br>";
-  text += "<br>";
-  text += "This program can load and show surface and tetrahedral meshes in Wavefront OBJ, GMSH and Nvidia's NXUStream2 format.<br>";
-  text += "<br>";
-  return text;
+    const QString version(APP_VERSION);
+    QString text("<h2>QTetraMesher</h2>");
+    text += "Version: ";
+    text += version;
+    text += "<br>";
+    text += "<br>";
+    text += "&copy; 2013, Dennis L&uuml;bke, qtm (at) dennis2society.de";
+    text += "<br>";
+    text += "<br>";
+    text += "This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for<br />" \
+          "finite element simulation from various surface mesh formats. It also offers a fast<br />" \
+          "and easy-to-use mesh viewer based on QGLViewer and allows basic mesh manipulations<br />" \
+          "(currently only scaling is possible). Two different methods for tetrahedralization<br />" \
+          "are possible: Delaunay Triangulation and Johnathan Shewchuk's Isosurface Stuffing algorithm.<br>";
+    text += "<br />";
+    text += "Usage/build instructions available at <a href=\"http://qtm.dennis2society.de\">qtm.dennis2society.de</a>.<br />";
+    text += "<br />";
+    text += "Sourcecode available at <a href=\"http://code.google.com/p/qtetramesher/\">QTetraMesher at Google Code</a>.<br />";
+    text += "<br />";
+    text += "<pre>This program is free software: you can redistribute it and/or modify it<br />" \
+          "under the terms of the GNU General Public License as published by the Free<br />" \
+          "Software Foundation, either version 3 of the License, or (at your option) any<br />" \
+          "later version.<br />" \
+          "This program is distributed in the hope that it will be useful,<br />" \
+          "but WITHOUT ANY WARRANTY; without even the implied warranty of<br />" \
+          "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br />" \
+          "GNU General Public License for more details.<br />" \
+          "You should have received a copy of the GNU General Public License<br />" \
+          "along with this program.  If not, see here: <a href=\"http://www.gnu.org/licenses/gpl.html\">GPL License</a>.";
+    text += "<br>";
+    return text;
 }
 
 void QGLTetraViewer::ToggleTetraVis(int i)

@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>dennis2society QTetraMesher</string>
+   <string>QTetraMesher</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -695,7 +695,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -718,7 +718,6 @@
      <string>Help/Info</string>
     </property>
     <addaction name="actionHelp"/>
-    <addaction name="actionAbout"/>
     <addaction name="actionAbout_QGLViewer"/>
    </widget>
    <widget class="QMenu" name="menuView">

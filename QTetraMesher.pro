@@ -6,6 +6,11 @@
 
 QT       += core gui xml opengl
 
+VERSION = 0.8.1
+
+# Define the preprocessor macro to get the application version in our application.
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = QTetraMesher
@@ -38,7 +43,6 @@ INCLUDEPATH += $$PWD/src
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/release/ -lQGLViewer2
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/debug/ -lQGLViewerd2
-else:symbian: LIBS += -lQGLViewer2
 else:unix: LIBS += -L/usr/lib/i386-linux-gnu -lqglviewer-qt4
 
 INCLUDEPATH += $$PWD/../../libQGLViewer-2.3.17
@@ -46,7 +50,6 @@ DEPENDPATH += $$PWD/../../libQGLViewer-2.3.17
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralize
-else:symbian: LIBS += -lTetraMeshTools -lSofaTetraStuffing
 else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/../sofa/extlibs -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lsofa_misc -lsofa_component_misc -lsofacore -lsofahelper -lsofadefaulttype -lsofa_mesh_collision -lsofa_deformable -lsofa_object_interaction -lsofa_base_collision -lsofa_base_mechanics -lsofa_base_topology -lsofasimulation -lGLEW -ltinyxml -lsofa_rigid
 
 INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include

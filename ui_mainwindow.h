@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Mar 20 21:13:03 2013
-**      by: Qt User Interface Compiler version 4.8.3
+** Created: Sun 24. Mar 14:05:43 2013
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -506,7 +506,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 25));
+        menuBar->setGeometry(QRect(0, 0, 1024, 21));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -538,7 +538,6 @@ public:
         menuFile->addSeparator();
         menuFile->addAction(actionQuit);
         menuHelp_Info->addAction(actionHelp);
-        menuHelp_Info->addAction(actionAbout);
         menuHelp_Info->addAction(actionAbout_QGLViewer);
         menuView->addAction(actionShow_FPS);
         menuView->addAction(actionShow_Grid);
@@ -589,7 +588,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "dennis2society QTetraMesher", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "QTetraMesher", 0, QApplication::UnicodeUTF8));
         actionLoad_GMSH->setText(QApplication::translate("MainWindow", "Load GMSH (.msh)", 0, QApplication::UnicodeUTF8));
         actionLoad_NXU2->setText(QApplication::translate("MainWindow", "Load NXU2 (.xml)", 0, QApplication::UnicodeUTF8));
         actionLoad_Tetgen->setText(QApplication::translate("MainWindow", "Load Tetgen (not yet...)", 0, QApplication::UnicodeUTF8));

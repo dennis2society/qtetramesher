@@ -57,7 +57,6 @@ void MainWindow::showCGALDialog()
 {
     if (ctd == NULL)
     {
-        //std::cout<<"Creating CGAL Dialog..."<<std::endl;
         ctd = new CGALTetrahedralizeDialog();
         ctd->setViewer(ui->viewer);
         connect(ctd, SIGNAL(displayMessage(QString,uint)), this, SLOT(displayMessage(QString,uint)));
