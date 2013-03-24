@@ -2,6 +2,7 @@
  *	Octree.h
  *
  *	Octree implementation for 3D surface mesh subdivision.
+ *	Each Octree node that intersects a surface mesh triangle will be used.
  *
  *	Author: Dennis Luebke, 2013
  *

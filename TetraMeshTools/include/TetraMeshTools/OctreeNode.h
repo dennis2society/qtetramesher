@@ -30,6 +30,7 @@ private:
 	static unsigned int			_maxDepth; // static int for maximum depth of our octree
 	std::vector<OctreeNode*>	_nodes; // a maximum of 8 children is possible
 	static std::vector<Vec3f>*	_points; // pointer to surface mesh points
+	static std::vector<Triangle>* _tris;
 	//std::vector<Vec3f*>			_pointsInSelf;	// list of point-pointers to know which surface points are contained in the current child
 	Vec3f						_minBC, _maxBC;	// 3D points for opposite corners
 	const int					_quadrant;
@@ -41,7 +42,7 @@ private:
 
 public:
 	// only necessary for root node
-	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& _minBC, const Vec3f& _maxBC);
+	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& _minBC, const Vec3f& _maxBC, std::vector<Triangle>* inTris_);
 	// this constructor is only for the child nodes
 	OctreeNode(const OctreeNode* parent_, const Vec3f& _minBC, const Vec3f& _maxBC, const unsigned int depth_, const int quadrant_);
 	~OctreeNode();

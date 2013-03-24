@@ -7,14 +7,17 @@
 
 #include "OctreeNode.h"
 #include <iostream>
+#include "SATriangleBoxIntersection.h"
 
 std::vector<Vec3f>* OctreeNode::_points = NULL;
+std::vector<Triangle>* OctreeNode::_tris = NULL;
 unsigned int OctreeNode::_maxDepth = 0;
 
-OctreeNode::OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_) : _minBC(minBC_), _maxBC(maxBC_), _quadrant(-1)
+OctreeNode::OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_, std::vector<Triangle>* inTris_) : _minBC(minBC_), _maxBC(maxBC_), _quadrant(-1)
 {
 	_parent = NULL;
 	OctreeNode::_points = inPoints_;
+	OctreeNode::_tris = inTris_;
 	OctreeNode::_maxDepth = maxDepth_;
 	_depth = 0;
 	_nodes.resize(8);
@@ -84,6 +87,11 @@ void OctreeNode::buildNode()
 		{
 			usedQuadrants[i] = false;
 		}
+		// vertex Octree:
+		// The following code generates the child nodes only when they are occupied by a vertex.
+		// Currently useless, but was a nice testing scenario for node generation.
+		// Will be kept as a reminder for myself.
+		/*
 		for (unsigned int i=0; i<_points->size(); ++i)
 		{
 			// dirty test to avoid iterating over all vertices when all nodes are occupied already...
@@ -205,9 +213,94 @@ void OctreeNode::buildNode()
 				usedQuadrants[pq.result] = true;
 			}
 		}
+		*/
+
+		// generate Octree nodes when they are occupied by a triangle
+		// using SAT (separating axis theorem)
+		for (unsigned int i=0; i<OctreeNode::_tris->size(); ++i)
+		{
+			// dirty test to avoid iterating over all vertices when all nodes are occupied already...
+			int setCount = 0;
+			for (unsigned int k=0; k<8; ++k)
+			{
+				if (usedQuadrants[k])
+				{
+					++setCount;
+				}
+			}
+			if (setCount == 8)
+			{
+				break;
+			}
+			const Triangle& t = _tris->at(i);
+			const Vec3f& v0 = OctreeNode::_points->at(t.index[0]);
+			const Vec3f& v1 = OctreeNode::_points->at(t.index[1]);
+			const Vec3f& v2 = OctreeNode::_points->at(t.index[2]);
+			const Vec3f triPoints[3] = {v0, v1, v2};
+			// as we are using a bounding cube, we only need to calculate the length once
+			const float bcHalfLength = (_maxBC.x - _minBC.x) * 0.5f;
+			const float bcQuarterLength = bcHalfLength * 0.5f;
+			const Vec3f boxCenter(_minBC.x + bcHalfLength, _minBC.y + bcHalfLength, _minBC.z + bcHalfLength);
+			const Vec3f boxQuarterSize(bcQuarterLength, bcQuarterLength, bcQuarterLength);
+
+			// check for sub-cube #0 (top, left, back)
+			Vec3f currentBoxCenter(center.x - bcQuarterLength, center.y + bcQuarterLength, center.z - bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[0] = true;
+			}
+
+			// check for sub-cube #1 (top, right, back)
+			currentBoxCenter = Vec3f(center.x + bcQuarterLength, center.y + bcQuarterLength, center.z - bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[1] = true;
+			}
+
+			// check for sub-cube #2 (top, left, front)
+			currentBoxCenter = Vec3f(center.x - bcQuarterLength, center.y + bcQuarterLength, center.z + bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[2] = true;
+			}
+
+			// check for sub-cube #3 (top, right, front)
+			currentBoxCenter = Vec3f(center.x + bcQuarterLength, center.y + bcQuarterLength, center.z + bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[3] = true;
+			}
+
+			// check for sub-cube #4 (bottom, left, back)
+			currentBoxCenter = Vec3f(center.x - bcQuarterLength, center.y - bcQuarterLength, center.z - bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[4] = true;
+			}
+
+			// check for sub-cube #5 (bottom, right, back)
+			currentBoxCenter = Vec3f(center.x + bcQuarterLength, center.y - bcQuarterLength, center.z - bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[5] = true;
+			}
+
+			// check for sub-cube #6 (bottom, left, front)
+			currentBoxCenter = Vec3f(center.x - bcQuarterLength, center.y - bcQuarterLength, center.z + bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[6] = true;
+			}
+
+			// check for sub-cube #7 (bottom, right, front)
+			currentBoxCenter = Vec3f(center.x + bcQuarterLength, center.y - bcQuarterLength, center.z + bcQuarterLength);
+			if (triBoxOverlap(currentBoxCenter, boxQuarterSize, triPoints) == 1)
+			{
+				usedQuadrants[7] = true;
+			}
+		}
 		// Add the 8 nodes to our child list.
 		// Ignore the qudrant if empty i.e. if it has no points
-		//std::cout<<"\tBC center["<<_depth<<"]["<<_quadrant<<"] : "<<center<<std::endl;
 		if (usedQuadrants[0])
 		{
 			OctreeNode* on0 = new OctreeNode(this, Vec3f(_minBC.x, center.y, _minBC.z), Vec3f(center.x, _maxBC.y, center.z), _depth+1, 0);

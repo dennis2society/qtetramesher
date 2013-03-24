@@ -143,7 +143,9 @@ int axisTest_z12(const float a, const float b, const float fa, const float fb)
 	}
 	float rad = fa * boxhalfsize[0] + fb * boxhalfsize[1];
 	if(min > rad || max < -rad) 
+	{
 		return 0;
+	}
 	else
 		return -1;
 }
@@ -169,9 +171,9 @@ int axisTest_z0(const float a, const float b, const float fa, const float fb)
 		return -1;
 }
 
-int triBoxOverlap(const Vec3f& boxcenter, const Vec3f& boxhalfsize, const Vec3f triverts[3])
+int triBoxOverlap(const Vec3f& boxcenter, const Vec3f& boxhalfsize_, const Vec3f triverts[3])
 {
-
+	boxhalfsize = boxhalfsize_;
 	Vec3f normal, e0, e1 , e2;
 	/* This is the fastest branch on Sun */
 	/* move everything so that the boxcenter is in (0,0,0) */
@@ -193,58 +195,67 @@ int triBoxOverlap(const Vec3f& boxcenter, const Vec3f& boxhalfsize, const Vec3f 
 	fez = fabsf(e0[2]);
 
 	int result = -1;
-	//AXISTEST_X01(e0[Z], e0[Y], fez, fey);
 	result = axisTest_x01(e0[2], e0[1], fez, fey);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Y02(e0[Z], e0[X], fez, fex);
 	result = axisTest_y02(e0[2], e0[0], fez, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Z12(e0[Y], e0[X], fey, fex);
 	result = axisTest_z12(e0[1], e0[0], fey, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
 	fex = fabsf(e1[0]);
 	fey = fabsf(e1[1]);
 	fez = fabsf(e1[2]);
 
-	//AXISTEST_X01(e1[Z], e1[Y], fez, fey);
 	result = axisTest_x01(e1[2], e1[1], fez, fey);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Y02(e1[Z], e1[X], fez, fex);
 	result = axisTest_y02(e1[2], e1[0], fez, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Z0(e1[Y], e1[X], fey, fex);
 	result = axisTest_z0(e1[1], e1[0], fey, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
 	fex = fabsf(e2[0]);
 	fey = fabsf(e2[1]);
 	fez = fabsf(e2[2]);
 
-	//AXISTEST_X2(e2[Z], e2[Y], fez, fey);
 	result = axisTest_x2(e2[2], e2[1], fez, fey);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Y1(e2[Z], e2[X], fez, fex);
 	result = axisTest_y1(e2[2], e2[0], fez, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
-	//AXISTEST_Z12(e2[Y], e2[X], fey, fex);
 	result = axisTest_z12(e2[1], e2[0], fey, fex);
 	if (result == 0)
+	{
 		return 0;
+	}
 
 	/**
 	 * Bullet 1:
@@ -255,30 +266,25 @@ int triBoxOverlap(const Vec3f& boxcenter, const Vec3f& boxhalfsize, const Vec3f 
 	 */
 
 	// test in X-direction
-	//FINDMINMAX(v0[X],v1[X],v2[X],min,max);
 	findMinMax(v0[0], v1[0], v2[0], min, max);
-	if(min > boxhalfsize[0] || max < -boxhalfsize[0]) return 0;
+	if(min > boxhalfsize_[0] || max < -boxhalfsize_[0]) return 0;
 
 	// test in Y-direction
-	//FINDMINMAX(v0[Y],v1[Y],v2[Y],min,max);
 	findMinMax(v0[1], v1[1], v2[1], min, max);
-	if(min > boxhalfsize[1] || max < -boxhalfsize[1]) return 0;
+	if(min > boxhalfsize_[1] || max < -boxhalfsize_[1]) return 0;
 
 	// test in Z-direction
-	//FINDMINMAX(v0[Z],v1[Z],v2[Z],min,max);
 	findMinMax(v0[2], v1[2], v2[2], min, max);
-	if(min > boxhalfsize[2] || max < -boxhalfsize[2]) return 0;
+	if(min > boxhalfsize_[2] || max < -boxhalfsize_[2]) return 0;
 
 	/**
 	 * Bullet 2:
 	 *  test if the box intersects the plane of the triangle
 	 *  compute plane equation of triangle: normal*x+d=0
 	 */
-
-	//CROSS(normal,e0,e1);
 	normal = e0.cross(e1);
 
-	if(!planeBoxOverlap(normal, v0, boxhalfsize)) return 0;
+	if(!planeBoxOverlap(normal, v0, boxhalfsize_)) return 0;
 
 	return 1;   /* box and triangle overlaps */
 
