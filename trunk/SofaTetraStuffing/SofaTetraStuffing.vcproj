@@ -60,7 +60,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="sofa_component_misc_1_0d.lib sofacore_1_0d.lib sofa_misc_1_0d.lib"
 				OutputFile="$(ProjectDir)\$(ConfigurationName)\$(ProjectName)d.dll"
-				AdditionalLibraryDirectories="lib"
+				AdditionalLibraryDirectories="..\..\..\Sofa_2013\lib"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -133,7 +133,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="sofa_component_misc_1_0.lib sofacore_1_0.lib sofa_misc_1_0.lib"
 				OutputFile="$(ProjectDir)\$(ConfigurationName)\$(ProjectName).dll"
-				AdditionalLibraryDirectories="lib"
+				AdditionalLibraryDirectories="..\..\..\Sofa_2013\lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -159,7 +159,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy /Y $(ConfigurationName)\$(TargetName).lib ..\lib&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="copy /Y $(ConfigurationName)\$(TargetName).lib ..\lib&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\$(ConfigurationName)&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\..\QTetraMesher_Win32"
 			/>
 		</Configuration>
 	</Configurations>

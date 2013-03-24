@@ -157,7 +157,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy /Y $(ConfigurationName)\$(TargetName).lib ..\lib&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\$(ConfigurationName)&#x0D;&#x0A;"
+				CommandLine="copy /Y $(ConfigurationName)\$(TargetName).lib ..\lib&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\$(ConfigurationName)&#x0D;&#x0A;copy /Y $(ConfigurationName)\*.dll ..\..\QTetraMesher_Win32"
 			/>
 		</Configuration>
 	</Configurations>
