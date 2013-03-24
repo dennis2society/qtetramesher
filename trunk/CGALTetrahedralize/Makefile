@@ -18,9 +18,8 @@ CFLAGS+=        -fopenmp
 #CFLAGS+=       -g
 #CFLAGS+=       -O0
 CFLAGS+=        -I$(incDir)
-CFLAGS+=		-I$(ttmDir)/include -I$(ttmDir)/include/TetraMeshTools
-CFLAGS+=		-I/usr/include
-CFLAGS+=		-I$ttmInclude
+CFLAGS+=	-I$(ttmDir)/include -I$(ttmDir)/include/TetraMeshTools
+CFLAGS+=	-I/usr/include
 CFLAGS+=        -fpic
 CFLAGS+=        -shared 
 
