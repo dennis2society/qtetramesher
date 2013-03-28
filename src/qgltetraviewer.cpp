@@ -257,11 +257,12 @@ void QGLTetraViewer::loadGMSH(const QString& fileName_)
     if (fileName_.compare("") != 0)
     {
         s = fileName_;
+        std::cout<<"loading from drag and drop..."<<std::endl;
     }
     else
     {
         QFileDialog* qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
-        QString s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
+        s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
         delete qfd;
     }
     std::cout<<"Loading GMSH Mesh... "<<s.toStdString()<<std::endl;
