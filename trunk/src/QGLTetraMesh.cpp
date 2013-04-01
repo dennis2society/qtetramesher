@@ -265,8 +265,10 @@ void QGLTetraMesh::Draw()
             case 0:	// hide octree
                 break;
             case 1:	// show octree
-                //DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
-                DrawOctree();
+                DrawOctree(false);
+                break;
+            case 2:	// show octree with smallest leafs only
+                DrawOctree(true);
                 break;
         }
 	}
@@ -378,12 +380,12 @@ void QGLTetraMesh::DrawTetrahedron(const unsigned int tetraIndex)
 	glEnd();
 }
 
-void QGLTetraMesh::DrawOctree()
+void QGLTetraMesh::DrawOctree(const bool leafsOnyly_)
 {
     if (oct != NULL)
     {
         OctreeNode* root = oct->getRootNode();
-        const std::vector<OctreeNode*>& leafs = root->getLeafs();
+        const std::vector<OctreeNode*>& leafs = root->getLeafs(leafsOnyly_);
         for (unsigned int k=0; k<leafs.size(); ++k)
         {
             //std::cout<<"Drawing octree node #"<<k<<" with depth "<<leafs[k]->getDepth()<<"/"<<leafs[k]->getQuadrant()<<std::endl;

@@ -62,7 +62,9 @@ public:
 	const bool hasChildren() const;
 
 	// returns the smalles children i.e. the "leafs" as a recursively generated list
-	const std::vector<OctreeNode*>& getLeafs();
+	// when leafsOnly is set to true, we will only return the smallest child leafs,
+	// while ignoring the containing cubes.
+	const std::vector<OctreeNode*>& getLeafs(const bool leafsOnly_=false);
 
 	const unsigned int getDepth() const
 	{
