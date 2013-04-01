@@ -357,7 +357,7 @@ const bool OctreeNode::hasChildren() const
 	return false;
 }
 
-const std::vector<OctreeNode*>& OctreeNode::getLeafs()
+const std::vector<OctreeNode*>& OctreeNode::getLeafs(const bool leafsOnly_)
 {
 	_tmpChildren.clear();
 	if (this->hasChildren())
@@ -366,18 +366,20 @@ const std::vector<OctreeNode*>& OctreeNode::getLeafs()
 		{
 			if (_nodes[i] != NULL)
 			{
-				const std::vector<OctreeNode*>& childLeafs = _nodes[i]->getLeafs();
+				const std::vector<OctreeNode*>& childLeafs = _nodes[i]->getLeafs(leafsOnly_);
 				if (!childLeafs.empty())
 				{
 					_tmpChildren.insert(_tmpChildren.end(), childLeafs.begin(), childLeafs.end());
 				}
 			}
 		}
-		_tmpChildren.push_back(this);
+		if (!leafsOnly_)
+		{
+			_tmpChildren.push_back(this);
+		}
 		return _tmpChildren;
 	}
 	else
-
 	{
 		_tmpChildren.push_back(this);
 		return _tmpChildren;

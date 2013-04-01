@@ -20,7 +20,7 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle>& tris, c
 	// prepare data
 	MeshTetraStuffing::SeqPoints vertData;
 	MeshTetraStuffing::SeqTriangles triData;
-	// copy by element for conversion form our data types to SOFA's types
+	// copy by element for conversion from our data types to SOFA's types
 	sofaStuffer->inputPoints.beginEdit();
 	for (unsigned int i=0; i<verts.size(); ++i)
 	{
@@ -44,6 +44,8 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle>& tris, c
 	MeshTetraStuffing::Real ts = (MeshTetraStuffing::Real)size_;
 	sofaStuffer->size.setValue(ts);
 	sofaStuffer->size.endEdit();
+	// as the following section is working fine, we obviously don't need 
+	// SOFA's begin-/endEdit() calls for setting primitive type values
 	sofaStuffer->alphaLong = al_;
 	sofaStuffer->alphaShort = as_;
 	sofaStuffer->bSplitTetrahedra = splitTetras_;

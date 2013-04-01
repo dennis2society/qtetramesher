@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sun 24. Mar 14:05:43 2013
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Sun Mar 31 01:20:47 2013
+**      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -506,7 +506,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 21));
+        menuBar->setGeometry(QRect(0, 0, 1024, 25));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -637,6 +637,7 @@ public:
         octreeCombo->insertItems(0, QStringList()
          << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
          << QApplication::translate("MainWindow", "Visible", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Leafs Only", 0, QApplication::UnicodeUTF8)
         );
         octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", 0, QApplication::UnicodeUTF8));
         octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", 0, QApplication::UnicodeUTF8));

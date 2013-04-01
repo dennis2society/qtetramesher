@@ -60,7 +60,7 @@ private:
 
 	void DrawTetrahedron(const unsigned int tetraIndex);
 
-    void DrawOctree();
+    void DrawOctree(const bool leafsOnyly_);
 
     Vec3f surfaceColorSolid;
     Vec3f tetraColorSolid;
