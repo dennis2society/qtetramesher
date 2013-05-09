@@ -42,9 +42,9 @@ private:
 
 public:
 	// only necessary for root node
-	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& _minBC, const Vec3f& _maxBC, std::vector<Triangle>* inTris_);
+	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_, std::vector<Triangle>* inTris_);
 	// this constructor is only for the child nodes
-	OctreeNode(const OctreeNode* parent_, const Vec3f& _minBC, const Vec3f& _maxBC, const unsigned int depth_, const int quadrant_);
+	OctreeNode(const OctreeNode* parent_, const Vec3f& minBC_, const Vec3f& maxBC_, const unsigned int depth_, const int quadrant_);
 	~OctreeNode();
 
 	/**

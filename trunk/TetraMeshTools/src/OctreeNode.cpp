@@ -152,7 +152,7 @@ void OctreeNode::buildNode()
 				pq.back = -1;
 			}
 			// determine quadrant index 
-			// the sub-volumes will be ordered as followed: (ordered by priority)
+			// the sub-volumes will be ordered as followed: (ordered by index)
 			// top->bottom; back->front; left->right;
                         //      +   -   +   -   +
                         //     /   0   /   1   /|
