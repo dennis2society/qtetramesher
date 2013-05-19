@@ -15,8 +15,12 @@ As I am using lots of 3rd-party open-source C/C++ libraries, this work is releas
 as GPL software. This includes all self-written code. 3rd-party code remains under 
 its own license.
 
-Features
+Changelog
+  0.8.1
+	- Drag & Drop supported mesh files on the main window to open files.
+	- Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
 
+Features
     - Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10).
     - Integration of QGLViewer for easy mesh preview.
     - Surface mesh import and export for *.obj, *.ply, *.off, *.stl (using trimesh2).
