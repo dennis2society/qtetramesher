@@ -316,6 +316,39 @@ void QGLTetraViewer::saveGMSH()
     }
 }
 
+void QGLTetraViewer::saveTetgen()
+{
+    if (tMesh == NULL)
+    {
+        ShowStatusMessage("Saving Tetgen not possible! No tetrahedral mesh present...");
+        return;
+    }
+    if (tMesh->GetTetraMesh() != NULL)
+    {
+        QFileDialog* qfd = new QFileDialog(this, "Select Tetgen Output File prefix", "", "");
+        QString s = qfd->getSaveFileName(this, "Select Tetgen Output File prefix", "", "");
+        if (s.toStdString().empty())
+        {
+            delete qfd;
+            return;
+        }
+        // auto remove file extension if present
+        QFileInfo f(s);
+        if (!f.suffix().isEmpty())
+        {
+            s = f.baseName();
+        }
+        delete qfd;
+        std::string outfileNames = s.toStdString()+".node/.ele";
+        std::cout<<"Saving Tetgen to file: "<<outfileNames<<std::endl;
+        tMesh->SaveTetgen(s.toStdString());
+    }
+    else
+    {
+        ShowStatusMessage("Saving Tetgen failed! No tetrahedral mesh present...");
+    }
+}
+
 void QGLTetraViewer::saveSurface()
 {
     if (tMesh == NULL)

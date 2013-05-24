@@ -85,9 +85,11 @@ public:
 
 	void Draw();
 	void LoadGMSH(const std::string& fileName_);
+    void LoadTetgen(const std::string& fileName_);
     void LoadSurface(const std::string& fileName_);
     bool SaveGMSH(const std::string& fileName_);
     bool SaveSurface(const std::string& fileName_);
+    bool SaveTetgen(const std::string& fileName_);
 
     void scalex10();
 
