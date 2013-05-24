@@ -37,6 +37,7 @@ public :
     void loadSurface(const QString& fileName_ = "");
     void loadGMSH(const QString& fileName_ = "");
     void saveGMSH();
+    void saveTetgen();
     void saveSurface();
     void selectSurfaceColor();
     void selectSurfaceColorWireframe();

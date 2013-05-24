@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Thu May 9 23:00:08 2013
-**      by: Qt User Interface Compiler version 4.8.4
+** Created: Sun 19. May 15:10:45 2013
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -506,7 +506,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 25));
+        menuBar->setGeometry(QRect(0, 0, 1024, 21));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -579,6 +579,7 @@ public:
         QObject::connect(actionGenerate_Octree, SIGNAL(triggered()), MainWindow, SLOT(generateOctree()));
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
         QObject::connect(octreeGenerateButton, SIGNAL(released()), MainWindow, SLOT(generateOctree()));
+        QObject::connect(actionExport_Tetgen_2, SIGNAL(triggered()), viewer, SLOT(saveTetgen()));
 
         octreeCombo->setCurrentIndex(1);
 
@@ -598,7 +599,7 @@ public:
         actionQuit->setText(QApplication::translate("MainWindow", "Quit", 0, QApplication::UnicodeUTF8));
         actionExport_Surface->setText(QApplication::translate("MainWindow", "Export Surface (.obj/.ply/.off/.stl)", 0, QApplication::UnicodeUTF8));
         actionExport_GMSH_2->setText(QApplication::translate("MainWindow", "Export GMSH (.msh)", 0, QApplication::UnicodeUTF8));
-        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (not yet...)", 0, QApplication::UnicodeUTF8));
+        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (.node + .ele)", 0, QApplication::UnicodeUTF8));
         actionShow_FPS->setText(QApplication::translate("MainWindow", "Show FPS", 0, QApplication::UnicodeUTF8));
         actionShow_Grid->setText(QApplication::translate("MainWindow", "Show Grid", 0, QApplication::UnicodeUTF8));
         actionShow_Axis->setText(QApplication::translate("MainWindow", "Show Axis", 0, QApplication::UnicodeUTF8));

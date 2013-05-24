@@ -700,7 +700,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -806,7 +806,7 @@
   </action>
   <action name="actionExport_Tetgen_2">
    <property name="text">
-    <string>Export Tetgen (not yet...)</string>
+    <string>Export Tetgen (.node + .ele)</string>
    </property>
   </action>
   <action name="actionShow_FPS">
@@ -932,6 +932,7 @@
     <slot>saveGMSH()</slot>
     <slot>saveSurface()</slot>
     <slot>ToggleOctreeVis(int)</slot>
+    <slot>saveTetgen()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1382,6 +1383,22 @@
     <hint type="destinationlabel">
      <x>511</x>
      <y>413</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExport_Tetgen_2</sender>
+   <signal>triggered()</signal>
+   <receiver>viewer</receiver>
+   <slot>saveTetgen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>406</x>
+     <y>419</y>
     </hint>
    </hints>
   </connection>
