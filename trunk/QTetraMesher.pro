@@ -43,14 +43,15 @@ INCLUDEPATH += $$PWD/src
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/release/ -lQGLViewer2
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/debug/ -lQGLViewerd2
-else:unix: LIBS += -L/usr/lib/i386-linux-gnu -lqglviewer-qt4
+#else:unix: LIBS += -L/usr/lib/i386-linux-gnu -lqglviewer-qt4
+else:unix: LIBS += -L/usr/lib/x86_64-linux-gnu -lQGLViewer
 
 INCLUDEPATH += $$PWD/../../libQGLViewer-2.3.17
 DEPENDPATH += $$PWD/../../libQGLViewer-2.3.17
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralize
-else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/../sofa/extlibs -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lsofa_misc -lsofa_component_misc -lsofacore -lsofahelper -lsofadefaulttype -lsofa_mesh_collision -lsofa_deformable -lsofa_object_interaction -lsofa_base_collision -lsofa_base_mechanics -lsofa_base_topology -lsofasimulation -lGLEW -ltinyxml -lsofa_rigid
+else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/build-release/lib -L$$PWD/../sofa/extlibs -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lSofaMisc -lSofaComponentMisc -lSofaCore -lSofaHelper -lSofaDefaultType -lSofaMeshCollision -lSofaDeformable -lSofaObjectInteraction -lSofaBaseCollision -lSofaBaseMechanics -lSofaBaseTopology -lSofaSimulationCommon -lGLEW -ltinyxml -lSofaRigid
 
 INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include
 DEPENDPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include

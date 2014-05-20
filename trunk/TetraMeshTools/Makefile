@@ -26,7 +26,7 @@ CXXFLAGS:=      $(CFLAGS)
 
 # make targets
 all:	
-	$(CXX) $(CXXFLAGS) $(dirSrc)/*.cpp $(dirTrimesh2)/src/* -o $(outputDir)/$(outputName)
+	$(CXX) $(CXXFLAGS) $(dirSrc)/*.cpp $(dirTrimesh2)/src/*.cc -o $(outputDir)/$(outputName)
 	
 clean:
 	rm -rf lib/*

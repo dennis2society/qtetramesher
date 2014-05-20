@@ -25,6 +25,11 @@ bool TetraTools::TriMeshLoader::loadFile(const std::string& path_and_filename)
 	_vertices.clear();
 	_triangles.clear();
 	TriMesh* tm = TriMesh::read(path_and_filename.c_str());
+	if (!tm)
+	{
+		std::cerr<<"TrimeshLoader failed... "<<std::endl;
+		return false;
+	}
 	if (tm->vertices.size() == 0 || tm->faces.size() == 0)
 	{
 		std::cerr<<"Error loading surface mesh! Vertices or faces are empty..."<<std::endl;
