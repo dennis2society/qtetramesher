@@ -12,7 +12,7 @@ ttmLibDir:= $(ttmDir)/lib
 
 # SOFA root dir (change to where your own SOFA instance is living)
 sofaDir:= ../../sofa
-sofaLibDir:=$(sofaDir)/lib
+sofaLibDir:=$(sofaDir)/build-release/lib
 
 outputDir:= lib
 outputName:= libSofaTetraStuffing.so
@@ -34,7 +34,7 @@ CXXFLAGS:=      $(CFLAGS)
 ttmLibs:= -L$(ttmLibDir) -lTetraMeshTools
 
 # SOFA lib path and files
-sofaLibs:= -L$(sofaLibDir) -lsofa_misc -lsofa_component_misc -lsofacore
+sofaLibs:= -L$(sofaLibDir) -lSofaMisc -lSofaComponentMisc -lSofaCore
 
 # make targets
 all:	

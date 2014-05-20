@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    setlocale(LC_NUMERIC, "C");
     ui->setupUi(this);
     ui->viewer->setFPSIsDisplayed(true);
     ui->viewer->setAxisIsDrawn(true);
