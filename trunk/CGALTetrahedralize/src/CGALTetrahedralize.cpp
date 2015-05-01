@@ -201,6 +201,10 @@ CGALTetrahedralize::~CGALTetrahedralize()
 	clear();
 }
 
+
+/// Helpful documentation note for self:
+/// http://doc.cgal.org/latest/Mesh_3/index.html#Chapter_3D_Mesh_Generation
+
 void CGALTetrahedralize::GenerateFromSurface(const std::vector<Triangle>& tris, const std::vector<Vec3f>& verts, const double cell_size_, const double facet_angle_, const double facet_size_, const double face_distance_, const double cell_radius_edge_ratio_)
 {
 	std::cout<<"Generating CGAL surface mesh from our own data structure..."<<std::endl;
@@ -224,14 +228,15 @@ void CGALTetrahedralize::GenerateFromSurface(const std::vector<Triangle>& tris, 
 	Mesh_domain domain(polyhedron);
 
 	// Mesh criteria (no cell_size set)
+	std::cout<<"Mesh criteria..."<<std::endl;
 	Mesh_criteria criteria(facet_angle=facet_angle_, facet_size=facet_size_, facet_distance=face_distance_, cell_radius_edge_ratio=cell_radius_edge_ratio_, cell_size=cell_size_);
 	//Mesh_criteria criteria(cell_size=0.1, cell_radius_edge_ratio=3);
 
 	// Mesh generation
-	//std::cout<<"Making mesh (this might take a while depending on the size of the surface mesh...)"<<std::endl;
+	std::cout<<"Making mesh (this might take a while depending on the size of the surface mesh...)"<<std::endl;
 	C3t3 c3t3 = CGAL::make_mesh_3<C3t3>(domain, criteria, no_perturb(), no_exude());
 
-	//std::cout<<"C3T3 Number of cells : "<<c3t3.number_of_cells()<<std::endl;
+	std::cout<<"C3T3 Number of cells : "<<c3t3.number_of_cells()<<std::endl;
 /*	
 	Mesh_criteria new_criteria(cell_radius_edge_ratio=3, cell_size=0.03);
 	// Mesh refinement
@@ -246,13 +251,14 @@ void CGALTetrahedralize::GenerateFromSurface(const std::vector<Triangle>& tris, 
 	// Copy all data from CGAL data structures to our own structure.
 	Tr t = c3t3.triangulation();
 	i = 0;
+	//std::cout<<"NumVerts: "<<t.number_of_vertices()<<std::endl;
 	// Vertex map for storing the vertex indices (these are needed to generate the triangle indices from the vertex values)
 	std::map<Point_3, int> V;
-	for (Tr::All_vertices_iterator it=t.all_vertices_begin(); it != t.all_vertices_end(); ++it)
+	//for (Tr::All_vertices_iterator it=t.all_vertices_begin(); it != t.all_vertices_end(); ++it)
+	for( Finite_vertices_iterator it = t.finite_vertices_begin(); it != t.finite_vertices_end(); ++it)
 	{
-		// add the point current to the vertex map to re-use this map to generate the triangle-indices afterwards.
+		// add the current point to the vertex map to re-use this map to generate the triangle-indices afterwards.
 		V[it->point()] = i;
-		//std::cout<<"Vertex #"<<i<<" : "<<it->point()<<std::endl;
 		Vec3f v;
 		v.x = it->point().x();
 		v.y = it->point().y();
@@ -260,24 +266,22 @@ void CGALTetrahedralize::GenerateFromSurface(const std::vector<Triangle>& tris, 
 		tetraPoints.push_back(v);
 		++i;
 	}
-	
 	i = 0;
-
 	for (Complex_Cell_Iterator it = c3t3.cells_in_complex_begin(); it != c3t3.cells_in_complex_end(); ++it)
 	//for (Tr::All_cells_iterator it = t.all_cells_begin(); it != t.all_cells_end(); ++it)
 	{
-		const Tr::Cell c(*it);
+		//const Tr::Cell c(*it);
+		/*
 		const C3t3::Vertex_handle v0 = c.vertex(0);
 		const C3t3::Vertex_handle v1 = c.vertex(1);
 		const C3t3::Vertex_handle v2 = c.vertex(2);
 		const C3t3::Vertex_handle v3 = c.vertex(3);
-		//std::cout<<v0->point()<<" ; "<<v1->point()<<" ; "<<v2->point()<<" ; "<<v3->point()<<std::endl;
-		//std::cout<<"Indices: "<<V[v0->point()]<<"/"<<V[v1->point()]<<"/"<<V[v2->point()]<<"/"<<"/"<<V[v3->point()]<<std::endl;
+		*/
 		Tetrahedron tet;
-		tet.index[0] = V[v0->point()];
-		tet.index[1] = V[v1->point()];
-		tet.index[2] = V[v2->point()];
-		tet.index[3] = V[v3->point()];
+		for (int j=0; j<4; ++j)
+		{
+			tet.index[j] = V[it->vertex(j)->point()];
+		}
 		tetraIndices.push_back(tet);
 		++i;
 	}

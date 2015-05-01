@@ -9,7 +9,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include "sofa/component/misc/MeshTetraStuffing.h"
+#include "SofaMisc/MeshTetraStuffing.h"
 
 using namespace sofa::component::misc;
 
