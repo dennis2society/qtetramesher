@@ -34,7 +34,7 @@ libs+= -lCGAL -lboost_thread -lgmp -lmpfr -lCGAL_Core
 
 # make targets
 all:	
-	$(CXX) $(CXXFLAGS) $(dirSrc)/* -o $(outputDir)/$(outputName) $(libs) $(ttmLibs)
+	$(CXX) $(CXXFLAGS) $(dirSrc)/*.cpp -o $(outputDir)/$(outputName) $(libs) $(ttmLibs)
 	
 clean:
 	rm -rf $(outputDir)/$(outputName)
