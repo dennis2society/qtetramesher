@@ -3,7 +3,7 @@ README for QTetraMesher
 Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
 
 Usage and build instructions available at http://qtm.dennis2society.de.
-Sourcecode available at: http://code.google.com/p/qtetramesher/
+Sourcecode available at: https://github.com/dennis2society/qtetramesher
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
@@ -16,6 +16,8 @@ as GPL software. This includes all self-written code. 3rd-party code remains und
 its own license.
 
 Changelog
+  2015-12-06:
+        Migration to Github due to cancellation of Google Code
   0.8.1
 	- Drag & Drop supported mesh files on the main window to open files.
 	- Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
