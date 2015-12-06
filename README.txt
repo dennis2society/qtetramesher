@@ -23,7 +23,7 @@ Changelog
 	- Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
 
 Features
-    - Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10).
+    - Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10/.../15.10 and Arch based Manjaro 2015-12).
     - Integration of QGLViewer for easy mesh preview.
     - Surface mesh import and export for *.obj, *.ply, *.off, *.stl (using trimesh2).
     - Import and export of tetrahedral meshes in (a simplified subset of the) GMSH format *.msh 
