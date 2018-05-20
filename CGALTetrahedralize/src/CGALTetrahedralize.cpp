@@ -8,6 +8,11 @@
 #include <windows.h>
 #endif
 
+// update for Ubuntu 16.04 or CGAL version >= 4.8*
+#ifndef BOOST_PARAMETER_MAX_ARITY
+		#define BOOST_PARAMETER_MAX_ARITY 12
+#endif
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <CGAL/Simple_cartesian.h>

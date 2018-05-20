@@ -12,7 +12,7 @@ ttmLibDir:= $(ttmDir)/lib
 
 # SOFA root dir (change to where your own SOFA instance is living)
 sofaDir:= ../../sofa
-sofaLibDir:=$(sofaDir)/build/lib
+sofaLibDir:=$(sofaDir)/lib
 
 outputDir:= lib
 outputName:= libSofaTetraStuffing.so
@@ -23,7 +23,7 @@ CFLAGS+=        -fopenmp
 #CFLAGS+=       -O0
 CFLAGS+=        -I$(incDir)
 CFLAGS+=		-I$(ttmDir)/include -I$(ttmDir)/include/TetraMeshTools
-CFLAGS+=		-I$(sofaDir)/modules -I$(sofaDir)/modules -I$(sofaDir)/framework
+CFLAGS+=		-I$(sofaDir)/include # -I$(sofaDir)/modules -I$(sofaDir)/framework
 CFLAGS+=		-I$ttmInclude
 CFLAGS+=        -fpic
 CFLAGS+=        -shared 

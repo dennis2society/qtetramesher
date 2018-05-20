@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 4.8.6
+** Created by: Qt User Interface Compiler version 5.9.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,25 +10,25 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QComboBox>
-#include <QtGui/QFrame>
-#include <QtGui/QGridLayout>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QHeaderView>
-#include <QtGui/QLabel>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMenu>
-#include <QtGui/QMenuBar>
-#include <QtGui/QPushButton>
-#include <QtGui/QSlider>
-#include <QtGui/QSpinBox>
-#include <QtGui/QStatusBar>
-#include <QtGui/QToolBar>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 #include "QGLViewer/qglviewer.h"
 #include "qgltetraviewer.h"
 
@@ -115,7 +115,7 @@ public:
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
-            MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
+            MainWindow->setObjectName(QStringLiteral("MainWindow"));
         MainWindow->resize(1024, 828);
         QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(1);
@@ -124,62 +124,62 @@ public:
         MainWindow->setSizePolicy(sizePolicy);
         MainWindow->setMinimumSize(QSize(0, 0));
         actionLoad_GMSH = new QAction(MainWindow);
-        actionLoad_GMSH->setObjectName(QString::fromUtf8("actionLoad_GMSH"));
+        actionLoad_GMSH->setObjectName(QStringLiteral("actionLoad_GMSH"));
         actionLoad_NXU2 = new QAction(MainWindow);
-        actionLoad_NXU2->setObjectName(QString::fromUtf8("actionLoad_NXU2"));
+        actionLoad_NXU2->setObjectName(QStringLiteral("actionLoad_NXU2"));
         actionLoad_Tetgen = new QAction(MainWindow);
-        actionLoad_Tetgen->setObjectName(QString::fromUtf8("actionLoad_Tetgen"));
+        actionLoad_Tetgen->setObjectName(QStringLiteral("actionLoad_Tetgen"));
         actionExport_OBJ = new QAction(MainWindow);
-        actionExport_OBJ->setObjectName(QString::fromUtf8("actionExport_OBJ"));
+        actionExport_OBJ->setObjectName(QStringLiteral("actionExport_OBJ"));
         actionExport_GMSH = new QAction(MainWindow);
-        actionExport_GMSH->setObjectName(QString::fromUtf8("actionExport_GMSH"));
+        actionExport_GMSH->setObjectName(QStringLiteral("actionExport_GMSH"));
         actionExport_Tetgen = new QAction(MainWindow);
-        actionExport_Tetgen->setObjectName(QString::fromUtf8("actionExport_Tetgen"));
+        actionExport_Tetgen->setObjectName(QStringLiteral("actionExport_Tetgen"));
         actionQuit = new QAction(MainWindow);
-        actionQuit->setObjectName(QString::fromUtf8("actionQuit"));
+        actionQuit->setObjectName(QStringLiteral("actionQuit"));
         actionExport_Surface = new QAction(MainWindow);
-        actionExport_Surface->setObjectName(QString::fromUtf8("actionExport_Surface"));
+        actionExport_Surface->setObjectName(QStringLiteral("actionExport_Surface"));
         actionExport_GMSH_2 = new QAction(MainWindow);
-        actionExport_GMSH_2->setObjectName(QString::fromUtf8("actionExport_GMSH_2"));
+        actionExport_GMSH_2->setObjectName(QStringLiteral("actionExport_GMSH_2"));
         actionExport_Tetgen_2 = new QAction(MainWindow);
-        actionExport_Tetgen_2->setObjectName(QString::fromUtf8("actionExport_Tetgen_2"));
+        actionExport_Tetgen_2->setObjectName(QStringLiteral("actionExport_Tetgen_2"));
         actionShow_FPS = new QAction(MainWindow);
-        actionShow_FPS->setObjectName(QString::fromUtf8("actionShow_FPS"));
+        actionShow_FPS->setObjectName(QStringLiteral("actionShow_FPS"));
         actionShow_FPS->setCheckable(true);
         actionShow_FPS->setChecked(true);
         actionShow_Grid = new QAction(MainWindow);
-        actionShow_Grid->setObjectName(QString::fromUtf8("actionShow_Grid"));
+        actionShow_Grid->setObjectName(QStringLiteral("actionShow_Grid"));
         actionShow_Grid->setCheckable(true);
         actionShow_Grid->setChecked(true);
         actionShow_Axis = new QAction(MainWindow);
-        actionShow_Axis->setObjectName(QString::fromUtf8("actionShow_Axis"));
+        actionShow_Axis->setObjectName(QStringLiteral("actionShow_Axis"));
         actionShow_Axis->setCheckable(true);
         actionShow_Axis->setChecked(true);
         actionHelp = new QAction(MainWindow);
-        actionHelp->setObjectName(QString::fromUtf8("actionHelp"));
+        actionHelp->setObjectName(QStringLiteral("actionHelp"));
         actionAbout = new QAction(MainWindow);
-        actionAbout->setObjectName(QString::fromUtf8("actionAbout"));
+        actionAbout->setObjectName(QStringLiteral("actionAbout"));
         actionFullscreen = new QAction(MainWindow);
-        actionFullscreen->setObjectName(QString::fromUtf8("actionFullscreen"));
+        actionFullscreen->setObjectName(QStringLiteral("actionFullscreen"));
         actionFullscreen->setCheckable(true);
         actionAbout_QGLViewer = new QAction(MainWindow);
-        actionAbout_QGLViewer->setObjectName(QString::fromUtf8("actionAbout_QGLViewer"));
+        actionAbout_QGLViewer->setObjectName(QStringLiteral("actionAbout_QGLViewer"));
         actionMeshTetraStuffing = new QAction(MainWindow);
-        actionMeshTetraStuffing->setObjectName(QString::fromUtf8("actionMeshTetraStuffing"));
+        actionMeshTetraStuffing->setObjectName(QStringLiteral("actionMeshTetraStuffing"));
         actionTetGen = new QAction(MainWindow);
-        actionTetGen->setObjectName(QString::fromUtf8("actionTetGen"));
+        actionTetGen->setObjectName(QStringLiteral("actionTetGen"));
         actionCGAL_Tetrahedralize = new QAction(MainWindow);
-        actionCGAL_Tetrahedralize->setObjectName(QString::fromUtf8("actionCGAL_Tetrahedralize"));
+        actionCGAL_Tetrahedralize->setObjectName(QStringLiteral("actionCGAL_Tetrahedralize"));
         actionLoad_Surface_OBJ_OFF_3DS_PLY = new QAction(MainWindow);
-        actionLoad_Surface_OBJ_OFF_3DS_PLY->setObjectName(QString::fromUtf8("actionLoad_Surface_OBJ_OFF_3DS_PLY"));
+        actionLoad_Surface_OBJ_OFF_3DS_PLY->setObjectName(QStringLiteral("actionLoad_Surface_OBJ_OFF_3DS_PLY"));
         actionScale_x10 = new QAction(MainWindow);
-        actionScale_x10->setObjectName(QString::fromUtf8("actionScale_x10"));
+        actionScale_x10->setObjectName(QStringLiteral("actionScale_x10"));
         actionScale_x_0_1 = new QAction(MainWindow);
-        actionScale_x_0_1->setObjectName(QString::fromUtf8("actionScale_x_0_1"));
+        actionScale_x_0_1->setObjectName(QStringLiteral("actionScale_x_0_1"));
         actionGenerate_Octree = new QAction(MainWindow);
-        actionGenerate_Octree->setObjectName(QString::fromUtf8("actionGenerate_Octree"));
+        actionGenerate_Octree->setObjectName(QStringLiteral("actionGenerate_Octree"));
         centralWidget = new QWidget(MainWindow);
-        centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        centralWidget->setObjectName(QStringLiteral("centralWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -190,32 +190,32 @@ public:
         gridLayout = new QGridLayout(centralWidget);
         gridLayout->setSpacing(1);
         gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         gridLayout->setContentsMargins(2, 0, 1, 1);
         mainLayout = new QHBoxLayout();
         mainLayout->setSpacing(1);
-        mainLayout->setObjectName(QString::fromUtf8("mainLayout"));
+        mainLayout->setObjectName(QStringLiteral("mainLayout"));
         viewAndControlFrame = new QFrame(centralWidget);
-        viewAndControlFrame->setObjectName(QString::fromUtf8("viewAndControlFrame"));
+        viewAndControlFrame->setObjectName(QStringLiteral("viewAndControlFrame"));
         viewAndControlFrame->setFrameShape(QFrame::Box);
         viewAndControlFrame->setFrameShadow(QFrame::Raised);
         gridLayout_3 = new QGridLayout(viewAndControlFrame);
         gridLayout_3->setSpacing(1);
         gridLayout_3->setContentsMargins(1, 1, 1, 1);
-        gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
+        gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
         viewAndControlLayout = new QVBoxLayout();
         viewAndControlLayout->setSpacing(1);
-        viewAndControlLayout->setObjectName(QString::fromUtf8("viewAndControlLayout"));
+        viewAndControlLayout->setObjectName(QStringLiteral("viewAndControlLayout"));
         qglViewerFrame = new QFrame(viewAndControlFrame);
-        qglViewerFrame->setObjectName(QString::fromUtf8("qglViewerFrame"));
+        qglViewerFrame->setObjectName(QStringLiteral("qglViewerFrame"));
         qglViewerFrame->setFrameShape(QFrame::Box);
         qglViewerFrame->setFrameShadow(QFrame::Raised);
         gridLayout_4 = new QGridLayout(qglViewerFrame);
         gridLayout_4->setSpacing(1);
         gridLayout_4->setContentsMargins(1, 1, 1, 1);
-        gridLayout_4->setObjectName(QString::fromUtf8("gridLayout_4"));
+        gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
         viewer = new QGLTetraViewer(qglViewerFrame);
-        viewer->setObjectName(QString::fromUtf8("viewer"));
+        viewer->setObjectName(QStringLiteral("viewer"));
 
         gridLayout_4->addWidget(viewer, 0, 0, 1, 1);
 
@@ -229,7 +229,7 @@ public:
         mainLayout->addWidget(viewAndControlFrame);
 
         visualizationFrame = new QFrame(centralWidget);
-        visualizationFrame->setObjectName(QString::fromUtf8("visualizationFrame"));
+        visualizationFrame->setObjectName(QStringLiteral("visualizationFrame"));
         QSizePolicy sizePolicy2(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -243,13 +243,13 @@ public:
         horizontalLayout_3 = new QHBoxLayout(visualizationFrame);
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setContentsMargins(1, 1, 1, 1);
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
         gridLayout_2 = new QGridLayout();
         gridLayout_2->setSpacing(1);
         gridLayout_2->setContentsMargins(1, 1, 1, 1);
-        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
+        gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
         surfaceVisFrame = new QFrame(visualizationFrame);
-        surfaceVisFrame->setObjectName(QString::fromUtf8("surfaceVisFrame"));
+        surfaceVisFrame->setObjectName(QStringLiteral("surfaceVisFrame"));
         QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
@@ -261,13 +261,13 @@ public:
         horizontalLayout_2 = new QHBoxLayout(surfaceVisFrame);
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setContentsMargins(2, 2, 2, 2);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         surfaceVisLayout = new QVBoxLayout();
         surfaceVisLayout->setSpacing(1);
         surfaceVisLayout->setContentsMargins(1, 1, 1, 1);
-        surfaceVisLayout->setObjectName(QString::fromUtf8("surfaceVisLayout"));
+        surfaceVisLayout->setObjectName(QStringLiteral("surfaceVisLayout"));
         surfaceVisLabel = new QLabel(surfaceVisFrame);
-        surfaceVisLabel->setObjectName(QString::fromUtf8("surfaceVisLabel"));
+        surfaceVisLabel->setObjectName(QStringLiteral("surfaceVisLabel"));
         QFont font;
         font.setPointSize(12);
         font.setBold(true);
@@ -280,7 +280,7 @@ public:
         surfaceVisLayout->addWidget(surfaceVisLabel);
 
         surfaceCombo = new QComboBox(surfaceVisFrame);
-        surfaceCombo->setObjectName(QString::fromUtf8("surfaceCombo"));
+        surfaceCombo->setObjectName(QStringLiteral("surfaceCombo"));
         surfaceCombo->setMinimumSize(QSize(0, 30));
         QFont font1;
         font1.setPointSize(10);
@@ -291,12 +291,12 @@ public:
         surfaceVisLayout->addWidget(surfaceCombo);
 
         surfaceColorButton = new QPushButton(surfaceVisFrame);
-        surfaceColorButton->setObjectName(QString::fromUtf8("surfaceColorButton"));
+        surfaceColorButton->setObjectName(QStringLiteral("surfaceColorButton"));
 
         surfaceVisLayout->addWidget(surfaceColorButton);
 
         surfaceWireframeColorButton = new QPushButton(surfaceVisFrame);
-        surfaceWireframeColorButton->setObjectName(QString::fromUtf8("surfaceWireframeColorButton"));
+        surfaceWireframeColorButton->setObjectName(QStringLiteral("surfaceWireframeColorButton"));
 
         surfaceVisLayout->addWidget(surfaceWireframeColorButton);
 
@@ -307,7 +307,7 @@ public:
         gridLayout_2->addWidget(surfaceVisFrame, 1, 0, 1, 1);
 
         boundingBoxFrame = new QFrame(visualizationFrame);
-        boundingBoxFrame->setObjectName(QString::fromUtf8("boundingBoxFrame"));
+        boundingBoxFrame->setObjectName(QStringLiteral("boundingBoxFrame"));
         sizePolicy3.setHeightForWidth(boundingBoxFrame->sizePolicy().hasHeightForWidth());
         boundingBoxFrame->setSizePolicy(sizePolicy3);
         boundingBoxFrame->setMinimumSize(QSize(0, 100));
@@ -316,21 +316,21 @@ public:
         horizontalLayout_4 = new QHBoxLayout(boundingBoxFrame);
         horizontalLayout_4->setSpacing(1);
         horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
         horizontalLayout_4->setContentsMargins(1, 1, 1, -1);
         verticalLayout_2 = new QVBoxLayout();
         verticalLayout_2->setSpacing(1);
         verticalLayout_2->setContentsMargins(1, 1, 1, 1);
-        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         boundingVisLabel = new QLabel(boundingBoxFrame);
-        boundingVisLabel->setObjectName(QString::fromUtf8("boundingVisLabel"));
+        boundingVisLabel->setObjectName(QStringLiteral("boundingVisLabel"));
         boundingVisLabel->setFont(font);
         boundingVisLabel->setAlignment(Qt::AlignCenter);
 
         verticalLayout_2->addWidget(boundingVisLabel);
 
         boundingBoxCombo = new QComboBox(boundingBoxFrame);
-        boundingBoxCombo->setObjectName(QString::fromUtf8("boundingBoxCombo"));
+        boundingBoxCombo->setObjectName(QStringLiteral("boundingBoxCombo"));
         boundingBoxCombo->setMinimumSize(QSize(0, 30));
         boundingBoxCombo->setFont(font1);
 
@@ -343,22 +343,22 @@ public:
         gridLayout_2->addWidget(boundingBoxFrame, 4, 0, 1, 1);
 
         octreeFrame = new QFrame(visualizationFrame);
-        octreeFrame->setObjectName(QString::fromUtf8("octreeFrame"));
+        octreeFrame->setObjectName(QStringLiteral("octreeFrame"));
         sizePolicy3.setHeightForWidth(octreeFrame->sizePolicy().hasHeightForWidth());
         octreeFrame->setSizePolicy(sizePolicy3);
         octreeFrame->setMinimumSize(QSize(0, 120));
         octreeFrame->setFrameShape(QFrame::Box);
         octreeFrame->setFrameShadow(QFrame::Sunken);
         verticalLayoutWidget = new QWidget(octreeFrame);
-        verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
+        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
         verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 112));
         octreeVisLayout = new QVBoxLayout(verticalLayoutWidget);
         octreeVisLayout->setSpacing(1);
         octreeVisLayout->setContentsMargins(1, 1, 1, 1);
-        octreeVisLayout->setObjectName(QString::fromUtf8("octreeVisLayout"));
+        octreeVisLayout->setObjectName(QStringLiteral("octreeVisLayout"));
         octreeVisLayout->setContentsMargins(0, 0, 0, 0);
         octreeVisLabel = new QLabel(verticalLayoutWidget);
-        octreeVisLabel->setObjectName(QString::fromUtf8("octreeVisLabel"));
+        octreeVisLabel->setObjectName(QStringLiteral("octreeVisLabel"));
         sizePolicy3.setHeightForWidth(octreeVisLabel->sizePolicy().hasHeightForWidth());
         octreeVisLabel->setSizePolicy(sizePolicy3);
         octreeVisLabel->setMinimumSize(QSize(0, 30));
@@ -369,7 +369,7 @@ public:
         octreeVisLayout->addWidget(octreeVisLabel);
 
         octreeCombo = new QComboBox(verticalLayoutWidget);
-        octreeCombo->setObjectName(QString::fromUtf8("octreeCombo"));
+        octreeCombo->setObjectName(QStringLiteral("octreeCombo"));
         sizePolicy3.setHeightForWidth(octreeCombo->sizePolicy().hasHeightForWidth());
         octreeCombo->setSizePolicy(sizePolicy3);
         octreeCombo->setMinimumSize(QSize(0, 30));
@@ -379,7 +379,7 @@ public:
         octreeVisLayout->addWidget(octreeCombo);
 
         octreeDepthLabel = new QLabel(verticalLayoutWidget);
-        octreeDepthLabel->setObjectName(QString::fromUtf8("octreeDepthLabel"));
+        octreeDepthLabel->setObjectName(QStringLiteral("octreeDepthLabel"));
         QFont font2;
         font2.setBold(true);
         font2.setWeight(75);
@@ -389,9 +389,9 @@ public:
 
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setSpacing(6);
-        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
         octreeDepthSpinbox = new QSpinBox(verticalLayoutWidget);
-        octreeDepthSpinbox->setObjectName(QString::fromUtf8("octreeDepthSpinbox"));
+        octreeDepthSpinbox->setObjectName(QStringLiteral("octreeDepthSpinbox"));
         QSizePolicy sizePolicy4(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy4.setHorizontalStretch(0);
         sizePolicy4.setVerticalStretch(0);
@@ -408,7 +408,7 @@ public:
         horizontalLayout_5->addWidget(octreeDepthSpinbox);
 
         octreeGenerateButton = new QPushButton(verticalLayoutWidget);
-        octreeGenerateButton->setObjectName(QString::fromUtf8("octreeGenerateButton"));
+        octreeGenerateButton->setObjectName(QStringLiteral("octreeGenerateButton"));
         octreeGenerateButton->setFont(font2);
 
         horizontalLayout_5->addWidget(octreeGenerateButton);
@@ -420,7 +420,7 @@ public:
         gridLayout_2->addWidget(octreeFrame, 5, 0, 1, 1);
 
         tetraVisFrame = new QFrame(visualizationFrame);
-        tetraVisFrame->setObjectName(QString::fromUtf8("tetraVisFrame"));
+        tetraVisFrame->setObjectName(QStringLiteral("tetraVisFrame"));
         sizePolicy3.setHeightForWidth(tetraVisFrame->sizePolicy().hasHeightForWidth());
         tetraVisFrame->setSizePolicy(sizePolicy3);
         tetraVisFrame->setMinimumSize(QSize(0, 200));
@@ -429,13 +429,13 @@ public:
         horizontalLayout = new QHBoxLayout(tetraVisFrame);
         horizontalLayout->setSpacing(1);
         horizontalLayout->setContentsMargins(1, 1, 1, 1);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(1);
         verticalLayout->setContentsMargins(1, 1, 1, 1);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         tetraVisLabel = new QLabel(tetraVisFrame);
-        tetraVisLabel->setObjectName(QString::fromUtf8("tetraVisLabel"));
+        tetraVisLabel->setObjectName(QStringLiteral("tetraVisLabel"));
         tetraVisLabel->setFont(font);
         tetraVisLabel->setTextFormat(Qt::AutoText);
         tetraVisLabel->setAlignment(Qt::AlignCenter);
@@ -443,31 +443,31 @@ public:
         verticalLayout->addWidget(tetraVisLabel);
 
         tetraCombo = new QComboBox(tetraVisFrame);
-        tetraCombo->setObjectName(QString::fromUtf8("tetraCombo"));
+        tetraCombo->setObjectName(QStringLiteral("tetraCombo"));
         tetraCombo->setMinimumSize(QSize(0, 30));
         tetraCombo->setFont(font1);
 
         verticalLayout->addWidget(tetraCombo);
 
         tetraSolidColorButton = new QPushButton(tetraVisFrame);
-        tetraSolidColorButton->setObjectName(QString::fromUtf8("tetraSolidColorButton"));
+        tetraSolidColorButton->setObjectName(QStringLiteral("tetraSolidColorButton"));
 
         verticalLayout->addWidget(tetraSolidColorButton);
 
         tetraWireframeColorButton = new QPushButton(tetraVisFrame);
-        tetraWireframeColorButton->setObjectName(QString::fromUtf8("tetraWireframeColorButton"));
+        tetraWireframeColorButton->setObjectName(QStringLiteral("tetraWireframeColorButton"));
 
         verticalLayout->addWidget(tetraWireframeColorButton);
 
         line = new QFrame(tetraVisFrame);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName(QStringLiteral("line"));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
         verticalLayout->addWidget(line);
 
         cutPlaneLabel = new QLabel(tetraVisFrame);
-        cutPlaneLabel->setObjectName(QString::fromUtf8("cutPlaneLabel"));
+        cutPlaneLabel->setObjectName(QStringLiteral("cutPlaneLabel"));
         QFont font3;
         font3.setPointSize(11);
         font3.setBold(true);
@@ -479,7 +479,7 @@ public:
         verticalLayout->addWidget(cutPlaneLabel);
 
         cutPlaneSlider = new QSlider(tetraVisFrame);
-        cutPlaneSlider->setObjectName(QString::fromUtf8("cutPlaneSlider"));
+        cutPlaneSlider->setObjectName(QStringLiteral("cutPlaneSlider"));
         cutPlaneSlider->setMinimumSize(QSize(0, 30));
         cutPlaneSlider->setOrientation(Qt::Horizontal);
         cutPlaneSlider->setInvertedAppearance(false);
@@ -504,22 +504,22 @@ public:
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
-        menuBar->setObjectName(QString::fromUtf8("menuBar"));
+        menuBar->setObjectName(QStringLiteral("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 1024, 21));
         menuFile = new QMenu(menuBar);
-        menuFile->setObjectName(QString::fromUtf8("menuFile"));
+        menuFile->setObjectName(QStringLiteral("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
-        menuHelp_Info->setObjectName(QString::fromUtf8("menuHelp_Info"));
+        menuHelp_Info->setObjectName(QStringLiteral("menuHelp_Info"));
         menuView = new QMenu(menuBar);
-        menuView->setObjectName(QString::fromUtf8("menuView"));
+        menuView->setObjectName(QStringLiteral("menuView"));
         menuMesh = new QMenu(menuBar);
-        menuMesh->setObjectName(QString::fromUtf8("menuMesh"));
+        menuMesh->setObjectName(QStringLiteral("menuMesh"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
-        mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
+        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
+        statusBar->setObjectName(QStringLiteral("statusBar"));
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
@@ -588,73 +588,73 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "QTetraMesher", 0, QApplication::UnicodeUTF8));
-        actionLoad_GMSH->setText(QApplication::translate("MainWindow", "Load GMSH (.msh)", 0, QApplication::UnicodeUTF8));
-        actionLoad_NXU2->setText(QApplication::translate("MainWindow", "Load NXU2 (.xml)", 0, QApplication::UnicodeUTF8));
-        actionLoad_Tetgen->setText(QApplication::translate("MainWindow", "Load Tetgen (not yet...)", 0, QApplication::UnicodeUTF8));
-        actionExport_OBJ->setText(QApplication::translate("MainWindow", "Export OBJ", 0, QApplication::UnicodeUTF8));
-        actionExport_GMSH->setText(QApplication::translate("MainWindow", "Export GMSH", 0, QApplication::UnicodeUTF8));
-        actionExport_Tetgen->setText(QApplication::translate("MainWindow", "Export Tetgen", 0, QApplication::UnicodeUTF8));
-        actionQuit->setText(QApplication::translate("MainWindow", "Quit", 0, QApplication::UnicodeUTF8));
-        actionExport_Surface->setText(QApplication::translate("MainWindow", "Export Surface (.obj/.ply/.off/.stl)", 0, QApplication::UnicodeUTF8));
-        actionExport_GMSH_2->setText(QApplication::translate("MainWindow", "Export GMSH (.msh)", 0, QApplication::UnicodeUTF8));
-        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (.node + .ele)", 0, QApplication::UnicodeUTF8));
-        actionShow_FPS->setText(QApplication::translate("MainWindow", "Show FPS", 0, QApplication::UnicodeUTF8));
-        actionShow_Grid->setText(QApplication::translate("MainWindow", "Show Grid", 0, QApplication::UnicodeUTF8));
-        actionShow_Axis->setText(QApplication::translate("MainWindow", "Show Axis", 0, QApplication::UnicodeUTF8));
-        actionHelp->setText(QApplication::translate("MainWindow", "Help", 0, QApplication::UnicodeUTF8));
-        actionAbout->setText(QApplication::translate("MainWindow", "About QTetraMesher", 0, QApplication::UnicodeUTF8));
-        actionFullscreen->setText(QApplication::translate("MainWindow", "Fullscreen", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "QTetraMesher", Q_NULLPTR));
+        actionLoad_GMSH->setText(QApplication::translate("MainWindow", "Load GMSH (.msh)", Q_NULLPTR));
+        actionLoad_NXU2->setText(QApplication::translate("MainWindow", "Load NXU2 (.xml)", Q_NULLPTR));
+        actionLoad_Tetgen->setText(QApplication::translate("MainWindow", "Load Tetgen (not yet...)", Q_NULLPTR));
+        actionExport_OBJ->setText(QApplication::translate("MainWindow", "Export OBJ", Q_NULLPTR));
+        actionExport_GMSH->setText(QApplication::translate("MainWindow", "Export GMSH", Q_NULLPTR));
+        actionExport_Tetgen->setText(QApplication::translate("MainWindow", "Export Tetgen", Q_NULLPTR));
+        actionQuit->setText(QApplication::translate("MainWindow", "Quit", Q_NULLPTR));
+        actionExport_Surface->setText(QApplication::translate("MainWindow", "Export Surface (.obj/.ply/.off/.stl)", Q_NULLPTR));
+        actionExport_GMSH_2->setText(QApplication::translate("MainWindow", "Export GMSH (.msh)", Q_NULLPTR));
+        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (.node + .ele)", Q_NULLPTR));
+        actionShow_FPS->setText(QApplication::translate("MainWindow", "Show FPS", Q_NULLPTR));
+        actionShow_Grid->setText(QApplication::translate("MainWindow", "Show Grid", Q_NULLPTR));
+        actionShow_Axis->setText(QApplication::translate("MainWindow", "Show Axis", Q_NULLPTR));
+        actionHelp->setText(QApplication::translate("MainWindow", "Help", Q_NULLPTR));
+        actionAbout->setText(QApplication::translate("MainWindow", "About QTetraMesher", Q_NULLPTR));
+        actionFullscreen->setText(QApplication::translate("MainWindow", "Fullscreen", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        actionFullscreen->setToolTip(QApplication::translate("MainWindow", "Toggle Fullscreen", 0, QApplication::UnicodeUTF8));
+        actionFullscreen->setToolTip(QApplication::translate("MainWindow", "Toggle Fullscreen", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        actionAbout_QGLViewer->setText(QApplication::translate("MainWindow", "About QGLViewer", 0, QApplication::UnicodeUTF8));
-        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "MeshTetraStuffing", 0, QApplication::UnicodeUTF8));
-        actionTetGen->setText(QApplication::translate("MainWindow", "TetGen", 0, QApplication::UnicodeUTF8));
-        actionCGAL_Tetrahedralize->setText(QApplication::translate("MainWindow", "CGAL Tetrahedralize", 0, QApplication::UnicodeUTF8));
-        actionLoad_Surface_OBJ_OFF_3DS_PLY->setText(QApplication::translate("MainWindow", "Load Surface  (.obj/.ply/.off/.stl)", 0, QApplication::UnicodeUTF8));
-        actionScale_x10->setText(QApplication::translate("MainWindow", "Scale x 10", 0, QApplication::UnicodeUTF8));
-        actionScale_x_0_1->setText(QApplication::translate("MainWindow", "Scale x 0.1", 0, QApplication::UnicodeUTF8));
-        actionGenerate_Octree->setText(QApplication::translate("MainWindow", "Generate Octree", 0, QApplication::UnicodeUTF8));
-        surfaceVisLabel->setText(QApplication::translate("MainWindow", "Surface Visualization", 0, QApplication::UnicodeUTF8));
+        actionAbout_QGLViewer->setText(QApplication::translate("MainWindow", "About QGLViewer", Q_NULLPTR));
+        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "MeshTetraStuffing", Q_NULLPTR));
+        actionTetGen->setText(QApplication::translate("MainWindow", "TetGen", Q_NULLPTR));
+        actionCGAL_Tetrahedralize->setText(QApplication::translate("MainWindow", "CGAL Tetrahedralize", Q_NULLPTR));
+        actionLoad_Surface_OBJ_OFF_3DS_PLY->setText(QApplication::translate("MainWindow", "Load Surface  (.obj/.ply/.off/.stl)", Q_NULLPTR));
+        actionScale_x10->setText(QApplication::translate("MainWindow", "Scale x 10", Q_NULLPTR));
+        actionScale_x_0_1->setText(QApplication::translate("MainWindow", "Scale x 0.1", Q_NULLPTR));
+        actionGenerate_Octree->setText(QApplication::translate("MainWindow", "Generate Octree", Q_NULLPTR));
+        surfaceVisLabel->setText(QApplication::translate("MainWindow", "Surface Visualization", Q_NULLPTR));
         surfaceCombo->clear();
         surfaceCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Solid", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Wireframe", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Solid", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Wireframe", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
         );
-        surfaceColorButton->setText(QApplication::translate("MainWindow", "Surface Solid Color", 0, QApplication::UnicodeUTF8));
-        surfaceWireframeColorButton->setText(QApplication::translate("MainWindow", "Surface Wireframe Color", 0, QApplication::UnicodeUTF8));
-        boundingVisLabel->setText(QApplication::translate("MainWindow", "Bounding Box ", 0, QApplication::UnicodeUTF8));
+        surfaceColorButton->setText(QApplication::translate("MainWindow", "Surface Solid Color", Q_NULLPTR));
+        surfaceWireframeColorButton->setText(QApplication::translate("MainWindow", "Surface Wireframe Color", Q_NULLPTR));
+        boundingVisLabel->setText(QApplication::translate("MainWindow", "Bounding Box ", Q_NULLPTR));
         boundingBoxCombo->clear();
         boundingBoxCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "BoundingBox", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "BoundingCube", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "BoundingBox", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "BoundingCube", Q_NULLPTR)
         );
-        octreeVisLabel->setText(QApplication::translate("MainWindow", "Octree Visualization", 0, QApplication::UnicodeUTF8));
+        octreeVisLabel->setText(QApplication::translate("MainWindow", "Octree Visualization", Q_NULLPTR));
         octreeCombo->clear();
         octreeCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Visible", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Leafs Only", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Visible", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Leafs Only", Q_NULLPTR)
         );
-        octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", 0, QApplication::UnicodeUTF8));
-        octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", 0, QApplication::UnicodeUTF8));
-        tetraVisLabel->setText(QApplication::translate("MainWindow", "TetraMesh Visualization", 0, QApplication::UnicodeUTF8));
+        octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", Q_NULLPTR));
+        octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", Q_NULLPTR));
+        tetraVisLabel->setText(QApplication::translate("MainWindow", "TetraMesh Visualization", Q_NULLPTR));
         tetraCombo->clear();
         tetraCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Solid Tetras", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Wireframe", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Hidden", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Solid Tetras", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Wireframe", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
         );
-        tetraSolidColorButton->setText(QApplication::translate("MainWindow", "Tetras Solid Color", 0, QApplication::UnicodeUTF8));
-        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe Color", 0, QApplication::UnicodeUTF8));
-        cutPlaneLabel->setText(QApplication::translate("MainWindow", "Cut Plane", 0, QApplication::UnicodeUTF8));
-        menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
-        menuHelp_Info->setTitle(QApplication::translate("MainWindow", "Help/Info", 0, QApplication::UnicodeUTF8));
-        menuView->setTitle(QApplication::translate("MainWindow", "View", 0, QApplication::UnicodeUTF8));
-        menuMesh->setTitle(QApplication::translate("MainWindow", "Mesh", 0, QApplication::UnicodeUTF8));
+        tetraSolidColorButton->setText(QApplication::translate("MainWindow", "Tetras Solid Color", Q_NULLPTR));
+        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe Color", Q_NULLPTR));
+        cutPlaneLabel->setText(QApplication::translate("MainWindow", "Cut Plane", Q_NULLPTR));
+        menuFile->setTitle(QApplication::translate("MainWindow", "File", Q_NULLPTR));
+        menuHelp_Info->setTitle(QApplication::translate("MainWindow", "Help/Info", Q_NULLPTR));
+        menuView->setTitle(QApplication::translate("MainWindow", "View", Q_NULLPTR));
+        menuMesh->setTitle(QApplication::translate("MainWindow", "Mesh", Q_NULLPTR));
     } // retranslateUi
 
 };
