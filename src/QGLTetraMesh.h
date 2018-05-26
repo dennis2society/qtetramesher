@@ -251,22 +251,23 @@ public:
         surfaceColorWireframe /= 255.0f;
     }
 
-    const QColor& GetSurfaceColor()
+    const QColor GetSurfaceColor()
     {
-        return QColor(surfaceColorSolid.x * 255.0f, surfaceColorSolid.y * 255.0f, surfaceColorSolid.z * 255.0f);
+        QColor c((int)(surfaceColorSolid.x * 255.0f), (int)(surfaceColorSolid.y * 255.0f), (int)(surfaceColorSolid.z * 255.0f));
+        return c;
     }
 
-    const QColor& GetSurfaceWireframeColor()
+    const QColor GetSurfaceWireframeColor()
     {
         return QColor(surfaceColorWireframe.x * 255.0f, surfaceColorWireframe.y * 255.0f, surfaceColorWireframe.z * 255.0f);
     }
 
-    const QColor& GetTetraColor()
+    const QColor GetTetraColor()
     {
         return QColor(tetraColorSolid.x * 255.0f, tetraColorSolid.y * 255.0f, tetraColorSolid.z * 255.0f);
     }
 
-    const QColor& GetTetraWireframeColor()
+    const QColor GetTetraWireframeColor()
     {
         return QColor(tetraColorWireframe.x * 255.0f, tetraColorWireframe.y * 255.0f, tetraColorWireframe.z * 255.0f);
     }

@@ -378,44 +378,36 @@ void QGLTetraViewer::saveSurface()
 
 void QGLTetraViewer::selectSurfaceColor()
 {
-    QColorDialog* qcd = new QColorDialog(this);
-    QColor c = qcd->getColor(tMesh->GetSurfaceColor(), this);
+    QColor c = QColorDialog::getColor(tMesh->GetSurfaceColor(), this, "Surface Color", QColorDialog::DontUseNativeDialog);
     if (c.isValid())
     {
         tMesh->SetSurfaceSolidColor(c.red(), c.green(), c.blue());
     }
-    delete qcd;
 }
 
 void QGLTetraViewer::selectSurfaceColorWireframe()
 {
-    QColorDialog* qcd = new QColorDialog(this);
-    QColor c = qcd->getColor(tMesh->GetSurfaceWireframeColor(), this);
+    QColor c = QColorDialog::getColor(tMesh->GetSurfaceWireframeColor(), this, "Surface Wireframe Color", QColorDialog::DontUseNativeDialog);
     if (c.isValid())
     {
         tMesh->SetSurfaceWireframeColor(c.red(), c.green(), c.blue());
     }
-    delete qcd;
 }
 
 void QGLTetraViewer::selectTetraColor()
 {
-    QColorDialog* qcd = new QColorDialog(this);
-    QColor c = qcd->getColor(tMesh->GetTetraColor(), this);
+    QColor c = QColorDialog::getColor(tMesh->GetTetraColor(), this, "Tetra Solid Color", QColorDialog::DontUseNativeDialog);
     if (c.isValid())
     {
         tMesh->SetTetraSolidColor(c.red(), c.green(), c.blue());
     }
-    delete qcd;
 }
 
 void QGLTetraViewer::selectTetraColorWireframe()
 {
-    QColorDialog* qcd = new QColorDialog(this);
-    QColor c = qcd->getColor(tMesh->GetTetraWireframeColor(), this);
+    QColor c = QColorDialog::getColor(tMesh->GetTetraWireframeColor(), this, "Tetra Wireframe Color", QColorDialog::DontUseNativeDialog);
     if (c.isValid())
     {
         tMesh->SetTetraWireframeColor(c.red(), c.green(), c.blue());
     }
-    delete qcd;
 }
