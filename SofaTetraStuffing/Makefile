@@ -34,6 +34,8 @@ CXXFLAGS:=      $(CFLAGS)
 ttmLibs:= -L$(ttmLibDir) -lTetraMeshTools
 
 # SOFA lib path and files
+# You may want to update the lib names to your local versions.
+# I have mine symlinked to the originals in the SOFA dir to the version-free names below:
 sofaLibs:= -L$(sofaLibDir) -lSofaMisc -lSofaComponentMisc -lSofaCore
 
 # make targets
