@@ -29,7 +29,7 @@ CXXFLAGS:=      $(CFLAGS)
 ttmLibs:= -L$(ttmLibDir) -lTetraMeshTools
 
 # SOFA lib path and files
-libs:= -L/usr/lib/CGAL -L/usr/lib -L/usr/lib/i386-linux-gnu
+libs:= -L/usr/lib/CGAL -L/usr/lib
 libs+= -lCGAL -lboost_thread -lgmp -lmpfr -lCGAL_Core
 
 # make targets
