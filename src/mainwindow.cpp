@@ -7,8 +7,9 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "QMimeData"
 #include <QUrl>
-#include <QMimeData>
+#include <QGLViewer/manipulatedFrame.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setlocale(LC_NUMERIC, "C");
     tsd = NULL;
     ctd = NULL;
+    ui->viewer->setManipulatedFrame(new qglviewer::ManipulatedFrame);
+    ui->viewer->manipulatedFrame()->setSpinningSensitivity(85.0);
+    ui->viewer->manipulatedFrame()->setRotationSensitivity(0.2);
 }
 
 MainWindow::~MainWindow()
