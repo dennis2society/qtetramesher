@@ -23,10 +23,10 @@ Sourcecode available at: https://github.com/dennis2society/qtetramesher
  * CGAL 4.12 (built with Eigen3)
  * Boost 1.64
  * SOFA 17.12
-<br />
+
 ### 2015-12-06
  * Migration to Github due to cancellation of Google Code
-<br />
+
 ### 0.8.1
  * Drag & Drop supported mesh files on the main window to open files.
  * Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
