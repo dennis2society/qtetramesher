@@ -16,6 +16,12 @@ as GPL software. This includes all self-written code. 3rd-party code remains und
 its own license.
 
 Changelog
+  2018-05-27:
+		- Updated Windows binary build (Visual Studio 2015, x64)
+			- Qt5.10.1
+			- CGAL 4.12 (built with Eigen3)
+			- Boost 1.64
+			- SOFA 17.12
   2015-12-06:
         Migration to Github due to cancellation of Google Code
   0.8.1
