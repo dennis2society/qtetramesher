@@ -1,4 +1,4 @@
-README for QTetraMesher
+# README for QTetraMesher
 
 ![ScreenShot](https://qtm.dennis2society.de/images/qtm_win_with_octree_small.jpg )
 ![ScreenShot](https://qtm.dennis2society.de/images/qtm_with_stuffing_options_small.jpg )
@@ -16,13 +16,13 @@ As I am using lots of 3rd-party open-source C/C++ libraries, this work is releas
 as GPL software. This includes all self-written code. 3rd-party code remains under 
 its own license.
 
-Changelog
-  2018-05-27:
-		- Updated Windows binary build (Visual Studio 2015, x64)
-			- Qt5.10.1
-			- CGAL 4.12 (built with Eigen3)
-			- Boost 1.64
-			- SOFA 17.12
+Changelog<br />
+  2018-05-27:<br />
+		* Updated Windows binary build (Visual Studio 2015, x64)
+			* Qt5.10.1
+			* CGAL 4.12 (built with Eigen3)
+			* Boost 1.64
+			* SOFA 17.12
   2015-12-06:
         Migration to Github due to cancellation of Google Code
   0.8.1
