@@ -16,6 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = QTetraMesher
 TEMPLATE = app
 
+CONFIG -= debug_and_release debug_and_release_target
 
 SOURCES += src/main.cpp\
         src/mainwindow.cpp\
@@ -41,14 +42,14 @@ FORMS    += mainwindow.ui \
 
 INCLUDEPATH += $$PWD/src
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/release/ -lQGLViewer2
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../libQGLViewer-2.3.17/QGLViewer/debug/ -lQGLViewerd2
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../sofa/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../sofa/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib
 else:unix: LIBS += -L/usr/lib -lQGLViewer-qt5
-INCLUDEPATH += $$PWD/../../libQGLViewer-2.3.17
-DEPENDPATH += $$PWD/../../libQGLViewer-2.3.17
+win32:CONFIG(release, debug|release): INCLUDEPATH += $$PWD/../sofa/include
+else:win32:CONFIG(debug, debug|release): DEPENDPATH += $$PWD/../sofa/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralize
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize -lQGLViewer -lopengl32
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralized -lQGLViewer -lopengl32
 else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/../sofa/extlibs -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lSofaMisc -lSofaComponentMisc -lSofaCore -lSofaHelper -lSofaDefaultType -lSofaMeshCollision -lSofaDeformable -lSofaObjectInteraction -lSofaBaseCollision -lSofaBaseMechanics -lSofaBaseTopology -lSofaSimulationCommon -lGLEW -lSofaRigid -licui18n -licuuc -licudata
-INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include
-DEPENDPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include
+INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include $$PWD/../sofa/include
+DEPENDPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include $$PWD/../sofa/include

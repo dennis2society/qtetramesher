@@ -75,7 +75,7 @@ void MainWindow::showCGALDialog()
 void MainWindow::generateOctree()
 {
     ui->viewer->generateOctree(ui->octreeDepthSpinbox->value());
-    ui->viewer->updateGL();
+    //ui->viewer->updateGL();
 }
 
 void MainWindow::displayMessage(QString msg_, unsigned int time_)
@@ -86,7 +86,7 @@ void MainWindow::displayMessage(QString msg_, unsigned int time_)
 void MainWindow::notifyDone(QString msg_, unsigned int time_)
 {
     ui->viewer->ShowStatusMessage(msg_, time_);
-    ui->viewer->updateGL();
+    //ui->viewer->updateGL();
 }
 
 void MainWindow::clearTetraOptions()
