@@ -389,6 +389,7 @@ void QGLTetraViewer::selectSurfaceColor()
     if (c.isValid())
     {
         tMesh->SetSurfaceSolidColor(c.red(), c.green(), c.blue());
+        update();
     }
 }
 
@@ -398,6 +399,7 @@ void QGLTetraViewer::selectSurfaceColorWireframe()
     if (c.isValid())
     {
         tMesh->SetSurfaceWireframeColor(c.red(), c.green(), c.blue());
+        update();
     }
 }
 
@@ -407,6 +409,7 @@ void QGLTetraViewer::selectTetraColor()
     if (c.isValid())
     {
         tMesh->SetTetraSolidColor(c.red(), c.green(), c.blue());
+        update();
     }
 }
 
@@ -416,5 +419,6 @@ void QGLTetraViewer::selectTetraColorWireframe()
     if (c.isValid())
     {
         tMesh->SetTetraWireframeColor(c.red(), c.green(), c.blue());
+        update();
     }
 }
