@@ -625,9 +625,9 @@ static inline T refract(const Vec<D,T> &I, const Vec<D,T> &N,
 	return (k < T(0)) ? T(0) : eta * I - (eta * NdotI * sqrt(k)) * N;
 }
 
-
+/*
 // C99 compatibility functions for MSVS
-#ifndef _WIN32
+//#ifndef _WIN32
 #ifdef cbrt
 # undef cbrt
 #endif
@@ -676,8 +676,8 @@ inline long double trunc(long double x)
 {
 	return (x < 0.0f) ? (long double)(int(x)) : (long double)(int(x));
 }
-#endif
-
+//#endif
+*/
 
 // Squared length
 template <int D, class T>
