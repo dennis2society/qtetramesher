@@ -44,12 +44,14 @@ INCLUDEPATH += $$PWD/src
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../sofa/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../sofa/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib
-else:unix: LIBS += -L/usr/lib -lQGLViewer-qt5
+else:unix: LIBS += -L/usr/lib -L$$PWD/../sofa/lib  -lQGLViewer
+
 win32:CONFIG(release, debug|release): INCLUDEPATH += $$PWD/../sofa/include
 else:win32:CONFIG(debug, debug|release): DEPENDPATH += $$PWD/../sofa/include
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize -lQGLViewer -lopengl32
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralized -lQGLViewer -lopengl32
-else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/../sofa/extlibs -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lSofaMisc -lSofaComponentMisc -lSofaCore -lSofaHelper -lSofaDefaultType -lSofaMeshCollision -lSofaDeformable -lSofaObjectInteraction -lSofaBaseCollision -lSofaBaseMechanics -lSofaBaseTopology -lSofaSimulationCommon -lGLEW -lSofaRigid -licui18n -licuuc -licudata
+else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/CGALTetrahedralize/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lSofaMisc -lSofaComponentMisc -lSofaCore -lSofaHelper -lSofaDefaultType -lSofaMeshCollision -lSofaDeformable -lSofaObjectInteraction -lSofaBaseCollision -lSofaBaseMechanics -lSofaBaseTopology -lSofaSimulationCommon -lGLEW -lSofaRigid -licui18n -licuuc -licudata 
+
 INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include $$PWD/../sofa/include
 DEPENDPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include $$PWD/../sofa/include
