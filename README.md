@@ -1,7 +1,5 @@
 README for QTetraMesher
 
-Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
-
 ![ScreenShot](https://qtm.dennis2society.de/images/qtm_win_with_octree_small.jpg )
 ![ScreenShot](https://qtm.dennis2society.de/images/qtm_with_stuffing_options_small.jpg )
 
@@ -75,4 +73,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see here: http://www.gnu.org/licenses/gpl.html
 
-
+Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
