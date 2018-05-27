@@ -62,7 +62,9 @@ step, smoothstep, faceforward, reflect, refract, and angle
 #endif
 
 #include <cstddef>
+#ifndef _WIN32
 #include <cmath>
+#endif
 #include <iostream>
 #include <algorithm>
 
@@ -625,7 +627,7 @@ static inline T refract(const Vec<D,T> &I, const Vec<D,T> &N,
 
 
 // C99 compatibility functions for MSVS
-#ifdef _WIN32
+#ifndef _WIN32
 #ifdef cbrt
 # undef cbrt
 #endif
