@@ -54,7 +54,7 @@ Sourcecode available at: https://github.com/dennis2society/qtetramesher
  * libQGLViewer (2.7.1), GPL, http://www.libqglviewer.com/
  * SOFA Framework (>=17.12), GPL/LGPL, http://www.sofa-framework.org/
  * CGAL (>=4.x), GPL/LGPL, http://www.cgal.org/
- * Qt (5.9/5.10), LGPL, http://qt-project.org/
+ * Qt (5.9/5.10), LGPL, https://www.qt.io/download
  * trimesh2 (2.11), GPL, http://gfx.cs.princeton.edu/proj/trimesh2/
  * Boost (1.64), Boost Software License, http://www.boost.org/
  * GMP (>=5.1.1), LGPL, http://gmplib.org/
