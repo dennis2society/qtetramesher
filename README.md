@@ -13,21 +13,24 @@ As I am using lots of 3rd-party open-source C/C++ libraries, this work is releas
 as GPL software. This includes all self-written code. 3rd-party code remains under 
 its own license.
 
-Usage and build instructions available at http://qtm.dennis2society.de.
+Usage and build instructions are available at http://qtm.dennis2society.de.
 Sourcecode available at: https://github.com/dennis2society/qtetramesher
 
 ## Changelog
-### 2018-05-27
+### 0.8.2 - 2018-05-27
  * Updated Windows binary build (Visual Studio 2015, x64)
- * Qt5.10.1
- * CGAL 4.12 (built with Eigen3)
- * Boost 1.64
- * SOFA 17.12
+   * Qt5.10.1
+   * CGAL 4.12 (built with Eigen3)
+   * Boost 1.64
+   * SOFA 17.12
+   * https://github.com/dennis2society/qtetramesher/releases/tag/0.8.2_win64_vs2015
+ * Binary release for Ubuntu 18.04 x64 (The release README.txt explains which libraries must be installed via apt)
+   * https://github.com/dennis2society/qtetramesher/releases/tag/0.8.2_Ubuntu_18.04_x64
 
-### 2015-12-06
+### 0.8.1 (Source only) - 2015-12-06
  * Migration to Github due to cancellation of Google Code
 
-### 0.8.1
+### 0.8.1 - sometimes in 2014... (Googlecode's history is lost)
  * Drag & Drop supported mesh files on the main window to open files.
  * Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
 
