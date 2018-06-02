@@ -61,6 +61,7 @@ public:
     QAction *actionScale_x10;
     QAction *actionScale_x_0_1;
     QAction *actionGenerate_Octree;
+    QAction *actionCrawfordTetraStuffing;
     QWidget *centralWidget;
     QGridLayout *gridLayout;
     QHBoxLayout *mainLayout;
@@ -116,7 +117,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(1024, 828);
+        MainWindow->resize(1024, 829);
         QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(1);
         sizePolicy.setVerticalStretch(1);
@@ -178,6 +179,8 @@ public:
         actionScale_x_0_1->setObjectName(QStringLiteral("actionScale_x_0_1"));
         actionGenerate_Octree = new QAction(MainWindow);
         actionGenerate_Octree->setObjectName(QStringLiteral("actionGenerate_Octree"));
+        actionCrawfordTetraStuffing = new QAction(MainWindow);
+        actionCrawfordTetraStuffing->setObjectName(QStringLiteral("actionCrawfordTetraStuffing"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -201,8 +204,9 @@ public:
         viewAndControlFrame->setFrameShadow(QFrame::Raised);
         gridLayout_3 = new QGridLayout(viewAndControlFrame);
         gridLayout_3->setSpacing(1);
-        gridLayout_3->setContentsMargins(1, 1, 1, 1);
+        gridLayout_3->setContentsMargins(11, 11, 11, 11);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
+        gridLayout_3->setContentsMargins(1, 1, 1, 1);
         viewAndControlLayout = new QVBoxLayout();
         viewAndControlLayout->setSpacing(1);
         viewAndControlLayout->setObjectName(QStringLiteral("viewAndControlLayout"));
@@ -212,8 +216,9 @@ public:
         qglViewerFrame->setFrameShadow(QFrame::Raised);
         gridLayout_4 = new QGridLayout(qglViewerFrame);
         gridLayout_4->setSpacing(1);
-        gridLayout_4->setContentsMargins(1, 1, 1, 1);
+        gridLayout_4->setContentsMargins(11, 11, 11, 11);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
+        gridLayout_4->setContentsMargins(1, 1, 1, 1);
         viewer = new QGLTetraViewer(qglViewerFrame);
         viewer->setObjectName(QStringLiteral("viewer"));
 
@@ -242,12 +247,13 @@ public:
         visualizationFrame->setLineWidth(2);
         horizontalLayout_3 = new QHBoxLayout(visualizationFrame);
         horizontalLayout_3->setSpacing(6);
-        horizontalLayout_3->setContentsMargins(1, 1, 1, 1);
+        horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        horizontalLayout_3->setContentsMargins(1, 1, 1, 1);
         gridLayout_2 = new QGridLayout();
         gridLayout_2->setSpacing(1);
-        gridLayout_2->setContentsMargins(1, 1, 1, 1);
         gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
+        gridLayout_2->setContentsMargins(1, 1, 1, 1);
         surfaceVisFrame = new QFrame(visualizationFrame);
         surfaceVisFrame->setObjectName(QStringLiteral("surfaceVisFrame"));
         QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -260,12 +266,13 @@ public:
         surfaceVisFrame->setFrameShadow(QFrame::Sunken);
         horizontalLayout_2 = new QHBoxLayout(surfaceVisFrame);
         horizontalLayout_2->setSpacing(6);
-        horizontalLayout_2->setContentsMargins(2, 2, 2, 2);
+        horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalLayout_2->setContentsMargins(2, 2, 2, 2);
         surfaceVisLayout = new QVBoxLayout();
         surfaceVisLayout->setSpacing(1);
-        surfaceVisLayout->setContentsMargins(1, 1, 1, 1);
         surfaceVisLayout->setObjectName(QStringLiteral("surfaceVisLayout"));
+        surfaceVisLayout->setContentsMargins(1, 1, 1, 1);
         surfaceVisLabel = new QLabel(surfaceVisFrame);
         surfaceVisLabel->setObjectName(QStringLiteral("surfaceVisLabel"));
         QFont font;
@@ -320,8 +327,8 @@ public:
         horizontalLayout_4->setContentsMargins(1, 1, 1, -1);
         verticalLayout_2 = new QVBoxLayout();
         verticalLayout_2->setSpacing(1);
-        verticalLayout_2->setContentsMargins(1, 1, 1, 1);
         verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
+        verticalLayout_2->setContentsMargins(1, 1, 1, 1);
         boundingVisLabel = new QLabel(boundingBoxFrame);
         boundingVisLabel->setObjectName(QStringLiteral("boundingVisLabel"));
         boundingVisLabel->setFont(font);
@@ -354,9 +361,9 @@ public:
         verticalLayoutWidget->setGeometry(QRect(0, 0, 201, 112));
         octreeVisLayout = new QVBoxLayout(verticalLayoutWidget);
         octreeVisLayout->setSpacing(1);
-        octreeVisLayout->setContentsMargins(1, 1, 1, 1);
+        octreeVisLayout->setContentsMargins(11, 11, 11, 11);
         octreeVisLayout->setObjectName(QStringLiteral("octreeVisLayout"));
-        octreeVisLayout->setContentsMargins(0, 0, 0, 0);
+        octreeVisLayout->setContentsMargins(1, 1, 1, 1);
         octreeVisLabel = new QLabel(verticalLayoutWidget);
         octreeVisLabel->setObjectName(QStringLiteral("octreeVisLabel"));
         sizePolicy3.setHeightForWidth(octreeVisLabel->sizePolicy().hasHeightForWidth());
@@ -428,12 +435,13 @@ public:
         tetraVisFrame->setFrameShadow(QFrame::Sunken);
         horizontalLayout = new QHBoxLayout(tetraVisFrame);
         horizontalLayout->setSpacing(1);
-        horizontalLayout->setContentsMargins(1, 1, 1, 1);
+        horizontalLayout->setContentsMargins(11, 11, 11, 11);
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setContentsMargins(1, 1, 1, 1);
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(1);
-        verticalLayout->setContentsMargins(1, 1, 1, 1);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setContentsMargins(1, 1, 1, 1);
         tetraVisLabel = new QLabel(tetraVisFrame);
         tetraVisLabel->setObjectName(QStringLiteral("tetraVisLabel"));
         tetraVisLabel->setFont(font);
@@ -505,7 +513,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 21));
+        menuBar->setGeometry(QRect(0, 0, 1024, 22));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -543,6 +551,7 @@ public:
         menuView->addAction(actionShow_Axis);
         menuView->addAction(actionFullscreen);
         menuMesh->addAction(actionMeshTetraStuffing);
+        menuMesh->addAction(actionCrawfordTetraStuffing);
         menuMesh->addAction(actionCGAL_Tetrahedralize);
         menuMesh->addAction(actionGenerate_Octree);
         menuMesh->addAction(actionTetGen);
@@ -579,6 +588,7 @@ public:
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
         QObject::connect(octreeGenerateButton, SIGNAL(released()), MainWindow, SLOT(generateOctree()));
         QObject::connect(actionExport_Tetgen_2, SIGNAL(triggered()), viewer, SLOT(saveTetgen()));
+        QObject::connect(actionCrawfordTetraStuffing, SIGNAL(triggered()), MainWindow, SLOT(showCrawfordTetraDialog()));
 
         octreeCombo->setCurrentIndex(1);
 
@@ -609,13 +619,14 @@ public:
         actionFullscreen->setToolTip(QApplication::translate("MainWindow", "Toggle Fullscreen", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
         actionAbout_QGLViewer->setText(QApplication::translate("MainWindow", "About QGLViewer", Q_NULLPTR));
-        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "MeshTetraStuffing", Q_NULLPTR));
+        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "SOFATetraStuffing", Q_NULLPTR));
         actionTetGen->setText(QApplication::translate("MainWindow", "TetGen", Q_NULLPTR));
         actionCGAL_Tetrahedralize->setText(QApplication::translate("MainWindow", "CGAL Tetrahedralize", Q_NULLPTR));
         actionLoad_Surface_OBJ_OFF_3DS_PLY->setText(QApplication::translate("MainWindow", "Load Surface  (.obj/.ply/.off/.stl)", Q_NULLPTR));
         actionScale_x10->setText(QApplication::translate("MainWindow", "Scale x 10", Q_NULLPTR));
         actionScale_x_0_1->setText(QApplication::translate("MainWindow", "Scale x 0.1", Q_NULLPTR));
         actionGenerate_Octree->setText(QApplication::translate("MainWindow", "Generate Octree", Q_NULLPTR));
+        actionCrawfordTetraStuffing->setText(QApplication::translate("MainWindow", "Quartet TetraStuffing", Q_NULLPTR));
         surfaceVisLabel->setText(QApplication::translate("MainWindow", "Surface Visualization", Q_NULLPTR));
         surfaceCombo->clear();
         surfaceCombo->insertItems(0, QStringList()

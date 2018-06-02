@@ -80,7 +80,7 @@ public:
         cellSizeSpinBox->setFont(font);
         cellSizeSpinBox->setMinimum(0.01);
         cellSizeSpinBox->setMaximum(50);
-        cellSizeSpinBox->setSingleStep(0.05);
+        cellSizeSpinBox->setSingleStep(0.01);
         cellSizeSpinBox->setValue(0.5);
 
         horizontalLayout_6->addWidget(cellSizeSpinBox);
@@ -102,6 +102,7 @@ public:
         facetAngleSpinBox->setDecimals(1);
         facetAngleSpinBox->setMinimum(1);
         facetAngleSpinBox->setMaximum(60);
+        facetAngleSpinBox->setSingleStep(0.1);
         facetAngleSpinBox->setValue(25);
 
         horizontalLayout_5->addWidget(facetAngleSpinBox);
@@ -121,7 +122,7 @@ public:
         facetSizeSpinBox->setObjectName(QStringLiteral("facetSizeSpinBox"));
         facetSizeSpinBox->setFont(font);
         facetSizeSpinBox->setMinimum(0.01);
-        facetSizeSpinBox->setSingleStep(0.05);
+        facetSizeSpinBox->setSingleStep(0.01);
         facetSizeSpinBox->setValue(0.5);
 
         horizontalLayout_3->addWidget(facetSizeSpinBox);
@@ -164,7 +165,7 @@ public:
         crterSpinBox->setDecimals(1);
         crterSpinBox->setMinimum(0.1);
         crterSpinBox->setMaximum(10);
-        crterSpinBox->setSingleStep(0.1);
+        crterSpinBox->setSingleStep(0.01);
         crterSpinBox->setValue(3);
 
         horizontalLayout_4->addWidget(crterSpinBox);

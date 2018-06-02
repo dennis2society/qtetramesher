@@ -59,6 +59,18 @@ void MainWindow::showTetraStuffingDialog()
     tsd->show();
 }
 
+void MainWindow::showCrawfordTetraDialog()
+{
+    if (cts == NULL)
+    {
+        cts = new QuartetTetraStuffingDialog();
+        cts->setViewer(ui->viewer);
+        connect(cts, SIGNAL(displayMessage(QString,uint)), this, SLOT(displayMessage(QString,uint)));
+        connect(cts, SIGNAL(notifyDone(QString,uint)), this, SLOT(notifyDone(QString,uint)));
+    }
+    cts->show();
+}
+
 void MainWindow::showCGALDialog()
 {
     if (ctd == NULL)
@@ -102,6 +114,12 @@ void MainWindow::clearTetraOptions()
         ctd->hide();
         delete ctd;
         ctd = NULL;
+    }
+    if (cts != NULL)
+    {
+        cts->hide();
+        delete cts;
+        cts = NULL;
     }
 }
 

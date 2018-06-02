@@ -11,6 +11,7 @@
 #include <QMainWindow>
 #include "cgaltetrahedralizedialog.h"
 #include "tetrastuffingdialog.h"
+#include "quartetterahedralizedialog.h"
 #include <QCloseEvent>
 
 namespace Ui {
@@ -28,6 +29,7 @@ public:
 public slots:
     void toggleFullScreen(bool value);
     void showTetraStuffingDialog();
+    void showCrawfordTetraDialog();
     void showCGALDialog();
     void generateOctree();
     void displayMessage(QString msg_, unsigned int time_);
@@ -38,6 +40,7 @@ private:
     Ui::MainWindow *ui;
     TetraStuffingDialog* tsd;
     CGALTetrahedralizeDialog* ctd;
+    QuartetTetraStuffingDialog* cts;
 
 protected:
     // override main window close event to close all child dialogs

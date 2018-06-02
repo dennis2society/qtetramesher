@@ -109,7 +109,7 @@ QString QGLTetraViewer::helpString() const
     text += version;
     text += "<br>";
     text += "<br>";
-    text += "&copy; 2013, Dennis L&uuml;bke, qtm (at) dennis2society.de";
+    text += "&copy; 2013 - 2018, Dennis L&uuml;bke, qtm (at) dennis2society.de";
     text += "<br>";
     text += "<br>";
     text += "This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for<br />" \
@@ -117,10 +117,13 @@ QString QGLTetraViewer::helpString() const
           "and easy-to-use mesh viewer based on QGLViewer and allows basic mesh manipulations<br />" \
           "(currently only scaling is possible). Two different methods for tetrahedralization<br />" \
           "are possible: Delaunay Triangulation and Johnathan Shewchuk's Isosurface Stuffing algorithm.<br>";
+    text += "A second implementation of Shewchuk's Isosurface Stuffing (Quartet Tetrahedralize) made by" \
+            "Crawford Doran and Robert Bridson is available.<br />" \
+            "<a href=\"https://github.com/crawforddoran/quartet\">Quartet Isosurface Stuffing (Github)</a><br />";
     text += "<br />";
     text += "Usage/build instructions available at <a href=\"http://qtm.dennis2society.de\">qtm.dennis2society.de</a>.<br />";
     text += "<br />";
-    text += "Sourcecode available at <a href=\"http://code.google.com/p/qtetramesher/\">QTetraMesher at Google Code</a>.<br />";
+    text += "Sourcecode available at <a href=\"https://github.com/dennis2society/qtetramesher\">QTetraMesher at Github</a>.<br />";
     text += "<br />";
     text += "<pre>This program is free software: you can redistribute it and/or modify it<br />" \
           "under the terms of the GNU General Public License as published by the Free<br />" \

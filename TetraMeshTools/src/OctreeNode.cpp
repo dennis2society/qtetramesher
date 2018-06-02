@@ -154,19 +154,19 @@ void OctreeNode::buildNode()
 			// determine quadrant index 
 			// the sub-volumes will be ordered as followed: (ordered by index)
 			// top->bottom; back->front; left->right;
-                        //      +   -   +   -   +
-                        //     /   0   /   1   /|
-                        //    +   -   +   -   + |   
-                        //   /   2   /   3   /|1|
-                        //  +   -   +   -   + | +
-                        //  |       |       |3|/| 
-                        //  |   2   |   3   | + |
-                        //  |       |       |/|5|
-                        //  +   -   +   -   + | +
-                        //  |       |       |7|/ 
-                        //  |   6   |   7   | +
-                        //  |       |       |/
-			//  +   -   +   -   +
+                        //         +   -   +   -   +
+                        //        /   0   /   1   /|
+                        //       +   -   +   -   + |   
+                        //      /   2   /   3   /|1|
+                        //     +   -   +   -   + | +
+                        //     |       |       |3|/| 
+                        //     |   2   |   3   | + |
+                        // (4) |       |       |/|5|
+                        //     +   -   +   -   + | +
+                        //     |        |       |7|/ 
+                        //     |   6   |   7   | +
+                        //     |       |       |/
+			                  //     +   -   +   -   +
 			if (pq.top == 1)
 			{
 				pq.result = 4;

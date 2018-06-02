@@ -96,7 +96,7 @@ public:
         font1.setBold(true);
         font1.setWeight(75);
         tetraSizeSpinBox->setFont(font1);
-        tetraSizeSpinBox->setSingleStep(0.1);
+        tetraSizeSpinBox->setSingleStep(0.01);
         tetraSizeSpinBox->setValue(2);
 
         horizontalLayout->addWidget(tetraSizeSpinBox);

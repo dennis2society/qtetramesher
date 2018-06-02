@@ -2,8 +2,8 @@ README for QTetraMesher
 
 Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
 
-![ScreenShot](https://qtm.dennis2society.de/images/qtm_win_with_octree.jpg )
-![ScreenShot](https://qtm.dennis2society.de/images/qtm_with_stuffing_options.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/qtm_win_with_octree_small.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/qtm_with_stuffing_options_small.jpg )
 
 Usage and build instructions available at http://qtm.dennis2society.de.
 Sourcecode available at: https://github.com/dennis2society/qtetramesher
