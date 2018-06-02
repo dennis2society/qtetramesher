@@ -11,9 +11,6 @@ TEMPLATE = lib
 
 DEFINES += CGAL_TETRAHEDRALIZE_LIBRARY
 
-# you may want to change this to your SOFA installation path
-SOFA_DIR = $$PWD/../../sofa
-
 # use fixed output folder and disable QtCreator's DEBUG/RELEASE and intermediate folders
 CONFIG -= debug_and_release debug_and_release_target
 
