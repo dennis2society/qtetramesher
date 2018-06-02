@@ -19,13 +19,13 @@ void QuartetTetraStuffing::GenerateFromSurface(const std::vector<inTriangle>& tr
   // convert from input data to the implementation's data types
   std::vector<Vec3i> surf_tri;
   std::vector<Vec3f> surf_x;
-  for (int i=0; i<tris.size(); ++i)
+  for (unsigned int i=0; i<tris.size(); ++i)
   {
     inTriangle org = tris.at(i);
     Vec3i tri(org.index[0], org.index[1], org.index[2]);
     surf_tri.push_back(tri);
   }
-  for (int i=0; i<verts.size(); ++i)
+  for (unsigned int i=0; i<verts.size(); ++i)
   {
     tmpVec3f org = verts.at(i);
     Vec3f vert(org.x, org.y, org.z);
