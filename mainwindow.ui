@@ -812,7 +812,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1524,7 +1524,7 @@
    <sender>actionQuartetTetraStuffing</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>showCrawfordTetraDialog()</slot>
+   <slot>showQuartetTetraDialog()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -614,7 +614,7 @@ public:
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
         QObject::connect(octreeGenerateButton, SIGNAL(released()), MainWindow, SLOT(generateOctree()));
         QObject::connect(actionExport_Tetgen_2, SIGNAL(triggered()), viewer, SLOT(saveTetgen()));
-        QObject::connect(actionQuartetTetraStuffing, SIGNAL(triggered()), MainWindow, SLOT(showCrawfordTetraDialog()));
+        QObject::connect(actionQuartetTetraStuffing, SIGNAL(triggered()), MainWindow, SLOT(showQuartetTetraDialog()));
 
         octreeCombo->setCurrentIndex(1);
 

@@ -121,12 +121,6 @@ void MainWindow::clearTetraOptions()
         delete cts;
         cts = NULL;
     }
-    if (ctd != NULL)
-    {
-        ctd->hide();
-        delete ctd;
-        ctd = NULL;
-    }
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
