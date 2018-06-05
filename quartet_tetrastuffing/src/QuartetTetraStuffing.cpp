@@ -13,6 +13,10 @@
 #include "feature.h"
 #include "trimesh.h"
 
+#ifdef _WIN32
+    #include <time.h>
+#endif
+
 
 void QuartetTetraStuffing::GenerateFromSurface(const std::vector<inTriangle>& tris, const std::vector<tmpVec3f>& verts, float gridSpacing, float angleThreshold, bool optimize)
 {

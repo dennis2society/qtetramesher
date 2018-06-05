@@ -11,6 +11,11 @@ TEMPLATE = lib
 
 DEFINES += CGAL_TETRAHEDRALIZE_LIBRARY
 
+# only needed for Windows compilation, adapt to your own paths!
+CGAL_DIR = $$PWD/../../cgal_4_12
+BOOST_DIR = $$PWD/../../boost_1_64
+EIGEN_DIR = $$PWD/../../eigen3
+
 # use fixed output folder and disable QtCreator's DEBUG/RELEASE and intermediate folders
 CONFIG -= debug_and_release debug_and_release_target
 
@@ -34,11 +39,30 @@ INCLUDEPATH += $$PWD/include  $$PWD/../TetraMeshTools/include $$SOFA_DIR/include
 
 unix: LIBS += -L/usr/lib -L$$SOFA_DIR/lib -L/usr/lib/CGAL -lCGAL -lboost_thread -lgmp -lmpfr -lCGAL_Core
 
-
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+win32 {
+    INCLUDEPATH += $$BOOST_DIR $$CGAL_DIR/include $$BOOST_DIR $$CGAL_DIR/build/include $$EIGEN_DIR $$CGAL_DIR/auxiliary/gmp/include
+    LIBS += -L$$CGAL_DIR/build/lib -L$$CGAL_DIR/auxiliary/gmp/lib
+}
+
+# add trailing "d" to TARGET name for DEBUG build
+win32:CONFIG(debug, debug|release) {
+    TARGET = $$join(TARGET,,,d)
+    QMAKE_CXXFLAGS += -bigobj
+    # adapt next line to your local verions of CGAL_Core, CGAL, gmp and mpfr
+    LIBS += -lCGAL_Core-vc140-mt-gd-4.12 -lCGAL-vc140-mt-gd-4.12 -llibgmp-10 -llibmpfr-4
+}
+
+win32:CONFIG(release, debug|release) {
+    # adapt next line to your local verions of CGAL_Core, CGAL, gmp and mpfr
+    LIBS += -lCGAL_Core-vc140-mt-4.12 -lCGAL-vc140-mt-4.12 -llibgmp-10 -llibmpfr-4
+}
+
+
 
 HEADERS += \
     include/CGALTetrahedralize.h

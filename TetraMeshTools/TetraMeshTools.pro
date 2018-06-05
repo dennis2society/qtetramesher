@@ -37,6 +37,11 @@ unix {
     INSTALLS += target
 }
 
+# add trailing "d" to TARGET name for DEBUG build
+win32:CONFIG(debug, debug|release) {
+    TARGET = $$join(TARGET,,,d)
+}
+
 HEADERS += \
     include/TetraMeshTools/BaseMeshLoader.h \
     include/TetraMeshTools/GeometryTypes.h \

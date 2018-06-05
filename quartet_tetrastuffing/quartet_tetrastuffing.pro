@@ -32,6 +32,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/src $$PWD/include  $$PWD/../TetraMeshTools/include
 
+# add trailing "d" to TARGET name for DEBUG build
+win32:CONFIG(debug, debug|release) {
+    TARGET = $$join(TARGET,,,d)
+}
+
 SOURCES += \
     src/feature.cpp \
     src/geometry_queries.cpp \

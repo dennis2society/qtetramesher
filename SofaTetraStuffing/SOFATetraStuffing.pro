@@ -13,6 +13,7 @@ DEFINES += SOFA_TETRASTUFFING_LIBRARY
 
 # you may want to change this to your SOFA installation path
 SOFA_DIR = $$PWD/../../sofa
+BOOST_DIR = $$PWD/../../boost_1_64
 
 # use fixed output folder and disable QtCreator's DEBUG/RELEASE and intermediate folders
 CONFIG -= debug_and_release debug_and_release_target
@@ -41,6 +42,16 @@ unix: LIBS += -L/usr/lib -L$$SOFA_DIR/lib  -lSofaMisc -lSofaComponentMisc -lSofa
 unix {
     target.path = /usr/lib
     INSTALLS += target
+}
+
+# add trailing "d" to TARGET name for DEBUG build
+win32:CONFIG(debug, debug|release) {
+    TARGET = $$join(TARGET,,,d)
+}
+
+win32 {
+    INCLUDEPATH += $$BOOST_DIR
+    LIBS += -L$$SOFA_DIR/lib -lSofaMisc -lSofaComponentMisc -lSofaCore
 }
 
 HEADERS += \
