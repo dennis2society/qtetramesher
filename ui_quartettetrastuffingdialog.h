@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'quartettetrastuffingdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -143,10 +143,10 @@ public:
 
     void retranslateUi(QDialog *QuartetTetraStuffingDialog)
     {
-        QuartetTetraStuffingDialog->setWindowTitle(QApplication::translate("QuartetTetraStuffingDialog", "Quartet TetraStuffing Options", Q_NULLPTR));
-        gridSpacingLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Cell Size", Q_NULLPTR));
-        angleThresholdtLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Angle Threshold", Q_NULLPTR));
-        generateTetrasButton->setText(QApplication::translate("QuartetTetraStuffingDialog", "Generate Tetrahedra", Q_NULLPTR));
+        QuartetTetraStuffingDialog->setWindowTitle(QApplication::translate("QuartetTetraStuffingDialog", "Quartet TetraStuffing Options", nullptr));
+        gridSpacingLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Cell Size", nullptr));
+        angleThresholdtLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Angle Threshold", nullptr));
+        generateTetrasButton->setText(QApplication::translate("QuartetTetraStuffingDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };

@@ -59,7 +59,7 @@ void MainWindow::showTetraStuffingDialog()
     tsd->show();
 }
 
-void MainWindow::showCrawfordTetraDialog()
+void MainWindow::showQuartetTetraDialog()
 {
     if (cts == NULL)
     {
@@ -120,6 +120,12 @@ void MainWindow::clearTetraOptions()
         cts->hide();
         delete cts;
         cts = NULL;
+    }
+    if (ctd != NULL)
+    {
+        ctd->hide();
+        delete ctd;
+        ctd = NULL;
     }
 }
 

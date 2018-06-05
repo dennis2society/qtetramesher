@@ -29,7 +29,7 @@ public:
 public slots:
     void toggleFullScreen(bool value);
     void showTetraStuffingDialog();
-    void showCrawfordTetraDialog();
+    void showQuartetTetraDialog();
     void showCGALDialog();
     void generateOctree();
     void displayMessage(QString msg_, unsigned int time_);

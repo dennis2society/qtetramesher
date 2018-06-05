@@ -812,7 +812,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -851,7 +851,7 @@
      <string>Mesh</string>
     </property>
     <addaction name="actionMeshTetraStuffing"/>
-    <addaction name="actionCrawfordTetraStuffing"/>
+    <addaction name="actionQuartetTetraStuffing"/>
     <addaction name="actionCGAL_Tetrahedralize"/>
     <addaction name="actionGenerate_Octree"/>
     <addaction name="actionTetGen"/>
@@ -1016,7 +1016,7 @@
     <string>Generate Octree</string>
    </property>
   </action>
-  <action name="actionCrawfordTetraStuffing">
+  <action name="actionQuartetTetraStuffing">
    <property name="text">
     <string>Quartet TetraStuffing</string>
    </property>
@@ -1521,7 +1521,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionCrawfordTetraStuffing</sender>
+   <sender>actionQuartetTetraStuffing</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>showCrawfordTetraDialog()</slot>
@@ -1546,6 +1546,6 @@
   <slot>showCGALDialog()</slot>
   <slot>clearTetraOptions()</slot>
   <slot>generateOctree()</slot>
-  <slot>showCrawfordTetraDialog()</slot>
+  <slot>showQuartetTetraDialog()</slot>
  </slots>
 </ui>

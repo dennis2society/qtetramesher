@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tetrastuffingdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -184,13 +184,13 @@ public:
 
     void retranslateUi(QDialog *TetraStuffingDialog)
     {
-        TetraStuffingDialog->setWindowTitle(QApplication::translate("TetraStuffingDialog", "TetraStuffing Options", Q_NULLPTR));
-        tetraSizeLabel->setText(QApplication::translate("TetraStuffingDialog", "TetraSize", Q_NULLPTR));
-        alphaShortLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaShort", Q_NULLPTR));
-        alphaLongLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaLong", Q_NULLPTR));
-        splitTetrasCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Split Tetras", Q_NULLPTR));
-        snapToPointsCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Snap To Points", Q_NULLPTR));
-        generateTetrasButton->setText(QApplication::translate("TetraStuffingDialog", "Generate Tetrahedra", Q_NULLPTR));
+        TetraStuffingDialog->setWindowTitle(QApplication::translate("TetraStuffingDialog", "TetraStuffing Options", nullptr));
+        tetraSizeLabel->setText(QApplication::translate("TetraStuffingDialog", "TetraSize", nullptr));
+        alphaShortLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaShort", nullptr));
+        alphaLongLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaLong", nullptr));
+        splitTetrasCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Split Tetras", nullptr));
+        snapToPointsCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Snap To Points", nullptr));
+        generateTetrasButton->setText(QApplication::translate("TetraStuffingDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };

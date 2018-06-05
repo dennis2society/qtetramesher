@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -22,6 +22,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
@@ -61,7 +62,7 @@ public:
     QAction *actionScale_x10;
     QAction *actionScale_x_0_1;
     QAction *actionGenerate_Octree;
-    QAction *actionCrawfordTetraStuffing;
+    QAction *actionQuartetTetraStuffing;
     QWidget *centralWidget;
     QGridLayout *gridLayout;
     QHBoxLayout *mainLayout;
@@ -105,6 +106,7 @@ public:
     QFrame *line;
     QLabel *cutPlaneLabel;
     QSlider *cutPlaneSlider;
+    QPlainTextEdit *consoleBox;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuHelp_Info;
@@ -179,8 +181,8 @@ public:
         actionScale_x_0_1->setObjectName(QStringLiteral("actionScale_x_0_1"));
         actionGenerate_Octree = new QAction(MainWindow);
         actionGenerate_Octree->setObjectName(QStringLiteral("actionGenerate_Octree"));
-        actionCrawfordTetraStuffing = new QAction(MainWindow);
-        actionCrawfordTetraStuffing->setObjectName(QStringLiteral("actionCrawfordTetraStuffing"));
+        actionQuartetTetraStuffing = new QAction(MainWindow);
+        actionQuartetTetraStuffing->setObjectName(QStringLiteral("actionQuartetTetraStuffing"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -287,6 +289,9 @@ public:
         surfaceVisLayout->addWidget(surfaceVisLabel);
 
         surfaceCombo = new QComboBox(surfaceVisFrame);
+        surfaceCombo->addItem(QString());
+        surfaceCombo->addItem(QString());
+        surfaceCombo->addItem(QString());
         surfaceCombo->setObjectName(QStringLiteral("surfaceCombo"));
         surfaceCombo->setMinimumSize(QSize(0, 30));
         QFont font1;
@@ -337,6 +342,9 @@ public:
         verticalLayout_2->addWidget(boundingVisLabel);
 
         boundingBoxCombo = new QComboBox(boundingBoxFrame);
+        boundingBoxCombo->addItem(QString());
+        boundingBoxCombo->addItem(QString());
+        boundingBoxCombo->addItem(QString());
         boundingBoxCombo->setObjectName(QStringLiteral("boundingBoxCombo"));
         boundingBoxCombo->setMinimumSize(QSize(0, 30));
         boundingBoxCombo->setFont(font1);
@@ -376,6 +384,9 @@ public:
         octreeVisLayout->addWidget(octreeVisLabel);
 
         octreeCombo = new QComboBox(verticalLayoutWidget);
+        octreeCombo->addItem(QString());
+        octreeCombo->addItem(QString());
+        octreeCombo->addItem(QString());
         octreeCombo->setObjectName(QStringLiteral("octreeCombo"));
         sizePolicy3.setHeightForWidth(octreeCombo->sizePolicy().hasHeightForWidth());
         octreeCombo->setSizePolicy(sizePolicy3);
@@ -451,6 +462,9 @@ public:
         verticalLayout->addWidget(tetraVisLabel);
 
         tetraCombo = new QComboBox(tetraVisFrame);
+        tetraCombo->addItem(QString());
+        tetraCombo->addItem(QString());
+        tetraCombo->addItem(QString());
         tetraCombo->setObjectName(QStringLiteral("tetraCombo"));
         tetraCombo->setMinimumSize(QSize(0, 30));
         tetraCombo->setFont(font1);
@@ -510,10 +524,22 @@ public:
 
         gridLayout->addLayout(mainLayout, 0, 1, 1, 1);
 
+        consoleBox = new QPlainTextEdit(centralWidget);
+        consoleBox->setObjectName(QStringLiteral("consoleBox"));
+        QSizePolicy sizePolicy5(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy5.setHorizontalStretch(0);
+        sizePolicy5.setVerticalStretch(0);
+        sizePolicy5.setHeightForWidth(consoleBox->sizePolicy().hasHeightForWidth());
+        consoleBox->setSizePolicy(sizePolicy5);
+        consoleBox->setMinimumSize(QSize(0, 90));
+        consoleBox->setMaximumSize(QSize(16777215, 100));
+
+        gridLayout->addWidget(consoleBox, 1, 1, 1, 1);
+
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1024, 22));
+        menuBar->setGeometry(QRect(0, 0, 1024, 21));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuHelp_Info = new QMenu(menuBar);
@@ -551,7 +577,7 @@ public:
         menuView->addAction(actionShow_Axis);
         menuView->addAction(actionFullscreen);
         menuMesh->addAction(actionMeshTetraStuffing);
-        menuMesh->addAction(actionCrawfordTetraStuffing);
+        menuMesh->addAction(actionQuartetTetraStuffing);
         menuMesh->addAction(actionCGAL_Tetrahedralize);
         menuMesh->addAction(actionGenerate_Octree);
         menuMesh->addAction(actionTetGen);
@@ -588,7 +614,7 @@ public:
         QObject::connect(octreeCombo, SIGNAL(currentIndexChanged(int)), viewer, SLOT(ToggleOctreeVis(int)));
         QObject::connect(octreeGenerateButton, SIGNAL(released()), MainWindow, SLOT(generateOctree()));
         QObject::connect(actionExport_Tetgen_2, SIGNAL(triggered()), viewer, SLOT(saveTetgen()));
-        QObject::connect(actionCrawfordTetraStuffing, SIGNAL(triggered()), MainWindow, SLOT(showCrawfordTetraDialog()));
+        QObject::connect(actionQuartetTetraStuffing, SIGNAL(triggered()), MainWindow, SLOT(showCrawfordTetraDialog()));
 
         octreeCombo->setCurrentIndex(1);
 
@@ -598,74 +624,66 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "QTetraMesher", Q_NULLPTR));
-        actionLoad_GMSH->setText(QApplication::translate("MainWindow", "Load GMSH (.msh)", Q_NULLPTR));
-        actionLoad_NXU2->setText(QApplication::translate("MainWindow", "Load NXU2 (.xml)", Q_NULLPTR));
-        actionLoad_Tetgen->setText(QApplication::translate("MainWindow", "Load Tetgen (not yet...)", Q_NULLPTR));
-        actionExport_OBJ->setText(QApplication::translate("MainWindow", "Export OBJ", Q_NULLPTR));
-        actionExport_GMSH->setText(QApplication::translate("MainWindow", "Export GMSH", Q_NULLPTR));
-        actionExport_Tetgen->setText(QApplication::translate("MainWindow", "Export Tetgen", Q_NULLPTR));
-        actionQuit->setText(QApplication::translate("MainWindow", "Quit", Q_NULLPTR));
-        actionExport_Surface->setText(QApplication::translate("MainWindow", "Export Surface (.obj/.ply/.off/.stl)", Q_NULLPTR));
-        actionExport_GMSH_2->setText(QApplication::translate("MainWindow", "Export GMSH (.msh)", Q_NULLPTR));
-        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (.node + .ele)", Q_NULLPTR));
-        actionShow_FPS->setText(QApplication::translate("MainWindow", "Show FPS", Q_NULLPTR));
-        actionShow_Grid->setText(QApplication::translate("MainWindow", "Show Grid", Q_NULLPTR));
-        actionShow_Axis->setText(QApplication::translate("MainWindow", "Show Axis", Q_NULLPTR));
-        actionHelp->setText(QApplication::translate("MainWindow", "Help", Q_NULLPTR));
-        actionAbout->setText(QApplication::translate("MainWindow", "About QTetraMesher", Q_NULLPTR));
-        actionFullscreen->setText(QApplication::translate("MainWindow", "Fullscreen", Q_NULLPTR));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "QTetraMesher", nullptr));
+        actionLoad_GMSH->setText(QApplication::translate("MainWindow", "Load GMSH (.msh)", nullptr));
+        actionLoad_NXU2->setText(QApplication::translate("MainWindow", "Load NXU2 (.xml)", nullptr));
+        actionLoad_Tetgen->setText(QApplication::translate("MainWindow", "Load Tetgen (not yet...)", nullptr));
+        actionExport_OBJ->setText(QApplication::translate("MainWindow", "Export OBJ", nullptr));
+        actionExport_GMSH->setText(QApplication::translate("MainWindow", "Export GMSH", nullptr));
+        actionExport_Tetgen->setText(QApplication::translate("MainWindow", "Export Tetgen", nullptr));
+        actionQuit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
+        actionExport_Surface->setText(QApplication::translate("MainWindow", "Export Surface (.obj/.ply/.off/.stl)", nullptr));
+        actionExport_GMSH_2->setText(QApplication::translate("MainWindow", "Export GMSH (.msh)", nullptr));
+        actionExport_Tetgen_2->setText(QApplication::translate("MainWindow", "Export Tetgen (.node + .ele)", nullptr));
+        actionShow_FPS->setText(QApplication::translate("MainWindow", "Show FPS", nullptr));
+        actionShow_Grid->setText(QApplication::translate("MainWindow", "Show Grid", nullptr));
+        actionShow_Axis->setText(QApplication::translate("MainWindow", "Show Axis", nullptr));
+        actionHelp->setText(QApplication::translate("MainWindow", "Help", nullptr));
+        actionAbout->setText(QApplication::translate("MainWindow", "About QTetraMesher", nullptr));
+        actionFullscreen->setText(QApplication::translate("MainWindow", "Fullscreen", nullptr));
 #ifndef QT_NO_TOOLTIP
-        actionFullscreen->setToolTip(QApplication::translate("MainWindow", "Toggle Fullscreen", Q_NULLPTR));
+        actionFullscreen->setToolTip(QApplication::translate("MainWindow", "Toggle Fullscreen", nullptr));
 #endif // QT_NO_TOOLTIP
-        actionAbout_QGLViewer->setText(QApplication::translate("MainWindow", "About QGLViewer", Q_NULLPTR));
-        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "SOFATetraStuffing", Q_NULLPTR));
-        actionTetGen->setText(QApplication::translate("MainWindow", "TetGen", Q_NULLPTR));
-        actionCGAL_Tetrahedralize->setText(QApplication::translate("MainWindow", "CGAL Tetrahedralize", Q_NULLPTR));
-        actionLoad_Surface_OBJ_OFF_3DS_PLY->setText(QApplication::translate("MainWindow", "Load Surface  (.obj/.ply/.off/.stl)", Q_NULLPTR));
-        actionScale_x10->setText(QApplication::translate("MainWindow", "Scale x 10", Q_NULLPTR));
-        actionScale_x_0_1->setText(QApplication::translate("MainWindow", "Scale x 0.1", Q_NULLPTR));
-        actionGenerate_Octree->setText(QApplication::translate("MainWindow", "Generate Octree", Q_NULLPTR));
-        actionCrawfordTetraStuffing->setText(QApplication::translate("MainWindow", "Quartet TetraStuffing", Q_NULLPTR));
-        surfaceVisLabel->setText(QApplication::translate("MainWindow", "Surface Visualization", Q_NULLPTR));
-        surfaceCombo->clear();
-        surfaceCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Solid", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Wireframe", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
-        );
-        surfaceColorButton->setText(QApplication::translate("MainWindow", "Surface Solid Color", Q_NULLPTR));
-        surfaceWireframeColorButton->setText(QApplication::translate("MainWindow", "Surface Wireframe Color", Q_NULLPTR));
-        boundingVisLabel->setText(QApplication::translate("MainWindow", "Bounding Box ", Q_NULLPTR));
-        boundingBoxCombo->clear();
-        boundingBoxCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "BoundingBox", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "BoundingCube", Q_NULLPTR)
-        );
-        octreeVisLabel->setText(QApplication::translate("MainWindow", "Octree Visualization", Q_NULLPTR));
-        octreeCombo->clear();
-        octreeCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Visible", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Leafs Only", Q_NULLPTR)
-        );
-        octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", Q_NULLPTR));
-        octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", Q_NULLPTR));
-        tetraVisLabel->setText(QApplication::translate("MainWindow", "TetraMesh Visualization", Q_NULLPTR));
-        tetraCombo->clear();
-        tetraCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Solid Tetras", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Wireframe", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Hidden", Q_NULLPTR)
-        );
-        tetraSolidColorButton->setText(QApplication::translate("MainWindow", "Tetras Solid Color", Q_NULLPTR));
-        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe Color", Q_NULLPTR));
-        cutPlaneLabel->setText(QApplication::translate("MainWindow", "Cut Plane", Q_NULLPTR));
-        menuFile->setTitle(QApplication::translate("MainWindow", "File", Q_NULLPTR));
-        menuHelp_Info->setTitle(QApplication::translate("MainWindow", "Help/Info", Q_NULLPTR));
-        menuView->setTitle(QApplication::translate("MainWindow", "View", Q_NULLPTR));
-        menuMesh->setTitle(QApplication::translate("MainWindow", "Mesh", Q_NULLPTR));
+        actionAbout_QGLViewer->setText(QApplication::translate("MainWindow", "About QGLViewer", nullptr));
+        actionMeshTetraStuffing->setText(QApplication::translate("MainWindow", "SOFATetraStuffing", nullptr));
+        actionTetGen->setText(QApplication::translate("MainWindow", "TetGen", nullptr));
+        actionCGAL_Tetrahedralize->setText(QApplication::translate("MainWindow", "CGAL Tetrahedralize", nullptr));
+        actionLoad_Surface_OBJ_OFF_3DS_PLY->setText(QApplication::translate("MainWindow", "Load Surface  (.obj/.ply/.off/.stl)", nullptr));
+        actionScale_x10->setText(QApplication::translate("MainWindow", "Scale x 10", nullptr));
+        actionScale_x_0_1->setText(QApplication::translate("MainWindow", "Scale x 0.1", nullptr));
+        actionGenerate_Octree->setText(QApplication::translate("MainWindow", "Generate Octree", nullptr));
+        actionQuartetTetraStuffing->setText(QApplication::translate("MainWindow", "Quartet TetraStuffing", nullptr));
+        surfaceVisLabel->setText(QApplication::translate("MainWindow", "Surface Visualization", nullptr));
+        surfaceCombo->setItemText(0, QApplication::translate("MainWindow", "Solid", nullptr));
+        surfaceCombo->setItemText(1, QApplication::translate("MainWindow", "Wireframe", nullptr));
+        surfaceCombo->setItemText(2, QApplication::translate("MainWindow", "Hidden", nullptr));
+
+        surfaceColorButton->setText(QApplication::translate("MainWindow", "Surface Solid Color", nullptr));
+        surfaceWireframeColorButton->setText(QApplication::translate("MainWindow", "Surface Wireframe Color", nullptr));
+        boundingVisLabel->setText(QApplication::translate("MainWindow", "Bounding Box ", nullptr));
+        boundingBoxCombo->setItemText(0, QApplication::translate("MainWindow", "Hidden", nullptr));
+        boundingBoxCombo->setItemText(1, QApplication::translate("MainWindow", "BoundingBox", nullptr));
+        boundingBoxCombo->setItemText(2, QApplication::translate("MainWindow", "BoundingCube", nullptr));
+
+        octreeVisLabel->setText(QApplication::translate("MainWindow", "Octree Visualization", nullptr));
+        octreeCombo->setItemText(0, QApplication::translate("MainWindow", "Hidden", nullptr));
+        octreeCombo->setItemText(1, QApplication::translate("MainWindow", "Visible", nullptr));
+        octreeCombo->setItemText(2, QApplication::translate("MainWindow", "Leafs Only", nullptr));
+
+        octreeDepthLabel->setText(QApplication::translate("MainWindow", "Octree Depth", nullptr));
+        octreeGenerateButton->setText(QApplication::translate("MainWindow", "Generate", nullptr));
+        tetraVisLabel->setText(QApplication::translate("MainWindow", "TetraMesh Visualization", nullptr));
+        tetraCombo->setItemText(0, QApplication::translate("MainWindow", "Solid Tetras", nullptr));
+        tetraCombo->setItemText(1, QApplication::translate("MainWindow", "Wireframe", nullptr));
+        tetraCombo->setItemText(2, QApplication::translate("MainWindow", "Hidden", nullptr));
+
+        tetraSolidColorButton->setText(QApplication::translate("MainWindow", "Tetras Solid Color", nullptr));
+        tetraWireframeColorButton->setText(QApplication::translate("MainWindow", "Tetras Wireframe Color", nullptr));
+        cutPlaneLabel->setText(QApplication::translate("MainWindow", "Cut Plane", nullptr));
+        menuFile->setTitle(QApplication::translate("MainWindow", "File", nullptr));
+        menuHelp_Info->setTitle(QApplication::translate("MainWindow", "Help/Info", nullptr));
+        menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));
+        menuMesh->setTitle(QApplication::translate("MainWindow", "Mesh", nullptr));
     } // retranslateUi
 
 };

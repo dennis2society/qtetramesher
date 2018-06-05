@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'CGALTetrahedralizeDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -188,13 +188,13 @@ public:
 
     void retranslateUi(QDialog *CGALTetrahedralizeDialog)
     {
-        CGALTetrahedralizeDialog->setWindowTitle(QApplication::translate("CGALTetrahedralizeDialog", "CGAL Tetrahedralize Options", Q_NULLPTR));
-        cellSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Cell Size", Q_NULLPTR));
-        facetAngleLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Angle", Q_NULLPTR));
-        facetSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Size", Q_NULLPTR));
-        facetDistanceLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Distance", Q_NULLPTR));
-        cellRadiusEdgeRatioLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "CellRadius To Edge Ratio", Q_NULLPTR));
-        CGALTetrahedralizeButton->setText(QApplication::translate("CGALTetrahedralizeDialog", "Generate Tetrahedra", Q_NULLPTR));
+        CGALTetrahedralizeDialog->setWindowTitle(QApplication::translate("CGALTetrahedralizeDialog", "CGAL Tetrahedralize Options", nullptr));
+        cellSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Cell Size", nullptr));
+        facetAngleLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Angle", nullptr));
+        facetSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Size", nullptr));
+        facetDistanceLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Distance", nullptr));
+        cellRadiusEdgeRatioLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "CellRadius To Edge Ratio", nullptr));
+        CGALTetrahedralizeButton->setText(QApplication::translate("CGALTetrahedralizeDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };
