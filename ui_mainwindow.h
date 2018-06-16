@@ -22,12 +22,9 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "QGLViewer/qglviewer.h"
@@ -106,14 +103,11 @@ public:
     QFrame *line;
     QLabel *cutPlaneLabel;
     QSlider *cutPlaneSlider;
-    QPlainTextEdit *consoleBox;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuHelp_Info;
     QMenu *menuView;
     QMenu *menuMesh;
-    QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -524,18 +518,6 @@ public:
 
         gridLayout->addLayout(mainLayout, 0, 1, 1, 1);
 
-        consoleBox = new QPlainTextEdit(centralWidget);
-        consoleBox->setObjectName(QStringLiteral("consoleBox"));
-        QSizePolicy sizePolicy5(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy5.setHorizontalStretch(0);
-        sizePolicy5.setVerticalStretch(0);
-        sizePolicy5.setHeightForWidth(consoleBox->sizePolicy().hasHeightForWidth());
-        consoleBox->setSizePolicy(sizePolicy5);
-        consoleBox->setMinimumSize(QSize(0, 90));
-        consoleBox->setMaximumSize(QSize(16777215, 100));
-
-        gridLayout->addWidget(consoleBox, 1, 1, 1, 1);
-
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -549,12 +531,6 @@ public:
         menuMesh = new QMenu(menuBar);
         menuMesh->setObjectName(QStringLiteral("menuMesh"));
         MainWindow->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(MainWindow);
-        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-        MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(MainWindow);
-        statusBar->setObjectName(QStringLiteral("statusBar"));
-        MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuMesh->menuAction());
