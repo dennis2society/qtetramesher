@@ -79,7 +79,7 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename Polyhedron_outpu
 	void operator()(typename Polyhedron_output::HalfedgeDS& out_hds)
 	{
 		typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
-		typedef typename Polyhedron_input::HalfedgeDS Input_HDS;
+        typedef typename Polyhedron_input::HalfedgeDS Input_HDS;
 
 		CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
 

@@ -134,18 +134,15 @@ public:
 	}
 	// convenience [] operator for iterating over elements
 	// this might be helpful for 3x3 matrices that consist of three Vec3fs
-	const float operator[](unsigned int index) const 
+  const float operator[](unsigned int index) const
 	{
 		switch (index) {
 		case 0:
 			return x;
-			break;
 		case 1:
 			return y;
-			break;
 		case 2:
 			return z;
-			break;
 		default:
 			break;
 		}
@@ -157,13 +154,10 @@ public:
 		switch (index) {
 		case 0:
 			return x;
-			break;
 		case 1:
 			return y;
-			break;
 		case 2:
 			return z;
-			break;
 		default:
 			break;
 		}

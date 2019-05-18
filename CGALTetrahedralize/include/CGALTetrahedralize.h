@@ -16,7 +16,7 @@
 #include <vector>
 #include "TetraMeshTools/TetraToolsExports.h"
 
-#ifndef BOOST_PARAMETER_MAX-ARITY
+#ifndef BOOST_PARAMETER_MAX_ARITY
 	#define BOOST_PARAMETER_MAX_ARITY 12
 #endif
 
