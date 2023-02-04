@@ -134,7 +134,7 @@ public:
 	}
 	// convenience [] operator for iterating over elements
 	// this might be helpful for 3x3 matrices that consist of three Vec3fs
-  const float operator[](unsigned int index) const
+    float operator[](unsigned int index) const
 	{
 		switch (index) {
 		case 0:

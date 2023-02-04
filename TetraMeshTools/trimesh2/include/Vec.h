@@ -577,7 +577,7 @@ static inline T fract(const T &x)
 }
 
 template <class T>
-static inline T clamp(const T &x, const T &a, const T &b)
+static inline T cclamp(const T &x, const T &a, const T &b)
 {
 	return x > a ? x < b ? x : b : a;  // returns a on NaN
 }
@@ -839,7 +839,7 @@ namespace std {
  VEC_DECLARE_TWOARG(max)
 }
 VEC_DECLARE_THREEARG(smoothstep)
-VEC_DECLARE_THREEARG(clamp)
+VEC_DECLARE_THREEARG(cclamp)
 
 #undef VEC_DECLARE_ONEARG
 #undef VEC_DECLARE_TWOARG

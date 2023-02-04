@@ -38,9 +38,9 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    TetraStuffingDialog* tsd;
-    CGALTetrahedralizeDialog* ctd;
-    QuartetTetraStuffingDialog* cts;
+    TetraStuffingDialog* tsd = NULL;
+    CGALTetrahedralizeDialog* ctd = NULL;
+    QuartetTetraStuffingDialog* cts = NULL;
 
 protected:
     // override main window close event to close all child dialogs

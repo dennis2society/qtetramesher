@@ -37,7 +37,7 @@ static void find_overlap_onedir(TriMesh *mesh1, TriMesh *mesh2,
 
 	for (int i = 0; i < nsamp; i++) {
 		int ind = int((float) i / nsamp * nv);
-		ind = clamp(ind, 0, nv-1);
+        ind = cclamp(ind, 0, nv-1);
 		float this_area = mesh1->pointareas[ind];
 		area_considered += this_area;
 		point p = xf12 * mesh1->vertices[ind];

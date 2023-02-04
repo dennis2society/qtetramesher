@@ -50,12 +50,35 @@ INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffin
 
 win32:CONFIG(release, debug|release): LIBS += -L$$SOFA_DIR/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib -L$$PWD/quartet_tetrastuffing/lib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$SOFA_DIR/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib -L$$PWD/quartet_tetrastuffing/lib -L$$QGLVIEWER_DIR
-else:unix: LIBS += -L/usr/lib -L$$PWD/../sofa/lib  -lQGLViewer
+else:unix: LIBS += -L/usr/lib -L$$PWD/../sofa/lib  -lQGLViewer-qt5 \
+                    -L$$SOFA_DIR/include/Sofa.Component.Engine.Generate \
+                    -L$$SOFA_DIR/include/Sofa.Config \
+                    -L$$SOFA_DIR/include/Sofa.Type \
+                    -L$$SOFA_DIR/include/Sofa.DefaultType \
+                    -L$$SOFA_DIR/include/Sofa.LinearAlgebra \
+                    -L$$SOFA_DIR/include/Sofa.Helper \
+                    -L$$SOFA_DIR/include/Sofa.Core \
+                    -L$$SOFA_DIR/include/Sofa.Topology \
+                    -L$$SOFA_DIR/include/Sofa.Geometry\
 
 win32:CONFIG(release, debug|release): INCLUDEPATH += $$PWD/../sofa/include
 else:win32:CONFIG(debug, debug|release): DEPENDPATH += $$PWD/../sofa/include
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize -lQGLViewer -lopengl32 -lQuartetTetraStuffing
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralized -lQGLViewerd2 -lopengl32 -lQuartetTetraStuffingd
-else:unix: LIBS += -L$$PWD/TetraMeshTools/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/../sofa/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/quartet_tetrastuffing/lib -lCGALTetrahedralize -lTetraMeshTools -lSofaTetraStuffing -lQuartetTetraStuffing -lSofaMisc -lSofaComponentMisc -lSofaCore -lSofaHelper -lSofaDefaultType -lSofaMeshCollision -lSofaDeformable -lSofaObjectInteraction -lSofaBaseCollision -lSofaBaseMechanics -lSofaBaseTopology -lSofaSimulationCommon -lGLEW -lSofaRigid -licui18n -licuuc -licudata
+else:unix: LIBS += -L$$PWD/TetraMeshTools/lib \
+                   -L$$PWD/SofaTetraStuffing/lib \
+                   -L$$PWD/../sofa/lib \
+                   -L$$PWD/CGALTetrahedralize/lib \
+                   -L$$PWD/quartet_tetrastuffing/lib \
+                   -lCGALTetrahedralize \
+                   -lTetraMeshTools \
+                   -lSofaTetraStuffing \
+                   -lQuartetTetraStuffing \
+                   -lSofa.Core \
+                   -lSofa.Component.Engine.Generate \
+                   -lGLEW \
+                   -licui18n \
+                   -licuuc \
+                   -licudata
 

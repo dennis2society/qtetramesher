@@ -33,7 +33,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH += $$PWD/src $$PWD/include $$PWD/include/TetraMeshTools $$PWD/trimesh2/include
 
 unix {
-    target.path = /usr/lib
+    target.path = $$PWD/lib
     INSTALLS += target
 }
 

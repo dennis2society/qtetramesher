@@ -37,7 +37,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/include  $$PWD/../TetraMeshTools/include $$SOFA_DIR/include
 
-unix: LIBS += -L/usr/lib -L$$SOFA_DIR/lib -L/usr/lib/CGAL -lCGAL -lboost_thread -lgmp -lmpfr -lCGAL_Core
+unix: LIBS += -L/usr/lib -L$$SOFA_DIR/lib -lboost_thread -lgmp -lmpfr
 
 unix {
     target.path = /usr/lib

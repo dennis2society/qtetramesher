@@ -9,9 +9,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include "SofaMisc/MeshTetraStuffing.h"
+#include "sofa/component/engine/generate/MeshTetraStuffing.h"
 
-using namespace sofa::component::misc;
+using namespace sofa::component::engine::generate;
 
 void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle>& tris, const std::vector<Vec3f>& verts, const float size_, const float as_, const float al_, const bool snapToSurface_, const bool splitTetras_)
 {
@@ -25,7 +25,7 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle>& tris, c
 	for (unsigned int i=0; i<verts.size(); ++i)
 	{
 		const Vec3f& vOrg = verts[i];
-		sofa::defaulttype::Vec<3, double> v(vOrg.x, vOrg.y, vOrg.z);
+        sofa::type::Vec<3, double> v(vOrg.x, vOrg.y, vOrg.z);
 		vertData.push_back(v);
 	}
 	sofaStuffer->inputPoints.setValue(vertData);

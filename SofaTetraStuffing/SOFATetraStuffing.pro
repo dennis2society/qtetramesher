@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       -= core gui
+QT       -= core
 
 TARGET = SofaTetraStuffing
 TEMPLATE = lib
@@ -34,9 +34,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH += $$PWD/src $$PWD/include  $$PWD/../TetraMeshTools/include $$SOFA_DIR/include
+#INCLUDEPATH += $$PWD/src $$PWD/include  $$PWD/../TetraMeshTools/include $$SOFA_DIR/include/SofaMisc $$SOFA_DIR/include/SofaFramework
+INCLUDEPATH += $$PWD/src $$PWD/include \
+               $$PWD/../TetraMeshTools/include \
+               $$SOFA_DIR/include/Sofa.Component.Engine.Generate \
+               $$SOFA_DIR/include/Sofa.Config \
+               $$SOFA_DIR/include/Sofa.Type \
+               $$SOFA_DIR/include/Sofa.DefaultType \
+               $$SOFA_DIR/include/Sofa.LinearAlgebra \
+               $$SOFA_DIR/include/Sofa.Helper \
+               $$SOFA_DIR/include/Sofa.Core \
+               $$SOFA_DIR/include/Sofa.Topology \
+               $$SOFA_DIR/include/Sofa.Geometry
 
-unix: LIBS += -L/usr/lib -L$$SOFA_DIR/lib  -lSofaMisc -lSofaComponentMisc -lSofaCore
+unix: LIBS += -L$$SOFA_DIR/lib -L/usr/lib -L$$SOFA_DIR/lib -lSofa.Core
 
 
 unix {
@@ -51,7 +62,7 @@ win32:CONFIG(debug, debug|release) {
 
 win32 {
     INCLUDEPATH += $$BOOST_DIR
-    LIBS += -L$$SOFA_DIR/lib -lSofaMisc -lSofaComponentMisc -lSofaCore
+    LIBS += -L$$SOFA_DIR/lib -lSofaCore
 }
 
 HEADERS += \
