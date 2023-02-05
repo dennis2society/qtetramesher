@@ -32,7 +32,7 @@
 #include "TetraMeshTools/Octree.h"
 #include <string>
 #include <vector>
-#include <QColor>
+#include <QtGui/QColor>
 
 class QGLTetraMesh
 {

@@ -29,7 +29,8 @@ SOURCES += src/main.cpp\
     src/tetrastuffingdialog.cpp \
     src/cgaltetrahedralizedialog.cpp \
     src/BaseTetraDialog.cpp \
-    src/quartettetrahedralizedialog.cpp
+    src/quartettetrahedralizedialog.cpp \
+    src/RangeSlider.cpp
 
 HEADERS  += src/mainwindow.h\
             src/qgltetraviewer.h\
@@ -38,14 +39,15 @@ HEADERS  += src/mainwindow.h\
     src/tetrastuffingdialog.h \
     src/cgaltetrahedralizedialog.h \
     src/BaseTetraDialog.h \
-    src/quartetterahedralizedialog.h
+    src/quartetterahedralizedialog.h \
+    src/RangeSlider.h
 
 FORMS    += mainwindow.ui \
     tetrastuffingdialog.ui \
     CGALTetrahedralizeDialog.ui \
     quartettetrastuffingdialog.ui
 
-INCLUDEPATH += $$PWD/src
+INCLUDEPATH += $$PWD/src /usr/include/qt
 INCLUDEPATH += $$PWD/TetraMeshTools/include $$PWD/include $$PWD/SofaTetraStuffing/include $$PWD/CGALTetrahedralize/include $$PWD/quartet_tetrastuffing/include $$PWD/../sofa/include
 
 win32:CONFIG(release, debug|release): LIBS += -L$$SOFA_DIR/lib -L$$PWD/SofaTetraStuffing/lib -L$$PWD/CGALTetrahedralize/lib -L$$PWD/TetraMeshTools/lib -L$$PWD/quartet_tetrastuffing/lib
@@ -80,5 +82,6 @@ else:unix: LIBS += -L$$PWD/TetraMeshTools/lib \
                    -lGLEW \
                    -licui18n \
                    -licuuc \
-                   -licudata
+                   -licudata \
+                   -lassimp
 

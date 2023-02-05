@@ -52,7 +52,6 @@ public:
 		y = v[1];
 		z = v[2];
 	}
-
 	int operator==(const Vec3f &v) const {
 		return x == v.x && y == v.y && z == v.z;
 	}

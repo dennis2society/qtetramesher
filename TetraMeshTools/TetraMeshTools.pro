@@ -30,11 +30,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH += $$PWD/src $$PWD/include $$PWD/include/TetraMeshTools $$PWD/trimesh2/include
+INCLUDEPATH += $$PWD/src $$PWD/include $$PWD/include/TetraMeshTools $$PWD/trimesh2/include /usr/include
 
 unix {
     target.path = $$PWD/lib
     INSTALLS += target
+}
+
+DESTDIR = $$PWD/lib
+CONFIG(debug, debug|release) {
+    DESTDIR = $$PWD/lib
+    DESTDIR += ../debug_linux_x64
+} else {
+    DESTDIR = $$PWD/lib
+    DESTDIR += ../bin_linux_x64
 }
 
 # add trailing "d" to TARGET name for DEBUG build

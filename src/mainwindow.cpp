@@ -54,8 +54,8 @@ void MainWindow::showTetraStuffingDialog()
         tsd->setViewer(ui->viewer);
         connect(tsd, SIGNAL(displayMessage(QString,uint)), this, SLOT(displayMessage(QString,uint)));
         connect(tsd, SIGNAL(notifyDone(QString,uint)), this, SLOT(notifyDone(QString,uint)));
+        tsd->setTetraSize(ui->viewer->getMaxBBox() * 0.05f);
     }
-    tsd->setTetraSize(ui->viewer->getMaxBBox() * 0.05f);
     tsd->show();
 }
 
@@ -79,8 +79,8 @@ void MainWindow::showCGALDialog()
         ctd->setViewer(ui->viewer);
         connect(ctd, SIGNAL(displayMessage(QString,uint)), this, SLOT(displayMessage(QString,uint)));
         connect(ctd, SIGNAL(notifyDone(QString,uint)), this, SLOT(notifyDone(QString,uint)));
+        ctd->setParams(ui->viewer->getMaxBBox() * 0.1f, ui->viewer->getMaxBBox() * 0.05);
     }
-    ctd->setParams(ui->viewer->getMaxBBox() * 0.1f, ui->viewer->getMaxBBox() * 0.05);
     ctd->show();
 }
 
@@ -101,6 +101,7 @@ void MainWindow::notifyDone(QString msg_, unsigned int time_)
     //ui->viewer->updateGL();
 }
 
+/*
 void MainWindow::clearTetraOptions()
 {
     if (tsd != NULL)
@@ -122,10 +123,11 @@ void MainWindow::clearTetraOptions()
         cts = NULL;
     }
 }
+*/
 
 void MainWindow::closeEvent(QCloseEvent * event)
 {
-    clearTetraOptions();
+    //clearTetraOptions();
 }
 
 void MainWindow::on_viewer_onLoad()

@@ -34,7 +34,7 @@ public slots:
     void generateOctree();
     void displayMessage(QString msg_, unsigned int time_);
     void notifyDone(QString msg_, unsigned int time_);
-    void clearTetraOptions();   // call this when loading a new mesh to reset the settings
+    //void clearTetraOptions();   // call this when loading a new mesh to reset the settings
 
 private:
     Ui::MainWindow *ui;

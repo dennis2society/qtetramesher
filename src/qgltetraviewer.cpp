@@ -257,7 +257,7 @@ void QGLTetraViewer::loadSurface(const QString& fileName_)
     this->setSceneCenter(qglviewer::Vec(0,0,0));
     this->setSceneRadius(_maxBBox);
     this->camera()->showEntireScene();
-    this->ShowStatusMessage("OBJ successfully loaded...", 3000);
+    this->ShowStatusMessage("OBJ successfully loaded...", 10000);
     emit onLoad();
 }
 
@@ -290,7 +290,7 @@ void QGLTetraViewer::loadGMSH(const QString& fileName_)
     this->setSceneCenter(qglviewer::Vec(0,0,0));
     this->setSceneRadius(_maxBBox);
     this->showEntireScene();
-    this->ShowStatusMessage("GMSH successfully loaded...", 3000);
+    this->ShowStatusMessage("GMSH successfully loaded...", 10000);
     emit onLoad();
 }
 
@@ -298,7 +298,7 @@ void QGLTetraViewer::saveGMSH()
 {
     if (tMesh == NULL)
     {
-        ShowStatusMessage("Saving GMSH not possible! No tetrahedral mesh present...");
+        ShowStatusMessage("Saving GMSH not possible! No tetrahedral mesh present...", 10000);
         return;
     }
     if (tMesh->GetTetraMesh() != NULL)
@@ -322,7 +322,7 @@ void QGLTetraViewer::saveGMSH()
     }
     else
     {
-        ShowStatusMessage("Saving GMSH failed! No tetrahedral mesh present...");
+        ShowStatusMessage("Saving GMSH failed! No tetrahedral mesh present...", 10000);
     }
 }
 
@@ -330,7 +330,7 @@ void QGLTetraViewer::saveTetgen()
 {
     if (tMesh == NULL)
     {
-        ShowStatusMessage("Saving Tetgen not possible! No tetrahedral mesh present...");
+        ShowStatusMessage("Saving Tetgen not possible! No tetrahedral mesh present...", 10000);
         return;
     }
     if (tMesh->GetTetraMesh() != NULL)
@@ -355,7 +355,7 @@ void QGLTetraViewer::saveTetgen()
     }
     else
     {
-        ShowStatusMessage("Saving Tetgen failed! No tetrahedral mesh present...");
+        ShowStatusMessage("Saving Tetgen failed! No tetrahedral mesh present...", 10000);
     }
 }
 
@@ -363,7 +363,7 @@ void QGLTetraViewer::saveSurface()
 {
     if (tMesh == NULL)
     {
-        ShowStatusMessage("Saving Surface not possible! No mesh present...");
+        ShowStatusMessage("Saving Surface not possible! No mesh present...", 10000);
         return;
     }
     if (tMesh->GetSurface() != NULL)
@@ -378,11 +378,11 @@ void QGLTetraViewer::saveSurface()
         std::cout<<"Saving Surface to file: "<<s.toStdString()<<std::endl;
         delete qfd;
         if (!tMesh->SaveSurface(s.toStdString()))
-            ShowStatusMessage("Saving Surface failed...");
+            ShowStatusMessage("Saving Surface failed...", 10000);
     }
     else
     {
-        ShowStatusMessage("Saving Surface failed! No surface mesh present...");
+        ShowStatusMessage("Saving Surface failed! No surface mesh present...", 10000);
     }
 }
 

@@ -463,7 +463,7 @@ void FeatureSet::autoDetectFeatures(const TriMesh& mesh,
         normalize(n1);
 
         // Compute second normal
-        assert(edge.sym);
+        //assert(edge.sym);
         v1 = edge.sym->v->p;
         v2 = edge.sym->next->v->p;
         v3 = edge.sym->prev->v->p;
