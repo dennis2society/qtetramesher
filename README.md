@@ -7,7 +7,8 @@ This is a Qt-based program for Windows and Linux to generate tetrahedral meshes 
 finite element simulation from various surface mesh formats. It also offers a fast 
 and easy-to-use mesh viewer based on QGLViewer and allows basic mesh manipulations 
 (currently only scaling is possible). Two different methods for tetrahedralization 
-are possible: Delaunay Triangulation and Johnathan Shewchuk's Isosurface Stuffing algorithm.
+are possible: Delaunay Triangulation and two variants of Johnathan Shewchuk's Isosurface
+Stuffing algorithm.
 
 As I am using lots of 3rd-party open-source C/C++ libraries, this work is released 
 as GPL software. This includes all self-written code. 3rd-party code remains under 
