@@ -57,7 +57,7 @@ void TetraTools::TriangleTopology::GenerateNormals()
 		normal.normalize();
 		_normals.push_back(normal);
 	}
-	radius = sqrt(dist);
+    radius = dist;
 }
 
 void TetraTools::TriangleTopology::GenerateEdges()
@@ -311,7 +311,7 @@ void TetraTools::TriangleTopology::Init(	const std::vector<Vec3f>& vertices_,
 	}
 	if (fullUpdate_)
 	{
-		GenerateEdges();
+        //GenerateEdges();
 		//GenerateTriangleEdges();
 		//GenerateEdgeMap();
 		//GenerateTriangleMap();
