@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'CGALTetrahedralizeDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.15.10
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,14 +10,11 @@
 #define UI_CGALTETRAHEDRALIZEDIALOG_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
@@ -51,23 +48,23 @@ public:
     void setupUi(QDialog *CGALTetrahedralizeDialog)
     {
         if (CGALTetrahedralizeDialog->objectName().isEmpty())
-            CGALTetrahedralizeDialog->setObjectName(QStringLiteral("CGALTetrahedralizeDialog"));
+            CGALTetrahedralizeDialog->setObjectName(QString::fromUtf8("CGALTetrahedralizeDialog"));
         CGALTetrahedralizeDialog->resize(404, 332);
         buttonBox = new QDialogButtonBox(CGALTetrahedralizeDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setGeometry(QRect(60, 300, 341, 32));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         verticalLayoutWidget = new QWidget(CGALTetrahedralizeDialog);
-        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
+        verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
         verticalLayoutWidget->setGeometry(QRect(0, 0, 401, 251));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_6 = new QHBoxLayout();
-        horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
+        horizontalLayout_6->setObjectName(QString::fromUtf8("horizontalLayout_6"));
         cellSizeLabel = new QLabel(verticalLayoutWidget);
-        cellSizeLabel->setObjectName(QStringLiteral("cellSizeLabel"));
+        cellSizeLabel->setObjectName(QString::fromUtf8("cellSizeLabel"));
         QFont font;
         font.setBold(true);
         font.setWeight(75);
@@ -76,12 +73,12 @@ public:
         horizontalLayout_6->addWidget(cellSizeLabel);
 
         cellSizeSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        cellSizeSpinBox->setObjectName(QStringLiteral("cellSizeSpinBox"));
+        cellSizeSpinBox->setObjectName(QString::fromUtf8("cellSizeSpinBox"));
         cellSizeSpinBox->setFont(font);
-        cellSizeSpinBox->setMinimum(0.01);
-        cellSizeSpinBox->setMaximum(50);
-        cellSizeSpinBox->setSingleStep(0.01);
-        cellSizeSpinBox->setValue(0.5);
+        cellSizeSpinBox->setMinimum(0.010000000000000);
+        cellSizeSpinBox->setMaximum(50.000000000000000);
+        cellSizeSpinBox->setSingleStep(0.010000000000000);
+        cellSizeSpinBox->setValue(0.500000000000000);
 
         horizontalLayout_6->addWidget(cellSizeSpinBox);
 
@@ -89,21 +86,21 @@ public:
         verticalLayout->addLayout(horizontalLayout_6);
 
         horizontalLayout_5 = new QHBoxLayout();
-        horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
         facetAngleLabel = new QLabel(verticalLayoutWidget);
-        facetAngleLabel->setObjectName(QStringLiteral("facetAngleLabel"));
+        facetAngleLabel->setObjectName(QString::fromUtf8("facetAngleLabel"));
         facetAngleLabel->setFont(font);
 
         horizontalLayout_5->addWidget(facetAngleLabel);
 
         facetAngleSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        facetAngleSpinBox->setObjectName(QStringLiteral("facetAngleSpinBox"));
+        facetAngleSpinBox->setObjectName(QString::fromUtf8("facetAngleSpinBox"));
         facetAngleSpinBox->setFont(font);
         facetAngleSpinBox->setDecimals(1);
-        facetAngleSpinBox->setMinimum(1);
-        facetAngleSpinBox->setMaximum(60);
-        facetAngleSpinBox->setSingleStep(0.1);
-        facetAngleSpinBox->setValue(25);
+        facetAngleSpinBox->setMinimum(1.000000000000000);
+        facetAngleSpinBox->setMaximum(60.000000000000000);
+        facetAngleSpinBox->setSingleStep(0.100000000000000);
+        facetAngleSpinBox->setValue(25.000000000000000);
 
         horizontalLayout_5->addWidget(facetAngleSpinBox);
 
@@ -111,19 +108,19 @@ public:
         verticalLayout->addLayout(horizontalLayout_5);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         facetSizeLabel = new QLabel(verticalLayoutWidget);
-        facetSizeLabel->setObjectName(QStringLiteral("facetSizeLabel"));
+        facetSizeLabel->setObjectName(QString::fromUtf8("facetSizeLabel"));
         facetSizeLabel->setFont(font);
 
         horizontalLayout_3->addWidget(facetSizeLabel);
 
         facetSizeSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        facetSizeSpinBox->setObjectName(QStringLiteral("facetSizeSpinBox"));
+        facetSizeSpinBox->setObjectName(QString::fromUtf8("facetSizeSpinBox"));
         facetSizeSpinBox->setFont(font);
-        facetSizeSpinBox->setMinimum(0.01);
-        facetSizeSpinBox->setSingleStep(0.01);
-        facetSizeSpinBox->setValue(0.5);
+        facetSizeSpinBox->setMinimum(0.010000000000000);
+        facetSizeSpinBox->setSingleStep(0.010000000000000);
+        facetSizeSpinBox->setValue(0.500000000000000);
 
         horizontalLayout_3->addWidget(facetSizeSpinBox);
 
@@ -131,20 +128,20 @@ public:
         verticalLayout->addLayout(horizontalLayout_3);
 
         horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         facetDistanceLabel = new QLabel(verticalLayoutWidget);
-        facetDistanceLabel->setObjectName(QStringLiteral("facetDistanceLabel"));
+        facetDistanceLabel->setObjectName(QString::fromUtf8("facetDistanceLabel"));
         facetDistanceLabel->setFont(font);
 
         horizontalLayout_2->addWidget(facetDistanceLabel);
 
         facetDistanceSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        facetDistanceSpinBox->setObjectName(QStringLiteral("facetDistanceSpinBox"));
+        facetDistanceSpinBox->setObjectName(QString::fromUtf8("facetDistanceSpinBox"));
         facetDistanceSpinBox->setFont(font);
-        facetDistanceSpinBox->setMinimum(0.01);
-        facetDistanceSpinBox->setMaximum(10);
-        facetDistanceSpinBox->setSingleStep(0.01);
-        facetDistanceSpinBox->setValue(0.03);
+        facetDistanceSpinBox->setMinimum(0.010000000000000);
+        facetDistanceSpinBox->setMaximum(10.000000000000000);
+        facetDistanceSpinBox->setSingleStep(0.010000000000000);
+        facetDistanceSpinBox->setValue(0.030000000000000);
 
         horizontalLayout_2->addWidget(facetDistanceSpinBox);
 
@@ -152,21 +149,21 @@ public:
         verticalLayout->addLayout(horizontalLayout_2);
 
         horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         cellRadiusEdgeRatioLabel = new QLabel(verticalLayoutWidget);
-        cellRadiusEdgeRatioLabel->setObjectName(QStringLiteral("cellRadiusEdgeRatioLabel"));
+        cellRadiusEdgeRatioLabel->setObjectName(QString::fromUtf8("cellRadiusEdgeRatioLabel"));
         cellRadiusEdgeRatioLabel->setFont(font);
 
         horizontalLayout_4->addWidget(cellRadiusEdgeRatioLabel);
 
         crterSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        crterSpinBox->setObjectName(QStringLiteral("crterSpinBox"));
+        crterSpinBox->setObjectName(QString::fromUtf8("crterSpinBox"));
         crterSpinBox->setFont(font);
         crterSpinBox->setDecimals(1);
-        crterSpinBox->setMinimum(0.1);
-        crterSpinBox->setMaximum(10);
-        crterSpinBox->setSingleStep(0.01);
-        crterSpinBox->setValue(3);
+        crterSpinBox->setMinimum(0.100000000000000);
+        crterSpinBox->setMaximum(10.000000000000000);
+        crterSpinBox->setSingleStep(0.010000000000000);
+        crterSpinBox->setValue(3.000000000000000);
 
         horizontalLayout_4->addWidget(crterSpinBox);
 
@@ -174,7 +171,7 @@ public:
         verticalLayout->addLayout(horizontalLayout_4);
 
         CGALTetrahedralizeButton = new QPushButton(CGALTetrahedralizeDialog);
-        CGALTetrahedralizeButton->setObjectName(QStringLiteral("CGALTetrahedralizeButton"));
+        CGALTetrahedralizeButton->setObjectName(QString::fromUtf8("CGALTetrahedralizeButton"));
         CGALTetrahedralizeButton->setGeometry(QRect(27, 260, 351, 27));
         CGALTetrahedralizeButton->setFont(font);
 
@@ -188,13 +185,13 @@ public:
 
     void retranslateUi(QDialog *CGALTetrahedralizeDialog)
     {
-        CGALTetrahedralizeDialog->setWindowTitle(QApplication::translate("CGALTetrahedralizeDialog", "CGAL Tetrahedralize Options", nullptr));
-        cellSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Cell Size", nullptr));
-        facetAngleLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Angle", nullptr));
-        facetSizeLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Size", nullptr));
-        facetDistanceLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "Facet Distance", nullptr));
-        cellRadiusEdgeRatioLabel->setText(QApplication::translate("CGALTetrahedralizeDialog", "CellRadius To Edge Ratio", nullptr));
-        CGALTetrahedralizeButton->setText(QApplication::translate("CGALTetrahedralizeDialog", "Generate Tetrahedra", nullptr));
+        CGALTetrahedralizeDialog->setWindowTitle(QCoreApplication::translate("CGALTetrahedralizeDialog", "CGAL Tetrahedralize Options", nullptr));
+        cellSizeLabel->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "Cell Size", nullptr));
+        facetAngleLabel->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "Facet Angle", nullptr));
+        facetSizeLabel->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "Facet Size", nullptr));
+        facetDistanceLabel->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "Facet Distance", nullptr));
+        cellRadiusEdgeRatioLabel->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "CellRadius To Edge Ratio", nullptr));
+        CGALTetrahedralizeButton->setText(QCoreApplication::translate("CGALTetrahedralizeDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };

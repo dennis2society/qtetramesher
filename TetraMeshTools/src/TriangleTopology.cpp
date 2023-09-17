@@ -161,8 +161,8 @@ void TetraTools::TriangleTopology::GenerateEdgeMap()
 	unsigned int numVerts = _vertices.size();
 	unsigned int numEdges = _edges.size();
 	unsigned int offset = 0;
-	unsigned int maxEdges = 0;
-	unsigned int edgeMax = 0;
+    //unsigned int maxEdges = 0;
+    //unsigned int edgeMax = 0;
 	for (unsigned int i=0; i<numVerts; ++i) {
 		PrimitivesPerVertex veMap;
 		unsigned int counter = 0;
@@ -189,10 +189,10 @@ void TetraTools::TriangleTopology::GenerateEdgeMap()
 		}
 		veMap.length = counter;
 		_vertexEdgesLookup.push_back(veMap);
-		if (counter >= maxEdges) {
-			maxEdges = counter;
-			edgeMax = i;
-		}
+        //if (counter >= maxEdges) {
+        //	maxEdges = counter;
+        //	edgeMax = i;
+        //}
 	}
 }
 
@@ -343,8 +343,7 @@ void TetraTools::TriangleTopology::SetEdges(const std::vector<Edge>& edges_)
 	_triangleEdges.clear();
 }
 
-const unsigned int TetraTools::TriangleTopology::FindEdgeByIndex(const unsigned int i0, const unsigned int i1)
-{
+unsigned int TetraTools::TriangleTopology::FindEdgeByIndex(const unsigned int i0, const unsigned int i1) {
 	if (_edges.size() == 0)
 	{
 		GenerateEdges();

@@ -16,10 +16,11 @@ class DLL_EXPORT Octree
 {
 private:
 	OctreeNode*					_root;
-	const unsigned int			_maxDepth;
-	const std::vector<Vec3f>*	_inPoints;	// surface points for which we want to build the Octree
-	const std::vector<Triangle>* _inTris;	// surface triangle indices
-	Vec3f						_minBC, _maxBC;
+    unsigned int _maxDepth;
+    std::vector<Vec3f> *_inPoints; // surface points for which we want to build the Octree
+    std::vector<Triangle> *_inTris; // surface triangle indices
+    Vec3f _minBC;
+    Vec3f _maxBC;
 
 	void generateBoundingCube();
 
@@ -30,7 +31,7 @@ public:
 
 	OctreeNode* getRootNode();
 
-	const unsigned int getDepth() const
+    unsigned int getDepth() const
 	{
 		return _maxDepth;
 	}

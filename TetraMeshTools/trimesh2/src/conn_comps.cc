@@ -16,7 +16,7 @@ using namespace std;
 
 #define NO_COMP -1
 #define FOR_EACH_ADJACENT_FACE(mesh,v,f) \
-	for (int f_ind = 0, f = mesh->adjacentfaces[v][0]; \
+    for (int f_ind = 0, f = mesh->adjacentfaces[v][0]; \
 	     (f_ind < mesh->adjacentfaces[v].size()) && \
 	     ((f = mesh->adjacentfaces[v][f_ind]) || 1); \
 	     f_ind++)
@@ -89,8 +89,8 @@ static void find_connected(const TriMesh *mesh,
 // reflect this new numbering.
 static void sort_comps(vector<int> &comps, vector<int> &compsizes)
 {
-	int i;
-	vector<int> comp_pointers(compsizes.size());
+    int i;
+    vector<int> comp_pointers(compsizes.size());
 	for (i = 0; i < comp_pointers.size(); i++)
 		comp_pointers[i] = i;
 

@@ -199,17 +199,17 @@ namespace TetraTools
 			return _triangleEdges;
 		}
 
-		const unsigned int GetNumVertices()
+        unsigned int GetNumVertices() const
 		{
 			return _vertices.size();
 		}
 
-		const unsigned int GetNumEdges()
+        unsigned int GetNumEdges() const
 		{
 			return _edges.size();
 		}
 
-		const unsigned int GetNumTriangles()
+        unsigned int GetNumTriangles() const
 		{
 			return _triangles.size();
 		}
@@ -234,7 +234,7 @@ namespace TetraTools
 		/**
 		 * Find the Edge that is constructed by indices i0 and i1
 		 */
-		const unsigned int FindEdgeByIndex(const unsigned int i0, const unsigned int i1);
+        unsigned int FindEdgeByIndex(const unsigned int i0, const unsigned int i1);
 
 		float GetRadius()
 		{

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'quartettetrastuffingdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.15.10
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,15 +10,12 @@
 #define UI_QUARTETTETRASTUFFINGDIALOG_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
@@ -45,7 +42,7 @@ public:
     void setupUi(QDialog *QuartetTetraStuffingDialog)
     {
         if (QuartetTetraStuffingDialog->objectName().isEmpty())
-            QuartetTetraStuffingDialog->setObjectName(QStringLiteral("QuartetTetraStuffingDialog"));
+            QuartetTetraStuffingDialog->setObjectName(QString::fromUtf8("QuartetTetraStuffingDialog"));
         QuartetTetraStuffingDialog->resize(400, 300);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
@@ -55,27 +52,27 @@ public:
         QuartetTetraStuffingDialog->setMinimumSize(QSize(400, 300));
         QuartetTetraStuffingDialog->setMaximumSize(QSize(400, 300));
         buttonBox = new QDialogButtonBox(QuartetTetraStuffingDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setGeometry(QRect(30, 260, 341, 32));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         frame = new QFrame(QuartetTetraStuffingDialog);
-        frame->setObjectName(QStringLiteral("frame"));
+        frame->setObjectName(QString::fromUtf8("frame"));
         frame->setGeometry(QRect(0, 0, 401, 251));
         frame->setFrameShape(QFrame::StyledPanel);
         frame->setFrameShadow(QFrame::Raised);
         verticalLayoutWidget = new QWidget(frame);
-        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
+        verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
         verticalLayoutWidget->setGeometry(QRect(0, 0, 401, 251));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
         verticalLayout->setSpacing(2);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setContentsMargins(2, 0, 2, 2);
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         horizontalLayout->setContentsMargins(6, -1, 6, -1);
         gridSpacingLabel = new QLabel(verticalLayoutWidget);
-        gridSpacingLabel->setObjectName(QStringLiteral("gridSpacingLabel"));
+        gridSpacingLabel->setObjectName(QString::fromUtf8("gridSpacingLabel"));
         QFont font;
         font.setPointSize(12);
         font.setBold(true);
@@ -85,13 +82,13 @@ public:
         horizontalLayout->addWidget(gridSpacingLabel);
 
         gridSpacingSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        gridSpacingSpinBox->setObjectName(QStringLiteral("gridSpacingSpinBox"));
+        gridSpacingSpinBox->setObjectName(QString::fromUtf8("gridSpacingSpinBox"));
         QFont font1;
         font1.setBold(true);
         font1.setWeight(75);
         gridSpacingSpinBox->setFont(font1);
-        gridSpacingSpinBox->setSingleStep(0.01);
-        gridSpacingSpinBox->setValue(0.3);
+        gridSpacingSpinBox->setSingleStep(0.010000000000000);
+        gridSpacingSpinBox->setValue(0.300000000000000);
 
         horizontalLayout->addWidget(gridSpacingSpinBox);
 
@@ -99,20 +96,20 @@ public:
         verticalLayout->addLayout(horizontalLayout);
 
         horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout_2->setContentsMargins(6, -1, 6, -1);
         angleThresholdtLabel = new QLabel(verticalLayoutWidget);
-        angleThresholdtLabel->setObjectName(QStringLiteral("angleThresholdtLabel"));
+        angleThresholdtLabel->setObjectName(QString::fromUtf8("angleThresholdtLabel"));
         angleThresholdtLabel->setFont(font);
 
         horizontalLayout_2->addWidget(angleThresholdtLabel);
 
         angleThresholdSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        angleThresholdSpinBox->setObjectName(QStringLiteral("angleThresholdSpinBox"));
+        angleThresholdSpinBox->setObjectName(QString::fromUtf8("angleThresholdSpinBox"));
         angleThresholdSpinBox->setFont(font1);
-        angleThresholdSpinBox->setMaximum(90);
-        angleThresholdSpinBox->setSingleStep(0.1);
-        angleThresholdSpinBox->setValue(15);
+        angleThresholdSpinBox->setMaximum(90.000000000000000);
+        angleThresholdSpinBox->setSingleStep(0.100000000000000);
+        angleThresholdSpinBox->setValue(15.000000000000000);
 
         horizontalLayout_2->addWidget(angleThresholdSpinBox);
 
@@ -121,10 +118,10 @@ public:
 
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setSpacing(2);
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         horizontalLayout_4->setContentsMargins(6, 0, 6, 0);
         generateTetrasButton = new QPushButton(verticalLayoutWidget);
-        generateTetrasButton->setObjectName(QStringLiteral("generateTetrasButton"));
+        generateTetrasButton->setObjectName(QString::fromUtf8("generateTetrasButton"));
         generateTetrasButton->setFont(font);
 
         horizontalLayout_4->addWidget(generateTetrasButton);
@@ -143,10 +140,10 @@ public:
 
     void retranslateUi(QDialog *QuartetTetraStuffingDialog)
     {
-        QuartetTetraStuffingDialog->setWindowTitle(QApplication::translate("QuartetTetraStuffingDialog", "Quartet TetraStuffing Options", nullptr));
-        gridSpacingLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Cell Size", nullptr));
-        angleThresholdtLabel->setText(QApplication::translate("QuartetTetraStuffingDialog", "Angle Threshold", nullptr));
-        generateTetrasButton->setText(QApplication::translate("QuartetTetraStuffingDialog", "Generate Tetrahedra", nullptr));
+        QuartetTetraStuffingDialog->setWindowTitle(QCoreApplication::translate("QuartetTetraStuffingDialog", "Quartet TetraStuffing Options", nullptr));
+        gridSpacingLabel->setText(QCoreApplication::translate("QuartetTetraStuffingDialog", "Cell Size", nullptr));
+        angleThresholdtLabel->setText(QCoreApplication::translate("QuartetTetraStuffingDialog", "Angle Threshold", nullptr));
+        generateTetrasButton->setText(QCoreApplication::translate("QuartetTetraStuffingDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };

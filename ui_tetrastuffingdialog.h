@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tetrastuffingdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.15.10
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,16 +10,13 @@
 #define UI_TETRASTUFFINGDIALOG_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
@@ -51,7 +48,7 @@ public:
     void setupUi(QDialog *TetraStuffingDialog)
     {
         if (TetraStuffingDialog->objectName().isEmpty())
-            TetraStuffingDialog->setObjectName(QStringLiteral("TetraStuffingDialog"));
+            TetraStuffingDialog->setObjectName(QString::fromUtf8("TetraStuffingDialog"));
         TetraStuffingDialog->resize(400, 300);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
@@ -61,27 +58,27 @@ public:
         TetraStuffingDialog->setMinimumSize(QSize(400, 300));
         TetraStuffingDialog->setMaximumSize(QSize(400, 300));
         buttonBox = new QDialogButtonBox(TetraStuffingDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setGeometry(QRect(30, 260, 341, 32));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         frame = new QFrame(TetraStuffingDialog);
-        frame->setObjectName(QStringLiteral("frame"));
+        frame->setObjectName(QString::fromUtf8("frame"));
         frame->setGeometry(QRect(0, 0, 401, 251));
         frame->setFrameShape(QFrame::StyledPanel);
         frame->setFrameShadow(QFrame::Raised);
         verticalLayoutWidget = new QWidget(frame);
-        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
+        verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
         verticalLayoutWidget->setGeometry(QRect(0, 0, 401, 251));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
         verticalLayout->setSpacing(2);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setContentsMargins(2, 0, 2, 2);
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         horizontalLayout->setContentsMargins(6, -1, 6, -1);
         tetraSizeLabel = new QLabel(verticalLayoutWidget);
-        tetraSizeLabel->setObjectName(QStringLiteral("tetraSizeLabel"));
+        tetraSizeLabel->setObjectName(QString::fromUtf8("tetraSizeLabel"));
         QFont font;
         font.setPointSize(12);
         font.setBold(true);
@@ -91,13 +88,13 @@ public:
         horizontalLayout->addWidget(tetraSizeLabel);
 
         tetraSizeSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        tetraSizeSpinBox->setObjectName(QStringLiteral("tetraSizeSpinBox"));
+        tetraSizeSpinBox->setObjectName(QString::fromUtf8("tetraSizeSpinBox"));
         QFont font1;
         font1.setBold(true);
         font1.setWeight(75);
         tetraSizeSpinBox->setFont(font1);
-        tetraSizeSpinBox->setSingleStep(0.01);
-        tetraSizeSpinBox->setValue(2);
+        tetraSizeSpinBox->setSingleStep(0.010000000000000);
+        tetraSizeSpinBox->setValue(2.000000000000000);
 
         horizontalLayout->addWidget(tetraSizeSpinBox);
 
@@ -105,35 +102,35 @@ public:
         verticalLayout->addLayout(horizontalLayout);
 
         horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout_2->setContentsMargins(6, -1, 6, -1);
         alphaShortLabel = new QLabel(verticalLayoutWidget);
-        alphaShortLabel->setObjectName(QStringLiteral("alphaShortLabel"));
+        alphaShortLabel->setObjectName(QString::fromUtf8("alphaShortLabel"));
         alphaShortLabel->setFont(font);
 
         horizontalLayout_2->addWidget(alphaShortLabel);
 
         alphaShortSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        alphaShortSpinBox->setObjectName(QStringLiteral("alphaShortSpinBox"));
+        alphaShortSpinBox->setObjectName(QString::fromUtf8("alphaShortSpinBox"));
         alphaShortSpinBox->setFont(font1);
-        alphaShortSpinBox->setMaximum(1);
-        alphaShortSpinBox->setSingleStep(0.01);
-        alphaShortSpinBox->setValue(0.43);
+        alphaShortSpinBox->setMaximum(1.000000000000000);
+        alphaShortSpinBox->setSingleStep(0.010000000000000);
+        alphaShortSpinBox->setValue(0.430000000000000);
 
         horizontalLayout_2->addWidget(alphaShortSpinBox);
 
         alphaLongLabel = new QLabel(verticalLayoutWidget);
-        alphaLongLabel->setObjectName(QStringLiteral("alphaLongLabel"));
+        alphaLongLabel->setObjectName(QString::fromUtf8("alphaLongLabel"));
         alphaLongLabel->setFont(font);
 
         horizontalLayout_2->addWidget(alphaLongLabel);
 
         alphaLongSpinBox = new QDoubleSpinBox(verticalLayoutWidget);
-        alphaLongSpinBox->setObjectName(QStringLiteral("alphaLongSpinBox"));
+        alphaLongSpinBox->setObjectName(QString::fromUtf8("alphaLongSpinBox"));
         alphaLongSpinBox->setFont(font1);
-        alphaLongSpinBox->setMaximum(1);
-        alphaLongSpinBox->setSingleStep(0.01);
-        alphaLongSpinBox->setValue(0.25);
+        alphaLongSpinBox->setMaximum(1.000000000000000);
+        alphaLongSpinBox->setSingleStep(0.010000000000000);
+        alphaLongSpinBox->setValue(0.250000000000000);
 
         horizontalLayout_2->addWidget(alphaLongSpinBox);
 
@@ -141,17 +138,17 @@ public:
         verticalLayout->addLayout(horizontalLayout_2);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         horizontalLayout_3->setContentsMargins(6, -1, 6, -1);
         splitTetrasCheckBox = new QCheckBox(verticalLayoutWidget);
-        splitTetrasCheckBox->setObjectName(QStringLiteral("splitTetrasCheckBox"));
+        splitTetrasCheckBox->setObjectName(QString::fromUtf8("splitTetrasCheckBox"));
         splitTetrasCheckBox->setFont(font);
         splitTetrasCheckBox->setChecked(true);
 
         horizontalLayout_3->addWidget(splitTetrasCheckBox);
 
         snapToPointsCheckBox = new QCheckBox(verticalLayoutWidget);
-        snapToPointsCheckBox->setObjectName(QStringLiteral("snapToPointsCheckBox"));
+        snapToPointsCheckBox->setObjectName(QString::fromUtf8("snapToPointsCheckBox"));
         snapToPointsCheckBox->setFont(font);
         snapToPointsCheckBox->setChecked(true);
 
@@ -162,10 +159,10 @@ public:
 
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setSpacing(2);
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         horizontalLayout_4->setContentsMargins(6, 0, 6, 0);
         generateTetrasButton = new QPushButton(verticalLayoutWidget);
-        generateTetrasButton->setObjectName(QStringLiteral("generateTetrasButton"));
+        generateTetrasButton->setObjectName(QString::fromUtf8("generateTetrasButton"));
         generateTetrasButton->setFont(font);
 
         horizontalLayout_4->addWidget(generateTetrasButton);
@@ -184,13 +181,13 @@ public:
 
     void retranslateUi(QDialog *TetraStuffingDialog)
     {
-        TetraStuffingDialog->setWindowTitle(QApplication::translate("TetraStuffingDialog", "TetraStuffing Options", nullptr));
-        tetraSizeLabel->setText(QApplication::translate("TetraStuffingDialog", "TetraSize", nullptr));
-        alphaShortLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaShort", nullptr));
-        alphaLongLabel->setText(QApplication::translate("TetraStuffingDialog", "AlphaLong", nullptr));
-        splitTetrasCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Split Tetras", nullptr));
-        snapToPointsCheckBox->setText(QApplication::translate("TetraStuffingDialog", "Snap To Points", nullptr));
-        generateTetrasButton->setText(QApplication::translate("TetraStuffingDialog", "Generate Tetrahedra", nullptr));
+        TetraStuffingDialog->setWindowTitle(QCoreApplication::translate("TetraStuffingDialog", "TetraStuffing Options", nullptr));
+        tetraSizeLabel->setText(QCoreApplication::translate("TetraStuffingDialog", "TetraSize", nullptr));
+        alphaShortLabel->setText(QCoreApplication::translate("TetraStuffingDialog", "AlphaShort", nullptr));
+        alphaLongLabel->setText(QCoreApplication::translate("TetraStuffingDialog", "AlphaLong", nullptr));
+        splitTetrasCheckBox->setText(QCoreApplication::translate("TetraStuffingDialog", "Split Tetras", nullptr));
+        snapToPointsCheckBox->setText(QCoreApplication::translate("TetraStuffingDialog", "Snap To Points", nullptr));
+        generateTetrasButton->setText(QCoreApplication::translate("TetraStuffingDialog", "Generate Tetrahedra", nullptr));
     } // retranslateUi
 
 };

@@ -26,6 +26,7 @@ public :
   QGLTetraMesh* tMesh;
 
   void generateOctree(int d);
+  float getMaxBBox() const;
 
   public slots:
 	void ToggleTetraVis(int i);
@@ -33,6 +34,7 @@ public :
     void ToggleOctreeVis(int i);
 	void ToggleBBox(int i);
 	void SetCutPlane(int i);
+    void SetZRange(int lower, int upper);
 	void ShowStatusMessage(const QString& msg_, int duration_ = 2000);
     void loadSurface(const QString& fileName_ = "");
     void loadGMSH(const QString& fileName_ = "");
@@ -45,8 +47,6 @@ public :
     void selectTetraColorWireframe();
     void scale10();
     void scale01();
-
-    const float getMaxBBox();
 
 signals:
     void onLoad();

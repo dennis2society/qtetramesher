@@ -27,6 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->viewer->setManipulatedFrame(new qglviewer::ManipulatedFrame);
     ui->viewer->manipulatedFrame()->setSpinningSensitivity(85.0);
     ui->viewer->manipulatedFrame()->setRotationSensitivity(0.2);
+    //zRangeSlider = new RangeSlider(Qt::Horizontal, RangeSlider::Option::DoubleHandles, this);
+    //zRangeSlider->SetRange(0, 100);
+    //ui->verticalLayout->addWidget(zRangeSlider);
+    //QObject::connect(zRangeSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(SetZRange()) );
+    //QObject::connect(zRangeSlider, SIGNAL(upperValueChanged(int)), this, SLOT(SetZRange()) );
 }
 
 MainWindow::~MainWindow()
@@ -101,7 +106,6 @@ void MainWindow::notifyDone(QString msg_, unsigned int time_)
     //ui->viewer->updateGL();
 }
 
-/*
 void MainWindow::clearTetraOptions()
 {
     if (tsd != NULL)
@@ -123,11 +127,10 @@ void MainWindow::clearTetraOptions()
         cts = NULL;
     }
 }
-*/
 
 void MainWindow::closeEvent(QCloseEvent * event)
 {
-    //clearTetraOptions();
+    clearTetraOptions();
 }
 
 void MainWindow::on_viewer_onLoad()
@@ -165,4 +168,10 @@ void MainWindow::dropEvent(QDropEvent* event_)
         std::cout<<"Dropped surface file "<<fileName.toStdString()<<" on mainwindow..."<<std::endl;
         ui->viewer->loadSurface(fileName);
     }
+}
+
+void MainWindow::setZRange()
+{
+    std::cout<<"RangeSLider moved..."<<std::endl;
+    ui->viewer->SetZRange(zRangeSlider->GetLowerValue(), zRangeSlider->GetUpperValue());
 }

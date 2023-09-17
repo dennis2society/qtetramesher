@@ -31,9 +31,9 @@ private:
 	std::vector<OctreeNode*>	_nodes; // a maximum of 8 children is possible
 	static std::vector<Vec3f>*	_points; // pointer to surface mesh points
 	static std::vector<Triangle>* _tris;
-	//std::vector<Vec3f*>			_pointsInSelf;	// list of point-pointers to know which surface points are contained in the current child
-	Vec3f						_minBC, _maxBC;	// 3D points for opposite corners
-	const int					_quadrant;
+    Vec3f _minBC;
+    Vec3f _maxBC;
+    int					_quadrant;
 	
 	void buildNode();
 
@@ -42,9 +42,9 @@ private:
 
 public:
 	// only necessary for root node
-	OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_, std::vector<Triangle>* inTris_);
+    explicit OctreeNode(const unsigned int maxDepth_, std::vector<Vec3f>* inPoints_, const Vec3f& minBC_, const Vec3f& maxBC_, std::vector<Triangle>* inTris_);
 	// this constructor is only for the child nodes
-	OctreeNode(const OctreeNode* parent_, const Vec3f& minBC_, const Vec3f& maxBC_, const unsigned int depth_, const int quadrant_);
+    explicit OctreeNode(const OctreeNode* parent_, const Vec3f& minBC_, const Vec3f& maxBC_, const unsigned int depth_, const int quadrant_);
 	~OctreeNode();
 
 	/**
@@ -59,19 +59,19 @@ public:
 	const Vec3f& getMaxBC() const;
 
 	// returns true if the current node has children
-	const bool hasChildren() const;
+    bool hasChildren() const;
 
 	// returns the smalles children i.e. the "leafs" as a recursively generated list
 	// when leafsOnly is set to true, we will only return the smallest child leafs,
 	// while ignoring the containing cubes.
 	const std::vector<OctreeNode*>& getLeafs(const bool leafsOnly_=false);
 
-	const unsigned int getDepth() const
+    unsigned int getDepth() const
 	{
 		return _depth;
 	}
 
-	const unsigned int getQuadrant() const
+    unsigned int getQuadrant() const
 	{
 		return _quadrant;
 	}

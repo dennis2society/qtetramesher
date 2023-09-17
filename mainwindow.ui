@@ -741,25 +741,6 @@
                 </item>
                 <item>
                  <widget class="QSlider" name="cutPlaneSlider">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>30</height>
-                   </size>
-                  </property>
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="invertedAppearance">
-                   <bool>false</bool>
-                  </property>
-                  <property name="invertedControls">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="RangeSlider" name="xRangeSlider">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -985,6 +966,14 @@
     <string>Quartet TetraStuffing</string>
    </property>
   </action>
+  <action name="actionUpdate_Z_Slider">
+   <property name="text">
+    <string>Update Z Slider</string>
+   </property>
+   <property name="toolTip">
+    <string>Double Cutplane for Z axis</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1016,11 +1005,6 @@
     <slot>ToggleOctreeVis(int)</slot>
     <slot>saveTetgen()</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>RangeSlider</class>
-   <extends>QSlider</extends>
-   <header>rangeslider.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -1128,8 +1112,8 @@
    <slot>ToggleTriangleVis(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>211</y>
+     <x>1010</x>
+     <y>145</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1144,8 +1128,8 @@
    <slot>ToggleTetraVis(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>396</y>
+     <x>1011</x>
+     <y>321</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1160,8 +1144,8 @@
    <slot>ToggleBBox(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>682</y>
+     <x>1011</x>
+     <y>596</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1202,30 +1186,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>cutPlaneSlider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>viewer</receiver>
-   <slot>SetCutPlane(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>921</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>411</x>
-     <y>380</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>surfaceColorButton</sender>
    <signal>released()</signal>
    <receiver>viewer</receiver>
    <slot>selectSurfaceColor()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>213</y>
+     <x>1010</x>
+     <y>176</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1240,8 +1208,8 @@
    <slot>selectSurfaceColorWireframe()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>237</y>
+     <x>1010</x>
+     <y>207</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1256,8 +1224,8 @@
    <slot>selectTetraColor()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>414</y>
+     <x>1011</x>
+     <y>352</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1272,8 +1240,8 @@
    <slot>selectTetraColorWireframe()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>447</y>
+     <x>1011</x>
+     <y>383</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -1464,8 +1432,8 @@
    <slot>generateOctree()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>968</x>
-     <y>740</y>
+     <x>972</x>
+     <y>770</y>
     </hint>
     <hint type="destinationlabel">
      <x>511</x>
@@ -1505,6 +1473,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cutPlaneSlider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>viewer</receiver>
+   <slot>SetCutPlane(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>891</x>
+     <y>447</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>381</x>
+     <y>426</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>toggleFullScreen(bool)</slot>
@@ -1516,5 +1500,6 @@
   <slot>clearTetraOptions()</slot>
   <slot>generateOctree()</slot>
   <slot>showQuartetTetraDialog()</slot>
+  <slot>setZRange()</slot>
  </slots>
 </ui>

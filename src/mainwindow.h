@@ -13,6 +13,7 @@
 #include "tetrastuffingdialog.h"
 #include "quartetterahedralizedialog.h"
 #include <QCloseEvent>
+#include "RangeSlider.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,13 +35,15 @@ public slots:
     void generateOctree();
     void displayMessage(QString msg_, unsigned int time_);
     void notifyDone(QString msg_, unsigned int time_);
-    //void clearTetraOptions();   // call this when loading a new mesh to reset the settings
+    void clearTetraOptions();   // call this when loading a new mesh to reset the settings
+    void setZRange();
 
 private:
     Ui::MainWindow *ui;
     TetraStuffingDialog* tsd = NULL;
     CGALTetrahedralizeDialog* ctd = NULL;
     QuartetTetraStuffingDialog* cts = NULL;
+    RangeSlider* zRangeSlider;
 
 protected:
     // override main window close event to close all child dialogs

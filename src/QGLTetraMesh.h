@@ -54,6 +54,9 @@ private:
 
 	float cutPlaneOffset;
 
+    float zLowerThreshold;
+    float zUpperThreshold;
+
 	void DrawBoundingVolume(const BoundingBox& bb, Vec3f color_);
 
 	void DrawTetraTriangle(const unsigned int triangleIndex, const Vec3f& tetraCentroid, const Vec3f& color);
@@ -174,6 +177,8 @@ public:
 		float f = (float)i/100.0f;
 		cutPlaneOffset = f;
 	}
+
+    void SetZRange(int lower, int upper);
 
 	float GetSceneRadius()
 	{

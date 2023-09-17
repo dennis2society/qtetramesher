@@ -671,3 +671,10 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_)
     t.stop();
     std::cout<<"Octree Level "<<oct->getDepth()<<" generated in "<<t.getElapsedTimeInMilliSec()<<" ms."<<std::endl;
 }
+
+void QGLTetraMesh::SetZRange(int lower, int upper)
+{
+    zLowerThreshold = (float)lower/100.0f;
+    zUpperThreshold = (float)upper/100.0f;
+    std::cout<<"Z-Range set to "<<zLowerThreshold<<"/"<<zUpperThreshold<<std::endl;
+}
