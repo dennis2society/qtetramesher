@@ -56,13 +56,10 @@ target_link_libraries(
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
-
 if(LINUX)
   add_custom_command(
     TARGET TetraMeshTools
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-      -E make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64
     COMMAND ${CMAKE_COMMAND}
       -E copy $<TARGET_FILE:TetraMeshTools>
       ${CMAKE_SOURCE_DIR}/../bin_linux_x64/
