@@ -58,16 +58,13 @@ add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
 
 if(LINUX)
-  if (NOT EXISTS ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-    message("Output folder does not exist...")
-    add_custom_command(
-      TARGET TetraMeshTools
-      POST_BUILD
-      COMMAND ${CMAKE_COMMAND}
-        -E make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64
-    )
-    #file(make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-  endif()
+  add_custom_command(
+    TARGET TetraMeshTools
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+      -E make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64
+  )
+  #file(make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
   add_custom_command(
     TARGET TetraMeshTools
     POST_BUILD
