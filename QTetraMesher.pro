@@ -68,11 +68,10 @@ else:win32:CONFIG(debug, debug|release): DEPENDPATH += $$PWD/../sofa/include
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/release -lTetraMeshTools -lSofaTetraStuffing -lCGALTetrahedralize -lQGLViewer -lopengl32 -lQuartetTetraStuffing
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib -L$$PWD/TetraMeshTools/debug/ -lTetraMeshToolsd -lSofaTetraStuffingd -lCGALTetrahedralized -lQGLViewerd2 -lopengl32 -lQuartetTetraStuffingd
-else:unix: LIBS += -L$$PWD/TetraMeshTools/lib \
-                   -L$$PWD/SofaTetraStuffing/lib \
-                   -L$$PWD/../sofa/lib \
-                   -L$$PWD/CGALTetrahedralize/lib \
-                   -L$$PWD/quartet_tetrastuffing/lib \
+else:unix: LIBS += -L$$PWD/TetraMeshTools/build \
+                   -L$$PWD/SofaTetraStuffing/build \
+                   -L$$PWD/CGALTetrahedralize/build \
+                   -L$$PWD/quartet_tetrastuffing/build \
                    -lCGALTetrahedralize \
                    -lTetraMeshTools \
                    -lSofaTetraStuffing \
