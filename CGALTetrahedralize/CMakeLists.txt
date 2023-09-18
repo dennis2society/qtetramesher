@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(TetraMeshTools VERSION 1.0)
+project(CGALTetrahedralize VERSION 1.0)
 
 find_package(CGAL REQUIRED)
 
@@ -27,8 +27,8 @@ if(LINUX)
   add_custom_command(
     TARGET CGALTetrahedralize
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-      -E copy $<TARGET_FILE:CGALTetrahedralize>
-      ${CMAKE_BINARY_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:CGALTetrahedralize>"
+      "${CMAKE_BINARY_DIR}"
   )
 endif()

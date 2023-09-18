@@ -60,8 +60,8 @@ if(LINUX)
   add_custom_command(
     TARGET TetraMeshTools
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-      -E copy $<TARGET_FILE:TetraMeshTools>
-      ${CMAKE_BINARY_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:TetraMeshTools>"
+      "${CMAKE_BINARY_DIR}"
   )
 endif()

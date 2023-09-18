@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(TetraMeshTools VERSION 1.0)
+project(SofaTetraStuffing VERSION 1.0)
 
 # Set this to where you have installed your Sofa build:
 # (This is only needed if you want to build this lib from here)
@@ -64,8 +64,8 @@ if(LINUX)
   add_custom_command(
     TARGET SofaTetraStuffing
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-      -E copy $<TARGET_FILE:SofaTetraStuffing>
-        ${CMAKE_BINARY_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:SofaTetraStuffing>"
+      "${CMAKE_BINARY_DIR}"
   )
 endif()

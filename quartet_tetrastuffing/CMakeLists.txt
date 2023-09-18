@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(TetraMeshTools VERSION 1.0)
+project(QuartetTetraStuffing VERSION 1.0)
 
 include_directories(
   ../TetraMeshTools/include
@@ -36,8 +36,8 @@ if(LINUX)
   add_custom_command(
     TARGET QuartetTetraStuffing
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-      -E copy $<TARGET_FILE:QuartetTetraStuffing>
-      ${CMAKE_BINARY_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:QuartetTetraStuffing>"
+      "${CMAKE_BINARY_DIR}"
   )
 endif()
