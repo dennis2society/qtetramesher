@@ -56,7 +56,7 @@ target_link_libraries(
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
-if(LINUX)
+if(LINUX OR UNIX)
   add_custom_command(
     TARGET TetraMeshTools
     POST_BUILD
