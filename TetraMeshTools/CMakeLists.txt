@@ -62,6 +62,6 @@ if(LINUX)
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
       -E copy $<TARGET_FILE:TetraMeshTools>
-      ${CMAKE_SOURCE_DIR}/../bin_linux_x64/
+      ${CMAKE_BINARY_DIR}/
   )
 endif()

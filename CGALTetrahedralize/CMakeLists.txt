@@ -23,16 +23,12 @@ target_link_libraries(
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-  file(make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-endif()
-
 if(LINUX)
   add_custom_command(
     TARGET CGALTetrahedralize
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
       -E copy $<TARGET_FILE:CGALTetrahedralize>
-      ${CMAKE_SOURCE_DIR}/../bin_linux_x64/
+      ${CMAKE_BINARY_DIR}/
   )
 endif()
