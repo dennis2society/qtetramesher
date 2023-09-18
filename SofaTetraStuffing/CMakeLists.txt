@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 3.16)
 project(TetraMeshTools VERSION 1.0)
 
-# This can/should be done by providing the CMAKE_PREFIX_PATH="my_sofa_path"
-list(APPEND CMAKE_PREFIX_PATH "/opt/sofa_git/build/lib/cmake")
-list(APPEND CMAKE_PREFIX_PATH "/opt/sofa_git/build/install/lib/cmake")
+# Set this to where you have installed your Sofa build:
+set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install/")
 
-find_package(Sofa REQUIRED)
+# This can/should be done by providing the CMAKE_PREFIX_PATH="my_sofa_path"
+list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
+
+
+find_package(Sofa.Config REQUIRED)
+
 find_library(SofaCore
              NAMES Sofa.Core
-             HINTS ${SOFA_ROOT}/lib
+             HINTS ${SOFA_INSTALL_DIR}/lib
 )
 
 if(NOT SofaCore)
@@ -22,16 +26,16 @@ include_directories(
   ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
-  ${SOFA_ROOT}/include/Sofa.Config
-  ${SOFA_ROOT}/include/Sofa.Helper
-  ${SOFA_ROOT}/include/Sofa.Type
-  ${SOFA_ROOT}/include/Sofa.Core
-  ${SOFA_ROOT}/include/Sofa.Topology
-  ${SOFA_ROOT}/include/Sofa.Geometry
-  ${SOFA_ROOT}/include/Sofa.DefaultType
-  ${SOFA_ROOT}/include/Sofa.LinearAlgebra
-  ${SOFA_ROOT}/include/Sofa.Component.Compat
-  ${SOFA_ROOT}/include/Sofa.Component.Engine.Generate
+  ${SOFA_INSTALL_DIR}/include/Sofa.Config
+  ${SOFA_INSTALL_DIR}/include/Sofa.Helper
+  ${SOFA_INSTALL_DIR}/include/Sofa.Type
+  ${SOFA_INSTALL_DIR}/include/Sofa.Core
+  ${SOFA_INSTALL_DIR}/include/Sofa.Topology
+  ${SOFA_INSTALL_DIR}/include/Sofa.Geometry
+  ${SOFA_INSTALL_DIR}/include/Sofa.DefaultType
+  ${SOFA_INSTALL_DIR}/include/Sofa.LinearAlgebra
+  ${SOFA_INSTALL_DIR}/include/Sofa.Component.Compat
+  ${SOFA_INSTALL_DIR}/include/Sofa.Component.Engine.Generate
 )
 
 add_library(
@@ -41,7 +45,7 @@ add_library(
 )
 
 link_directories(
-  ${SOFA_ROOT}/lib
+  ${SOFA_INSTALL_DIR}/lib
 )
 
 target_link_libraries(
@@ -50,10 +54,6 @@ target_link_libraries(
 )
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
-
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-  file(make_directory ${CMAKE_SOURCE_DIR}/../bin_linux_x64)
-endif()
 
 if(LINUX)
   add_custom_command(
