@@ -8,7 +8,7 @@
 #include "tetrastuffingdialog.h"
 #include "ui_tetrastuffingdialog.h"
 #include "SofaTetraStuffing.h"
-#include <QTime>
+#include <QElapsedTimer>
 #include <sstream>
 
 TetraStuffingDialog::TetraStuffingDialog(QWidget *parent) :
@@ -31,7 +31,7 @@ void TetraStuffingDialog::setTetraSize(const float tetraSize_)
 
 void TetraStuffingDialog::generateTetras()
 {
-    QTime t;
+    QElapsedTimer t;
     t.start();
     QGLTetraMesh* tMesh_ = _viewer->tMesh;
     if (tMesh_ == NULL)

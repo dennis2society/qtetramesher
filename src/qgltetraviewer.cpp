@@ -16,13 +16,8 @@
 #include <QDateTime>
 
 // Constructor must call the base class constructor.
-#if QT_VERSION < 0x040000
-QGLTetraViewer::QGLTetraViewer(QWidget *parent, const char *name)
-  : QGLViewer(parent, name)
-#else
 QGLTetraViewer::QGLTetraViewer(QWidget *parent)
     : QGLViewer(parent)
-#endif
 {
 	//restoreStateFromFile();
 	tMesh = new QGLTetraMesh();
@@ -104,7 +99,7 @@ void QGLTetraViewer::draw()
 
 QString QGLTetraViewer::helpString() const
 {
-    const QString version(APP_VERSION);
+    const QString version("0.8.3");
     int year = QDate::currentDate().year();
     QString text("<h2>QTetraMesher</h2>");
     text += "Version: ";

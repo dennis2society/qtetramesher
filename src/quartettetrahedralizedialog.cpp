@@ -7,7 +7,7 @@
 
 #include "quartetterahedralizedialog.h"
 #include "ui_quartettetrastuffingdialog.h"
-#include <QTime>
+#include <QElapsedTimer>
 #include <sstream>
 #include "QuartetTetraStuffing.h"
 #include <QMessageBox>
@@ -35,7 +35,7 @@ void QuartetTetraStuffingDialog::setParams(const float tetraSize_, const float f
 void QuartetTetraStuffingDialog::generateTetras()
 {
 
-    QTime t;
+    QElapsedTimer t;
     t.start();
     QGLTetraMesh* tMesh_ = _viewer->tMesh;
     if (tMesh_ == NULL)
@@ -104,34 +104,4 @@ void QuartetTetraStuffingDialog::generateTetras()
     std::string stdMSG = ss.str();
     emit notifyDone(QString::fromStdString(stdMSG), 10000);
 
-/*
-    CGALTetrahedralize* cth = new CGALTetrahedralize();
-    try
-    {
-
-        cth->GenerateFromSurface(tris, verts, m_ui->cellSizeSpinBox->value(), m_ui->facetAngleSpinBox->value(), m_ui->facetSizeSpinBox->value(), m_ui->facetDistanceSpinBox->value(), m_ui->crterSpinBox->value());
-        emit displayMessage(QString("Updating visual mesh..."), 2000);
-        tMesh_->UpdateTetraMesh(cth->GetTetraVertices(), cth->GetTetras());
-        std::stringstream ss;
-        ss<<"Generated tetrahedral mesh in "<<t.elapsed()<<"ms. Tetras: "<<cth->GetTetras().size()<<"; Vertices: "<<cth->GetTetraVertices().size();
-        std::string stdMSG = ss.str();
-        emit notifyDone(QString::fromStdString(stdMSG), 10000);
-        delete cth;
-        cth = NULL;
-    }
-    catch (std::exception e)
-    {
-        std::cerr<<"Caught exception in CGALTetrahedralize..."<<std::endl;
-        if (cth != NULL)
-        {
-            delete cth;
-        }
-        QMessageBox mb(this);
-        mb.setIcon(QMessageBox::Warning);
-        mb.setText("ERROR while generating CGAL tetra mesh...<br />Probably the surface mesh is violating a CGAL precondition.");
-        mb.setInformativeText(e.what());
-        mb.exec();
-    }
-    //this->hide();
-*/
 }

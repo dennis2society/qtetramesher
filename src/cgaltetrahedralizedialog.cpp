@@ -7,7 +7,7 @@
 
 #include "cgaltetrahedralizedialog.h"
 #include "ui_CGALTetrahedralizeDialog.h"
-#include <QTime>
+#include <QElapsedTimer>
 #include <sstream>
 #include "CGALTetrahedralize.h"
 #include <QMessageBox>
@@ -34,7 +34,7 @@ void CGALTetrahedralizeDialog::setParams(const float tetraSize_, const float fac
 
 void CGALTetrahedralizeDialog::generateTetras()
 {
-    QTime t;
+    QElapsedTimer t;
     t.start();
     QGLTetraMesh* tMesh_ = _viewer->tMesh;
     if (tMesh_ == NULL)
