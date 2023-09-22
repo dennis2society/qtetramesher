@@ -72,10 +72,10 @@ add_executable(
   src/QGLTetraMesh.cpp
   src/quartetterahedralizedialog.h
   src/tetrastuffingdialog.cpp
-  mainwindow.ui
-  tetrastuffingdialog.ui
-  CGALTetrahedralizeDialog.ui
-  quartettetrastuffingdialog.ui
+  src/mainwindow.ui
+  src/tetrastuffingdialog.ui
+  src/CGALTetrahedralizeDialog.ui
+  src/quartettetrastuffingdialog.ui
 )
 
 target_link_libraries(
