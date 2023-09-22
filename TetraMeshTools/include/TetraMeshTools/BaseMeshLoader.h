@@ -11,26 +11,23 @@
 #ifndef BASEMESHLOADER_H_
 #define BASEMESHLOADER_H_
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
 #include "GeometryTypes.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "TetraToolsExports.h"
 
-namespace TetraTools
-{
-	class BaseMeshLoader
-	{
-	protected:
-		std::ifstream& ReadFile(const std::string& fileName_);
+namespace TetraTools {
+class BaseMeshLoader {
+protected:
+  std::ifstream &ReadFile(const std::string &fileName_);
 
-		virtual bool ParseFile(std::ifstream& file_) = 0;
+  virtual bool ParseFile(std::ifstream &file_) = 0;
+};
 
-	};
-
-}	/// end namespace Mesh
+} // namespace TetraTools
 
 #endif /* BASEMESHLOADER_H_ */

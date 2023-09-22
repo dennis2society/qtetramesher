@@ -16,35 +16,26 @@
 #include "TetraMeshTools/TetraToolsExports.h"
 #include <vector>
 
-namespace TetraTools
-{
+namespace TetraTools {
 
-class DLL_EXPORT TriMeshLoader
-{
+class DLL_EXPORT TriMeshLoader {
 public:
-	TriMeshLoader();
+  TriMeshLoader();
 
-	~TriMeshLoader();
+  ~TriMeshLoader();
 
-	const std::vector<Vec3f>& 	GetVertices()
-	{
-		return _vertices;
-	}
+  const std::vector<Vec3f> &GetVertices() { return _vertices; }
 
-	const std::vector<Triangle>	GetTriangles()
-	{
-		return _triangles;
-	}
+  const std::vector<Triangle> GetTriangles() { return _triangles; }
 
-	// loads the file on object construction
-	bool loadFile(const std::string& path_and_filename);
+  // loads the file on object construction
+  bool loadFile(const std::string &path_and_filename);
 
 protected:
-	std::vector<Vec3f>	_vertices;
-	std::vector<Triangle>	_triangles;
-
+  std::vector<Vec3f> _vertices;
+  std::vector<Triangle> _triangles;
 };
 
-}	/// end namespace TetraTools
+} // namespace TetraTools
 
 #endif /* TRIMESHLOADER_H_ */

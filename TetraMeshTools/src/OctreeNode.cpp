@@ -14,19 +14,16 @@ std::vector<Triangle> *OctreeNode::_tris = NULL;
 unsigned int OctreeNode::_maxDepth = 0;
 
 OctreeNode::OctreeNode(const unsigned int maxDepth_,
-                       std::vector<Vec3f> *inPoints_,
-                       const Vec3f &minBC_,
-                       const Vec3f &maxBC_,
-                       std::vector<Triangle> *inTris_)
-{
-    _parent = NULL;
-    _maxDepth = maxDepth_;
-    _points = inPoints_;
-    _minBC = minBC_;
-    _maxBC = maxBC_;
-    _tris = inTris_;
-    _depth = 0;
-    _quadrant = -1;
+                       std::vector<Vec3f> *inPoints_, const Vec3f &minBC_,
+                       const Vec3f &maxBC_, std::vector<Triangle> *inTris_) {
+  _parent = NULL;
+  _maxDepth = maxDepth_;
+  _points = inPoints_;
+  _minBC = minBC_;
+  _maxBC = maxBC_;
+  _tris = inTris_;
+  _depth = 0;
+  _quadrant = -1;
   _nodes.resize(8);
   for (unsigned int i = 0; i < 8; ++i) {
     _nodes[i] = NULL;
@@ -34,13 +31,10 @@ OctreeNode::OctreeNode(const unsigned int maxDepth_,
   buildNode();
 }
 
-OctreeNode::OctreeNode(const OctreeNode *parent_,
-                       const Vec3f &minBC_,
-                       const Vec3f &maxBC_,
-                       const unsigned int depth_,
+OctreeNode::OctreeNode(const OctreeNode *parent_, const Vec3f &minBC_,
+                       const Vec3f &maxBC_, const unsigned int depth_,
                        const int quadrant_)
-    : _parent(parent_)
-{
+    : _parent(parent_) {
   _minBC = minBC_;
   _maxBC = maxBC_;
   _depth = depth_;

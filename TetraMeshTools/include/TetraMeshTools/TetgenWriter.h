@@ -8,27 +8,26 @@
 #ifndef TETGEN_WRITER_H_
 #define TETGEN_WRITER_H_
 
+#include "GeometryTypes.h"
 #include <string>
 #include <vector>
-#include "GeometryTypes.h"
 
 #include "TetraToolsExports.h"
 
-namespace TetraTools
-{
-class DLL_EXPORT TetgenWriter
-{
+namespace TetraTools {
+class DLL_EXPORT TetgenWriter {
 public:
-	TetgenWriter()
-	{}
+  TetgenWriter() {}
 
-	/**
-	 *	As we have to write two separate files with different extension for Tetgen compliance, the 
-	 *	filename argument will have no extension. Required extensions will be added automatically.
-	 */
-	bool SaveToFile(const std::string& fileName_, const std::vector<Vec3f>& verts, const std::vector<Tetrahedron>& tetras);
+  /**
+   *	As we have to write two separate files with different extension for
+   *Tetgen compliance, the filename argument will have no extension. Required
+   *extensions will be added automatically.
+   */
+  bool SaveToFile(const std::string &fileName_, const std::vector<Vec3f> &verts,
+                  const std::vector<Tetrahedron> &tetras);
 };
 
-} /// end namespace TetraTools
+} // namespace TetraTools
 
 #endif // TETGEN_WRITER_H_

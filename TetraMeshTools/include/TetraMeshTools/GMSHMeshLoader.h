@@ -12,38 +12,36 @@
 
 #include "TetraToolsExports.h"
 
-namespace TetraTools
-{
+namespace TetraTools {
 
-	class DLL_EXPORT GMSHMeshLoader : public BaseMeshLoader
-	{
-	protected:
-		std::string _fileName;
-		std::string	_fileContent;
+class DLL_EXPORT GMSHMeshLoader : public BaseMeshLoader {
+protected:
+  std::string _fileName;
+  std::string _fileContent;
 
-		std::vector<Vec3f>			_vertices;
-		std::vector<Tetrahedron>	_tetraIndices;
+  std::vector<Vec3f> _vertices;
+  std::vector<Tetrahedron> _tetraIndices;
 
-		virtual bool ParseFile(std::ifstream& file_);
+  virtual bool ParseFile(std::ifstream &file_);
 
-		void ParseGMSH(std::ifstream &file, const unsigned int gmshFormat_);
+  void ParseGMSH(std::ifstream &file, const unsigned int gmshFormat_);
 
-	public:
-		GMSHMeshLoader();
+public:
+  GMSHMeshLoader();
 
-		GMSHMeshLoader(const std::string& fileName_);
+  GMSHMeshLoader(const std::string &fileName_);
 
-		bool Load(const std::string& fileName_);
+  bool Load(const std::string &fileName_);
 
-		const std::vector<Vec3f>& GetVertices() const;
+  const std::vector<Vec3f> &GetVertices() const;
 
-		const std::vector<Tetrahedron>& GetTetras() const;
+  const std::vector<Tetrahedron> &GetTetras() const;
 
-		bool IsLoaded();
+  bool IsLoaded();
 
-		void Clear();
-	};
+  void Clear();
+};
 
-} /// end namespace Mesh
+} // namespace TetraTools
 
 #endif /* GMSHMESHLOADER_H_ */

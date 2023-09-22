@@ -16,21 +16,20 @@
 #include "TetraMeshTools/TetraToolsExports.h"
 #include <vector>
 
-namespace TetraTools
-{
+namespace TetraTools {
 
-class DLL_EXPORT TriMeshWriter
-{
+class DLL_EXPORT TriMeshWriter {
 public:
-	TriMeshWriter();
+  TriMeshWriter();
 
-	~TriMeshWriter();
+  ~TriMeshWriter();
 
-	// loads the file on object construction
-	bool writeFile(const std::string& path_and_filename, const std::vector<Vec3f>& verts_, const std::vector<Triangle>& triangles_);
-
+  // loads the file on object construction
+  bool writeFile(const std::string &path_and_filename,
+                 const std::vector<Vec3f> &verts_,
+                 const std::vector<Triangle> &triangles_);
 };
 
-}	/// end namespace TetraTools
+} // namespace TetraTools
 
 #endif /* TRIMESHWRITER_H_ */
