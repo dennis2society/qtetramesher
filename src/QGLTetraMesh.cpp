@@ -502,12 +502,12 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
   return success;
 }
 
-bool QGLTetraMesh::SaveSurface(const std::string &fileName_) {
+bool QGLTetraMesh::SaveSurface(const std::string &fileName_, const std::string &extension_) {
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;
   bool success =
-      twriter.writeFile(fileName_, surf->GetVertices(), surf->GetTriangles());
+      twriter.writeFile(fileName_, extension_, surf->GetVertices(), surf->GetTriangles());
   t.stop();
   std::cout << "Finished saving Surface in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;

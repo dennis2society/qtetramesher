@@ -61,12 +61,10 @@ add_executable(
   src/BaseTetraDialog.h
   src/mainwindow.cpp
   src/qgltetraviewer.cpp
-  src/RangeSlider.cpp
   src/Timer.cpp
   src/cgaltetrahedralizedialog.cpp
   src/mainwindow.h
   src/qgltetraviewer.h
-  src/RangeSlider.h
   src/Timer.h
   src/cgaltetrahedralizedialog.h
   src/QGLTetraMesh.cpp

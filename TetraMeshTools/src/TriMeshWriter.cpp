@@ -14,7 +14,9 @@ TetraTools::TriMeshWriter::TriMeshWriter() {}
 TetraTools::TriMeshWriter::~TriMeshWriter() {}
 
 bool TetraTools::TriMeshWriter::writeFile(
-    const std::string &path_and_filename, const std::vector<Vec3f> &verts_,
+    const std::string &path_and_filename,
+    const std::string &extension_,
+    const std::vector<Vec3f> &verts_,
     const std::vector<Triangle> &triangles_) {
   TriMesh *tm = new TriMesh();
   tm->vertices.clear();

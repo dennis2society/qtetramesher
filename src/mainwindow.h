@@ -8,7 +8,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "RangeSlider.h"
 #include "cgaltetrahedralizedialog.h"
 #include "quartetterahedralizedialog.h"
 #include "tetrastuffingdialog.h"
@@ -36,14 +35,12 @@ public slots:
   void notifyDone(QString msg_, unsigned int time_);
   void clearTetraOptions(); // call this when loading a new mesh to reset the
                             // settings
-  void setZRange();
 
 private:
   Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
   QuartetTetraStuffingDialog *cts = NULL;
-  RangeSlider *zRangeSlider;
 
 protected:
   // override main window close event to close all child dialogs

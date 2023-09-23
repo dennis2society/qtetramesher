@@ -361,18 +361,19 @@ void QGLTetraViewer::saveSurface() {
   if (tMesh->GetSurface() != NULL) {
     QFileDialog *qfd =
         new QFileDialog(this, "Select Surface Output File", "",
-                        tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
     QString s =
         qfd->getSaveFileName(this, "Select Surface Output File", "",
-                             tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+                             tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
     if (s.toStdString().empty()) {
       delete qfd;
       return;
     }
     std::cout << "Saving Surface to file: " << s.toStdString() << std::endl;
-    delete qfd;
-    if (!tMesh->SaveSurface(s.toStdString()))
+    std::cout << "Selected Type Filter: " << qfd->selectedNameFilter().toStdString() << std::endl;
+    if (!tMesh->SaveSurface(s.toStdString(), qfd->selectedNameFilter().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
+    delete qfd;
   } else {
     ShowStatusMessage("Saving Surface failed! No surface mesh present...",
                       10000);

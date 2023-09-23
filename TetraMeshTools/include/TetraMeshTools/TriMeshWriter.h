@@ -26,6 +26,7 @@ public:
 
   // loads the file on object construction
   bool writeFile(const std::string &path_and_filename,
+                 const std::string &extension_,
                  const std::vector<Vec3f> &verts_,
                  const std::vector<Triangle> &triangles_);
 };

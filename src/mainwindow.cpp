@@ -141,8 +141,3 @@ void MainWindow::dropEvent(QDropEvent *event_) {
   }
 }
 
-void MainWindow::setZRange() {
-  std::cout << "RangeSLider moved..." << std::endl;
-  ui->viewer->SetZRange(zRangeSlider->GetLowerValue(),
-                        zRangeSlider->GetUpperValue());
-}
