@@ -31,24 +31,20 @@ TetraTools::TriangleTopology::~TriangleTopology() { Clear(); }
 
 void TetraTools::TriangleTopology::GenerateNormals() {
   _normals.clear();
-  if (_vertexTrianglesLookup.size() != _vertices.size()) {
-    GenerateTriangleMap();
-  }
-  std::cout << "Generating Surface Normals..." << std::endl;
-  float dist = 0;
-  for (unsigned int i = 0; i < _vertices.size(); ++i) {
-    Vec3f normal;
-    PrimitivesPerVertex ppv = _vertexTrianglesLookup[i];
-    for (unsigned int j = ppv.offset; j < ppv.length + ppv.offset; ++j) {
-      TriangleVertex tv = _triangleVertices[j];
-      Triangle t = _triangles[tv.triangleIndex];
-      normal += t.GetNormal(_vertices[t.index[0]], _vertices[t.index[1]],
-                            _vertices[t.index[2]]);
-    }
+  _normals.resize(_vertices.size());
+  for (auto tri = _triangles.begin(); tri != _triangles.end(); ++tri) {
+    Vec3f e1 = _vertices[tri->index[1]] - _vertices[tri->index[0]];
+    Vec3f e2 = _vertices[tri->index[2]] - _vertices[tri->index[0]];
+    Vec3f normal = e1.cross(e2);
     normal.normalize();
-    _normals.push_back(normal);
+
+    _normals[tri->index[0]] += normal;
+    _normals[tri->index[1]] += normal;
+    _normals[tri->index[2]] += normal;
   }
-  radius = dist;
+  for (auto n = _normals.begin(); n != _normals.end(); ++n) {
+    n->normalize();
+  }
 }
 
 void TetraTools::TriangleTopology::GenerateEdges() {
@@ -141,8 +137,6 @@ void TetraTools::TriangleTopology::GenerateEdgeMap() {
   unsigned int numVerts = _vertices.size();
   unsigned int numEdges = _edges.size();
   unsigned int offset = 0;
-  // unsigned int maxEdges = 0;
-  // unsigned int edgeMax = 0;
   for (unsigned int i = 0; i < numVerts; ++i) {
     PrimitivesPerVertex veMap;
     unsigned int counter = 0;
@@ -169,10 +163,6 @@ void TetraTools::TriangleTopology::GenerateEdgeMap() {
     }
     veMap.length = counter;
     _vertexEdgesLookup.push_back(veMap);
-    // if (counter >= maxEdges) {
-    //	maxEdges = counter;
-    //	edgeMax = i;
-    // }
   }
 }
 
@@ -232,7 +222,6 @@ void TetraTools::TriangleTopology::GenerateBoundingBox() {
 
 void TetraTools::TriangleTopology::GenerateBoundingBox(
     const std::vector<Vec3f> &vertices_) {
-  std::vector<Vec3f>::const_iterator it;
   /// generate Bounding Box
   std::cout << "Generating BoundingBox ..." << std::endl;
   BoundingBox b;
@@ -245,7 +234,7 @@ void TetraTools::TriangleTopology::GenerateBoundingBox(
                 -std::numeric_limits<float>::max(),
                 -std::numeric_limits<float>::max());
   float dist = 0;
-  for (it = vertices_.begin(); it != vertices_.end(); ++it) {
+  for (auto it = vertices_.begin(); it != vertices_.end(); ++it) {
     Vec3f v = *it;
     float pd = v.squaredLength();
     if (pd > dist) {
@@ -281,20 +270,12 @@ void TetraTools::TriangleTopology::Init(const std::vector<Vec3f> &vertices_,
                                         const bool fullUpdate_) {
   Clear();
   // GenerateBoundingBox(vertices_);
-  for (unsigned int i = 0; i < vertices_.size(); ++i) {
+  for (auto i = 0; i < vertices_.size(); ++i) {
     _vertices.push_back(vertices_[i]);
   }
   GenerateBoundingBox();
-  std::vector<Triangle>::const_iterator tit;
-  for (tit = triangles_.begin(); tit != triangles_.end(); ++tit) {
+  for (auto tit = triangles_.begin(); tit != triangles_.end(); ++tit) {
     _triangles.push_back(*tit);
-  }
-  if (fullUpdate_) {
-    // GenerateEdges();
-    // GenerateTriangleEdges();
-    // GenerateEdgeMap();
-    // GenerateTriangleMap();
-    GenerateNormals();
   }
 }
 
@@ -311,7 +292,7 @@ void TetraTools::TriangleTopology::Clear() {
 
 void TetraTools::TriangleTopology::SetEdges(const std::vector<Edge> &edges_) {
   _edges.clear();
-  for (unsigned int i = 0; i < edges_.size(); ++i) {
+  for (auto i = 0; i < edges_.size(); ++i) {
     _edges.push_back(edges_[i]);
   }
   _edgeVertices.clear();
@@ -327,7 +308,7 @@ TetraTools::TriangleTopology::FindEdgeByIndex(const unsigned int i0,
     if (_edges.size() == 0)
       return -1;
   }
-  for (unsigned int i = 0; i < _edges.size(); ++i) {
+  for (auto i = 0; i < _edges.size(); ++i) {
     const Edge e = _edges[i];
     if (((e.index[0] == i0) && (e.index[1] == i1)) ||
         ((e.index[0] == i1) && (e.index[1] == i0))) {
