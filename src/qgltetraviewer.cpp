@@ -72,11 +72,11 @@ void QGLTetraViewer::draw()
           drawText(10, 75, msg);
       }
   } else {
-      //// Draws a spiral
-      const float nbSteps = 200.0;
-      const uint nb = (uint) nbSteps;
-      glBegin(GL_QUAD_STRIP);
-      for (auto i = 0; i < nb; ++i) {
+    //// Draws a spiral
+    const float nbSteps = 200.0;
+    const uint nb = static_cast<uint>(nbSteps);
+    glBegin(GL_QUAD_STRIP);
+    for (auto i = 0; i < nb; ++i) {
       float ratio = i / nbSteps;
       float angle = 21.0 * ratio;
       float c = cos(angle);
