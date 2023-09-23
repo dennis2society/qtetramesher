@@ -815,8 +815,8 @@
      <string>Mesh</string>
     </property>
     <addaction name="actionMeshTetraStuffing"/>
-    <addaction name="actionQuartetTetraStuffing"/>
     <addaction name="actionCGAL_Tetrahedralize"/>
+    <addaction name="actionQuartetTetraStuffing"/>
     <addaction name="actionGenerate_Octree"/>
     <addaction name="actionTetGen"/>
     <addaction name="actionScale_x10"/>
@@ -938,7 +938,7 @@
   </action>
   <action name="actionMeshTetraStuffing">
    <property name="text">
-    <string>SOFATetraStuffing</string>
+    <string>Sofa TetraStuffing</string>
    </property>
   </action>
   <action name="actionTetGen">
@@ -973,7 +973,7 @@
   </action>
   <action name="actionQuartetTetraStuffing">
    <property name="text">
-    <string>Quartet TetraStuffing</string>
+    <string>Quartet TetraStuffing (Unstable...)</string>
    </property>
   </action>
   <action name="actionUpdate_Z_Slider">

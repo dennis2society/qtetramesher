@@ -135,7 +135,8 @@ void MainWindow::dropEvent(QDropEvent *event_) {
       fileName.endsWith("stl", Qt::CaseInsensitive) ||
       fileName.endsWith("3ds", Qt::CaseInsensitive) ||
       fileName.endsWith("dae", Qt::CaseInsensitive) ||
-      fileName.endsWith("off", Qt::CaseInsensitive)) {
+      fileName.endsWith("ac3", Qt::CaseInsensitive) ||
+      fileName.endsWith("ply", Qt::CaseInsensitive)) {
     std::cout << "Dropped surface file " << fileName.toStdString()
               << " on mainwindow..." << std::endl;
     ui->viewer->loadSurface(fileName);
