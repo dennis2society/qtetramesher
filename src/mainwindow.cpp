@@ -133,7 +133,8 @@ void MainWindow::dropEvent(QDropEvent *event_) {
   }
   if (fileName.endsWith("obj", Qt::CaseInsensitive) ||
       fileName.endsWith("stl", Qt::CaseInsensitive) ||
-      fileName.endsWith("ply", Qt::CaseInsensitive) ||
+      fileName.endsWith("3ds", Qt::CaseInsensitive) ||
+      fileName.endsWith("dae", Qt::CaseInsensitive) ||
       fileName.endsWith("off", Qt::CaseInsensitive)) {
     std::cout << "Dropped surface file " << fileName.toStdString()
               << " on mainwindow..." << std::endl;

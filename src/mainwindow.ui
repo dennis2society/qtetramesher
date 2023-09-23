@@ -787,12 +787,10 @@
     </property>
     <addaction name="actionLoad_Surface_OBJ_OFF_3DS_PLY"/>
     <addaction name="actionLoad_GMSH"/>
-    <addaction name="actionLoad_NXU2"/>
     <addaction name="actionLoad_Tetgen"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Surface"/>
     <addaction name="actionExport_GMSH_2"/>
-    <addaction name="actionExport_Tetgen_2"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -866,7 +864,7 @@
   </action>
   <action name="actionExport_Surface">
    <property name="text">
-    <string>Export Surface (.obj/.ply/.off/.stl)</string>
+    <string>Export Surface  (.obj/.ply/.stl/.dae/.3ds)</string>
    </property>
   </action>
   <action name="actionExport_GMSH_2">
@@ -955,7 +953,7 @@
   </action>
   <action name="actionLoad_Surface_OBJ_OFF_3DS_PLY">
    <property name="text">
-    <string>Load Surface  (.obj/.ply/.off/.stl)</string>
+    <string>Load Surface  (.obj/.ply/.stl/.dae/.3ds)</string>
    </property>
   </action>
   <action name="actionScale_x10">
