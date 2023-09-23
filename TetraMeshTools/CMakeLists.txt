@@ -42,28 +42,6 @@ add_library(
   src/TriangleTopology.cpp
   src/TriMeshLoader.cpp
   src/TriMeshWriter.cpp
-  trimesh2/src/conn_comps.cc
-  trimesh2/src/filter.cc
-  trimesh2/src/overlap.cc
-  trimesh2/src/subdiv.cc
-  trimesh2/src/TriMesh_grid.cc
-  trimesh2/src/TriMesh_stats.cc
-  trimesh2/src/diffuse.cc
-  trimesh2/src/ICP.cc
-  trimesh2/src/remove.cc
-  trimesh2/src/TriMesh_bounding.cc
-  trimesh2/src/TriMesh_io.cc
-  trimesh2/src/TriMesh_tstrips.cc
-  trimesh2/src/edgeflip.cc
-  trimesh2/src/KDtree.cc
-  trimesh2/src/reorder_verts.cc
-  trimesh2/src/TriMesh_connectivity.cc
-  trimesh2/src/TriMesh_normals.cc
-  trimesh2/src/faceflip.cc
-  trimesh2/src/lmsmooth.cc
-  trimesh2/src/shared.cc
-  trimesh2/src/TriMesh_curvature.cc
-  trimesh2/src/TriMesh_pointareas.cc
 )
 
 target_link_libraries(

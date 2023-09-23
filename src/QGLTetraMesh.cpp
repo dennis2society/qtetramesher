@@ -502,7 +502,7 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
   return success;
 }
 
-bool QGLTetraMesh::SaveSurface(const std::string &fileName_, const std::string &extension_) {
+bool QGLTetraMesh::SaveSurface(const std::string &fileName_, const std::string extension_) {
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;

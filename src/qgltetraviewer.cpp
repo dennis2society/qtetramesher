@@ -361,23 +361,23 @@ void QGLTetraViewer::saveSurface() {
     return;
   }
   if (tMesh->GetSurface() != NULL) {
+    QString selfilter = tr("OBJ (*.obj);; STL (*.stl);; Collada(*.dae);; "
+                           "3DS (*.3ds);; PLY (*.ply)");
     QFileDialog *qfd =
-        new QFileDialog(this, "Select Surface Output File", "",
-                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
-                           "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
-    QString s = qfd->getSaveFileName(
-        this, "Select Surface Output File", "",
-        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; "
-           "PLY (*.ply);; AC3D (*.ac)"));
+        new QFileDialog(this, "Select Surface Output File", "", selfilter);
+    qfd->setDefaultSuffix("obj");
+
+    QString s =
+        qfd->getSaveFileName(this, "Select Surface Output File", "", selfilter);
     if (s.toStdString().empty()) {
       delete qfd;
       return;
     }
     std::cout << "Saving Surface to file: " << s.toStdString() << std::endl;
-    std::cout << "Selected Type Filter: "
-              << qfd->selectedNameFilter().toStdString() << std::endl;
+    std::cout << "Selected Type Filter: " << QFileInfo(s).suffix().toStdString()
+              << std::endl;
     if (!tMesh->SaveSurface(s.toStdString(),
-                            qfd->selectedNameFilter().toStdString()))
+                            QFileInfo(s).suffix().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
     delete qfd;
   } else {
