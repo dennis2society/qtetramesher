@@ -12,6 +12,8 @@ include_directories(
 add_library(
   QuartetTetraStuffing
   SHARED
+  include/QuartetTetraStuffing.h
+  src/QuartetTetraStuffing.cpp
   src/feature.cpp
   src/make_signed_distance.cpp
   src/match_features.cpp
@@ -21,7 +23,6 @@ add_library(
   src/geometry_queries.cpp
   src/make_tet_mesh.cpp
   src/optimize_tet_mesh.cpp
-  src/QuartetTetraStuffing.cpp
   src/tet_mesh.cpp
   src/trimesh.cpp
 )

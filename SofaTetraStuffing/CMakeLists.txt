@@ -46,6 +46,7 @@ include_directories(
 add_library(
   SofaTetraStuffing
   SHARED
+  include/SofaTetraStuffing.h
   src/SofaTetraStuffing.cpp
 )
 

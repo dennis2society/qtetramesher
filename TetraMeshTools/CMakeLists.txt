@@ -14,6 +14,23 @@ include_directories(
 add_library(
   TetraMeshTools
   SHARED
+  include/TetraMeshTools/BaseMeshLoader.h
+  include/TetraMeshTools/GMSHMeshWriter.h
+  include/TetraMeshTools/SATriangleBoxIntersection.h
+  include/TetraMeshTools/TetrahedronTopology.h
+  include/TetraMeshTools/TriMeshLoader.h
+  include/TetraMeshTools/Vec3f.h
+  include/TetraMeshTools/GeometryTypes.h
+  include/TetraMeshTools/Octree.h
+  include/TetraMeshTools/TetgenLoader.h
+  include/TetraMeshTools/TetraToolsExports.h
+  include/TetraMeshTools/TriMeshWriter.h
+  include/TetraMeshTools/Vec4f.h
+  include/TetraMeshTools/GMSHMeshLoader.h
+  include/TetraMeshTools/OctreeNode.h
+  include/TetraMeshTools/TetgenWriter.h
+  include/TetraMeshTools/TriangleTopology.h
+  include/TetraMeshTools/Vec2f.h
   src/BaseMeshLoader.cpp
   src/GMSHMeshLoader.cpp
   src/GMSHMeshWriter.cpp

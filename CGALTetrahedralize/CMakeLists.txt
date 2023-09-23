@@ -13,6 +13,7 @@ include_directories(
 add_library(
   CGALTetrahedralize
   SHARED
+  include/CGALTetrahedralize.h
   src/CGALTetrahedralize.cpp
 )
 
