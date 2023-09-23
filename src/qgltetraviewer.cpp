@@ -23,54 +23,53 @@ QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QGLViewer(parent) {
 
 float QGLTetraViewer::getMaxBBox() const { return _maxBBox; }
 
-void QGLTetraViewer::draw()
-{
+void QGLTetraViewer::draw() {
   if (tMesh->IsReady()) {
-      BoundingBox bb = tMesh->GetBoundingBox();
-      tMesh->Draw();
-      std::stringstream ss;
-      std::string stdMSG;
-      QString msg;
-      if (tMesh->GetSurface() != NULL) {
-          ss << "Surface Mesh: "
-             << "Vertices: " << tMesh->GetSurface()->GetVertices().size()
-             << "; Triangles: " << tMesh->GetSurface()->GetTriangles().size();
-          stdMSG = ss.str();
-          msg = QString::fromStdString(stdMSG);
-          glColor3f(0.1f, 0.8f, 0.1f);
-          drawText(10, 30, msg);
-          ss.str("");
-          _maxBBox = bb.max.x - bb.min.x;
-          if (_maxBBox < (bb.max.y - bb.min.y))
-              _maxBBox = bb.max.y - bb.min.y;
-          if (_maxBBox < (bb.max.z - bb.min.z))
-              _maxBBox = bb.max.z - bb.min.z;
-          ss << "BBox Min:" << bb.min.x << "/" << bb.min.y << "/" << bb.min.z
-             << "; BBox Max: " << bb.max.x << "/" << bb.max.y << "/" << bb.max.z
-             << "; Max Value: " << _maxBBox;
-          stdMSG = ss.str();
-          msg = QString::fromStdString(stdMSG);
-          glColor3f(0.1f, 0.8f, 0.1f);
-          drawText(10, 45, msg);
-          ss.str("");
-      }
-      if (tMesh->GetTetraMesh() != NULL) {
-          ss << "Tetra Mesh: "
-             << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
-             << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
-          stdMSG = ss.str();
-          msg = QString::fromStdString(stdMSG);
-          glColor3f(0.8f, 0.8f, 0.1f);
-          drawText(10, 60, msg);
-          ss.str("");
-          ss << "Tetra Mesh: "
-             << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
-             << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
-          stdMSG = ss.str();
-          msg = QString::fromStdString(stdMSG);
-          glColor3f(0.8f, 0.8f, 0.1f);
-          drawText(10, 75, msg);
-      }
+    BoundingBox bb = tMesh->GetBoundingBox();
+    tMesh->Draw();
+    std::stringstream ss;
+    std::string stdMSG;
+    QString msg;
+    if (tMesh->GetSurface() != NULL) {
+      ss << "Surface Mesh: "
+         << "Vertices: " << tMesh->GetSurface()->GetVertices().size()
+         << "; Triangles: " << tMesh->GetSurface()->GetTriangles().size();
+      stdMSG = ss.str();
+      msg = QString::fromStdString(stdMSG);
+      glColor3f(0.1f, 0.8f, 0.1f);
+      drawText(10, 30, msg);
+      ss.str("");
+      _maxBBox = bb.max.x - bb.min.x;
+      if (_maxBBox < (bb.max.y - bb.min.y))
+        _maxBBox = bb.max.y - bb.min.y;
+      if (_maxBBox < (bb.max.z - bb.min.z))
+        _maxBBox = bb.max.z - bb.min.z;
+      ss << "BBox Min:" << bb.min.x << "/" << bb.min.y << "/" << bb.min.z
+         << "; BBox Max: " << bb.max.x << "/" << bb.max.y << "/" << bb.max.z
+         << "; Max Value: " << _maxBBox;
+      stdMSG = ss.str();
+      msg = QString::fromStdString(stdMSG);
+      glColor3f(0.1f, 0.8f, 0.1f);
+      drawText(10, 45, msg);
+      ss.str("");
+    }
+    if (tMesh->GetTetraMesh() != NULL) {
+      ss << "Tetra Mesh: "
+         << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
+         << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
+      stdMSG = ss.str();
+      msg = QString::fromStdString(stdMSG);
+      glColor3f(0.8f, 0.8f, 0.1f);
+      drawText(10, 60, msg);
+      ss.str("");
+      ss << "Tetra Mesh: "
+         << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
+         << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
+      stdMSG = ss.str();
+      msg = QString::fromStdString(stdMSG);
+      glColor3f(0.8f, 0.8f, 0.1f);
+      drawText(10, 75, msg);
+    }
   } else {
     //// Draws a spiral
     const float nbSteps = 200.0;
@@ -242,9 +241,12 @@ void QGLTetraViewer::loadSurface(const QString &fileName_) {
   } else {
     QFileDialog *qfd =
         new QFileDialog(this, "Select mesh File", "",
-                        tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
-    s = qfd->getOpenFileName(this, "Select mesh File", "",
-                             tr("Surface Meshes (*.obj *.off *.ply *.stl)"));
+                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
+                           "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
+    s = qfd->getOpenFileName(
+        this, "Select mesh File", "",
+        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; "
+           "PLY (*.ply);; AC3D (*.ac)"));
     delete qfd;
   }
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
@@ -361,17 +363,21 @@ void QGLTetraViewer::saveSurface() {
   if (tMesh->GetSurface() != NULL) {
     QFileDialog *qfd =
         new QFileDialog(this, "Select Surface Output File", "",
-                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
-    QString s =
-        qfd->getSaveFileName(this, "Select Surface Output File", "",
-                             tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
+                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
+                           "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
+    QString s = qfd->getSaveFileName(
+        this, "Select Surface Output File", "",
+        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; "
+           "PLY (*.ply);; AC3D (*.ac)"));
     if (s.toStdString().empty()) {
       delete qfd;
       return;
     }
     std::cout << "Saving Surface to file: " << s.toStdString() << std::endl;
-    std::cout << "Selected Type Filter: " << qfd->selectedNameFilter().toStdString() << std::endl;
-    if (!tMesh->SaveSurface(s.toStdString(), qfd->selectedNameFilter().toStdString()))
+    std::cout << "Selected Type Filter: "
+              << qfd->selectedNameFilter().toStdString() << std::endl;
+    if (!tMesh->SaveSurface(s.toStdString(),
+                            qfd->selectedNameFilter().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
     delete qfd;
   } else {
