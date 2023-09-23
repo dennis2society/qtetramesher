@@ -6,7 +6,6 @@
  */
 
 #include "TetraMeshTools/TriMeshWriter.h"
-#include "TriMesh.h"
 #include <assimp/Exporter.hpp>
 #include <assimp/cexport.h>
 #include <assimp/postprocess.h> // Post processing flags
