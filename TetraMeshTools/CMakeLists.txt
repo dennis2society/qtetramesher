@@ -8,7 +8,6 @@ include_directories(
   PRIVATE
   include
   include/TetraMeshTools
-  trimesh2/include
 )
 
 add_library(
@@ -51,12 +50,10 @@ target_link_libraries(
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
-if(LINUX OR UNIX)
-  add_custom_command(
-    TARGET TetraMeshTools
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "$<TARGET_FILE:TetraMeshTools>"
-      "${CMAKE_BINARY_DIR}"
-  )
-endif()
+add_custom_command(
+  TARGET TetraMeshTools
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy
+    "$<TARGET_FILE:TetraMeshTools>"
+    "${CMAKE_BINARY_DIR}"
+)
