@@ -96,9 +96,9 @@ target_link_libraries(
 )
 
 add_custom_command(
-    TARGET QTetraMesher
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "$<TARGET_FILE:QTetraMesher>"
-      "${CMAKE_BINARY_DIR}"
-  )
+  TARGET QTetraMesher
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy
+    "$<TARGET_FILE:QTetraMesher>"
+    "${CMAKE_BINARY_DIR}"
+)
