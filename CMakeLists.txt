@@ -91,6 +91,7 @@ target_link_libraries(
   Qt5::Xml
   ${GLUT_LIBRARY}
   OpenGL::OpenGL
+  # for Ubuntu this line must be changed to QGLViewer-qt5
   QGLViewer
 )
 
