@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.3)
 
 # Set this to where you have installed your Sofa build:
-set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install/" CACHE PATH "")
+set(SOFA_INSTALL_DIR "f:/dev/sofa_git/build/install" CACHE PATH "")
+set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${QT5_INSTALL_DIR})
 
 
 find_package(Sofa.Config REQUIRED)
@@ -49,6 +51,7 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
   ${Qt5Xml_INCLUDE_DIRS}
   ${Qt5OpenGL_INCLUDE_DIRS}
+  ${SOFA_INSTALL_DIR}/../../Sofa/GUI/Qt/libQGLViewer
 )
 
 add_executable(
@@ -90,10 +93,12 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Xml
   ${GLUT_LIBRARY}
-  OpenGL::OpenGL
+  OpenGL32
   # for Ubuntu this line must be changed to QGLViewer-qt5
   QGLViewer
 )
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 add_custom_command(
   TARGET QTetraMesher

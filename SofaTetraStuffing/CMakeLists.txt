@@ -22,6 +22,12 @@ find_library(SofaCore
              HINTS ${SOFA_INSTALL_DIR}/lib
 )
 
+find_library(SofaEngineGenerator
+			 NAMES Sofa.Component.Engine.Generate
+			 HINTS ${SOFA_INSTALL_DIR}/lib
+)
+
+
 if(NOT SofaCore)
   message(FATAL_ERROR "SofaCore library not found")
 endif()
@@ -41,6 +47,7 @@ include_directories(
   ${SOFA_INSTALL_DIR}/include/Sofa.LinearAlgebra
   ${SOFA_INSTALL_DIR}/include/Sofa.Component.Compat
   ${SOFA_INSTALL_DIR}/include/Sofa.Component.Engine.Generate
+  ${Boost_INCLUDE_DIRS}
 )
 
 add_library(
@@ -57,8 +64,10 @@ link_directories(
 target_link_libraries(
   SofaTetraStuffing
   ${SofaCore}
+  ${SofaEngineGenerator}
 )
 
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
 add_custom_command(

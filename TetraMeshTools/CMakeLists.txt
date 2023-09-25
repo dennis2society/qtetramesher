@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(TetraMeshTools VERSION 1.0)
 
-find_package(assimp REQUIRED NO_MODULE)
+find_package(assimp REQUIRED)
 
 include_directories(
   TetraMeshTools
   PRIVATE
   include
   include/TetraMeshTools
+  ${ASSIMP_INCLUDE_DIR}
 )
 
 add_library(
@@ -45,7 +46,7 @@ add_library(
 
 target_link_libraries(
   TetraMeshTools
-  assimp
+  assimp::assimp
 )
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
