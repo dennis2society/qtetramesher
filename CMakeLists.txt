@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.3)
 
 # Set this to where you have installed your Sofa build:
-set(SOFA_INSTALL_DIR "f:/dev/sofa_git/build/install" CACHE PATH "")
+set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
@@ -79,6 +79,20 @@ add_executable(
   src/quartettetrastuffingdialog.ui
 )
 
+# WIN32 and UNIX/LINUX use different names for the OpenGL lib
+if (WIN32)
+  set(OPENGL_LIB OpenGL32)
+else()
+  set(OPENGL_LIB OpenGL)
+endif()
+
+# Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer
+if (UNIX)
+  set(QGLVIEWER_LIB QGLViewer-qt5)
+else()
+  set(QGLVIEWER_LIB QGLViewer)
+endif()
+
 target_link_libraries(
   QTetraMesher
   TetraMeshTools
@@ -93,9 +107,9 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Xml
   ${GLUT_LIBRARY}
-  OpenGL32
+  ${OPENGL_LIB}
   # for Ubuntu this line must be changed to QGLViewer-qt5
-  QGLViewer
+  ${QGLVIEWER_LIB}
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
