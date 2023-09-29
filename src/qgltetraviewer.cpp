@@ -95,7 +95,6 @@ void QGLTetraViewer::draw() {
 }
 
 QString QGLTetraViewer::helpString() const {
-  //const QString version("0.8.3");
   const QString version(PROJECT_VER);
   int year = QDate::currentDate().year();
   QString text("<h2>QTetraMesher</h2>");
