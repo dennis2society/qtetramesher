@@ -14,10 +14,10 @@
 #include <math.h>
 #include <sstream>
 #include <string>
+#include <qtetramesher_version.h>
 
 // Constructor must call the base class constructor.
 QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QGLViewer(parent) {
-  // restoreStateFromFile();
   tMesh = new QGLTetraMesh();
 }
 
@@ -95,7 +95,8 @@ void QGLTetraViewer::draw() {
 }
 
 QString QGLTetraViewer::helpString() const {
-  const QString version("0.8.3");
+  //const QString version("0.8.3");
+  const QString version(PROJECT_VER);
   int year = QDate::currentDate().year();
   QString text("<h2>QTetraMesher</h2>");
   text += "Version: ";
@@ -107,45 +108,48 @@ QString QGLTetraViewer::helpString() const {
   text += "<br>";
   text += "<br>";
   text += "This is a Qt-based program for Windows and Linux to generate "
-          "tetrahedral meshes for<br />"
+          "tetrahedral meshes for "
           "finite element simulation from various surface mesh formats. It "
-          "also offers a fast<br />"
+          "also offers a fast "
           "and easy-to-use mesh viewer based on QGLViewer and allows basic "
-          "mesh manipulations<br />"
-          "(currently only scaling is possible). Two different methods for "
-          "tetrahedralization<br />"
-          "are possible: Delaunay Triangulation and Johnathan Shewchuk's "
-          "Isosurface Stuffing algorithm.<br>";
-  text += "A second implementation of Shewchuk's Isosurface Stuffing (Quartet "
-          "Tetrahedralize) made by "
+          "mesh manipulations "
+          "(currently only scaling is possible).<br /> "
+          "Two different methods for tetrahedralization are possible:<br />"
+          "Delaunay Triangulation (CGAL implementation)<br /> "
+          "<a href=\"https://www.cgal.org\">https://www.cgal.org</a><br />"
+          "and<br />"
+          "Johnathan Shewchuk's Isosurface Stuffing algorithm<br />"
+          "<a href=\"https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf\">"
+          "https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf</a><br>"
+          "(Implementation from Sofa Framework)<br />"
+          "<a href=\"https://github.com/sofa-framework/sofa\">"
+          "https://github.com/sofa-framework/sofa</a><br><br>";
+  text += "A second (unfortunately rather unstable) implementation of Shewchuk's "
+          "Isosurface Stuffing (Quartet Tetrahedralize) made by "
           "Crawford Doran and Robert Bridson is available.<br />"
-          "<a "
-          "href=\"https://github.com/crawforddoran/quartet\">https://"
+          "<a href=\"https://github.com/crawforddoran/quartet\">https://"
           "github.com/crawforddoran/quartet</a><br />";
   text += "<br />";
-  text +=
-      "Usage/build instructions available at <a "
-      "href=\"http://qtm.dennis2society.de\">qtm.dennis2society.de</a>.<br />";
+  text += "Usage/build instructions available at <a "
+          "href=\"http://qtm.dennis2society.de\">qtm.dennis2society.de</a>.<br />";
   text += "<br />";
-  text += "Sourcecode available at <a "
-          "href=\"https://github.com/dennis2society/"
+  text += "Sourcecode available at <a href=\"https://github.com/dennis2society/"
           "qtetramesher\">QTetraMesher at Github</a>.<br />";
   text += "<br />";
-  text +=
-      "<pre>This program is free software: you can redistribute it and/or "
-      "modify it<br />"
-      "under the terms of the GNU General Public License as published by the "
-      "Free<br />"
-      "Software Foundation, either version 3 of the License, or (at your "
-      "option) any<br />"
-      "later version.<br />"
-      "This program is distributed in the hope that it will be useful,<br />"
-      "but WITHOUT ANY WARRANTY; without even the implied warranty of<br />"
-      "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br />"
-      "GNU General Public License for more details.<br />"
-      "You should have received a copy of the GNU General Public License<br />"
-      "along with this program.  If not, see here: <a "
-      "href=\"http://www.gnu.org/licenses/gpl.html\">GPL License</a>.";
+  text += "<pre>This program is free software: you can redistribute it and/or "
+          "modify it<br />"
+          "under the terms of the GNU General Public License as published by the "
+          "Free<br />"
+          "Software Foundation, either version 3 of the License, or (at your "
+          "option) any<br />"
+          "later version.<br />"
+          "This program is distributed in the hope that it will be useful,<br />"
+          "but WITHOUT ANY WARRANTY; without even the implied warranty of<br />"
+          "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br />"
+          "GNU General Public License for more details.<br />"
+          "You should have received a copy of the GNU General Public License<br />"
+          "along with this program.  If not, see here: <a "
+          "href=\"http://www.gnu.org/licenses/gpl.html\">GPL License</a>.";
   text += "<br>";
   return text;
 }

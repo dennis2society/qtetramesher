@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.3)
 
-# Set this to where you have installed your Sofa build:
+configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
+
+# Set this line to where you have installed your Sofa build:
 set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
-set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
+
+# Windows only: Set your Qt5 install path here:
+if (WIN32)
+  set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
+endif()
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${QT5_INSTALL_DIR})
@@ -108,11 +114,16 @@ target_link_libraries(
   Qt5::Xml
   ${GLUT_LIBRARY}
   ${OPENGL_LIB}
-  # for Ubuntu this line must be changed to QGLViewer-qt5
   ${QGLVIEWER_LIB}
 )
 
+# Sofa namespaces require C++17 features
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+# attempt to hide the console window on Windows
+if (WIN32)
+  set_target_properties(QTetraMesher PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
 
 add_custom_command(
   TARGET QTetraMesher
