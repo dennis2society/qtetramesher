@@ -19,7 +19,7 @@ find_package(Sofa.Config REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-find_package(QGLViewer REQUIRED)
+#find_package(QGLViewer REQUIRED)
 find_package(CGAL REQUIRED)
 
 find_library(SofaCore
@@ -36,6 +36,7 @@ if(NOT SofaCore)
   message(FATAL_ERROR "SofaCore library not found")
 endif()
 
+add_subdirectory(libQGLViewer)
 add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
@@ -53,11 +54,12 @@ include_directories(
   SofaTetraStuffing/include
   CGALTetrahedralize/include
   quartet_tetrastuffing/include
+  libQGLViewer
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Widgets_INCLUDE_DIRS}
   ${Qt5Xml_INCLUDE_DIRS}
   ${Qt5OpenGL_INCLUDE_DIRS}
-  ${SOFA_INSTALL_DIR}include/extlibs/QGLViewer
+  #${SOFA_INSTALL_DIR}include/extlibs/QGLViewer
 )
 
 add_executable(
@@ -94,7 +96,7 @@ endif()
 
 # Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer
 if (UNIX)
-  set(QGLVIEWER_LIB QGLViewer-qt5)
+  set(QGLVIEWER_LIB QGLViewer)
 else()
   set(QGLVIEWER_LIB QGLViewer)
 endif()

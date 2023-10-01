@@ -142,7 +142,6 @@ void QGLTetraMesh::Draw() {
             glEnd();
           }
         }
-        glEnd();
       }
       break;
     default:
