@@ -42,8 +42,9 @@ QGLTetraMesh::~QGLTetraMesh() {
 }
 
 void QGLTetraMesh::Draw() {
-  glEnable(GL_LIGHTING);
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_LIGHTING);
+  //glEnable(GL_DEPTH_TEST);
+  glEnable(GL_COLOR_MATERIAL);
   static const float zero[4] = {0.0f, 0.0f, 0.0f};
   static const float diff[4] = {0.8f, 0.8f, 0.85f};
   static const float spec[4] = {0.6f, 0.6f, 0.6f};
@@ -52,7 +53,7 @@ void QGLTetraMesh::Draw() {
   glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
   glMaterialfv(GL_FRONT, GL_EMISSION, zero);
   glMaterialf(GL_FRONT, GL_SHININESS, 50.0f);
-  glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
   if (isReady) {
     /// draw tetra mesh
@@ -61,10 +62,9 @@ void QGLTetraMesh::Draw() {
       break;
     case 1: // wireframe
       if (top != NULL) {
+        glDisable(GL_LIGHTING);
         glColor3f(tetraColorWireframe.x, tetraColorWireframe.y,
                   tetraColorWireframe.z); /// yellow wireframe
-        glDisable(GL_LIGHTING);
-        glDisable(GL_CULL_FACE);
         glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(top->GetVertices()[0]));
         // draw triangles
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -75,8 +75,8 @@ void QGLTetraMesh::Draw() {
       break;
     case 0: // solid tetras with cut plane
       if (top != NULL) {
-        glEnable(GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         const std::vector<Tetrahedron> &tetras = top->GetTetrahedra();
         const std::vector<Vec3f> &vertices = top->GetVertices();
@@ -156,7 +156,6 @@ void QGLTetraMesh::Draw() {
         glColor3f(surfaceColorWireframe.x, surfaceColorWireframe.y,
                   surfaceColorWireframe.z); /// yellow wireframe
         glDisable(GL_LIGHTING);
-        glDisable(GL_CULL_FACE);
         glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(surf->GetVertices()[0]));
         // draw triangles
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -167,8 +166,8 @@ void QGLTetraMesh::Draw() {
       break;
     case 0: // surface with normals
       if (surf != NULL) {
-        glEnable(GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glColor3f(surfaceColorSolid.x, surfaceColorSolid.y,
                   surfaceColorSolid.z); /// grey
@@ -231,14 +230,11 @@ void QGLTetraMesh::Draw() {
       break;
     }
   }
-  glDisable(GL_LIGHTING);
-  glDisable(GL_CULL_FACE);
 }
 
 void QGLTetraMesh::DrawBoundingVolume(const BoundingBox &bb, Vec3f color_) {
   glColor3f(color_.x, color_.y, color_.z); /// green bbox
   glDisable(GL_LIGHTING);
-  glDisable(GL_CULL_FACE);
   glBegin(GL_LINES);
   glVertex3f(bb.min.x, bb.min.y, bb.min.z);
   glVertex3f(bb.max.x, bb.min.y, bb.min.z);
@@ -265,7 +261,6 @@ void QGLTetraMesh::DrawBoundingVolume(const BoundingBox &bb, Vec3f color_) {
   glVertex3f(bb.min.x, bb.min.y, bb.max.z);
   glVertex3f(bb.min.x, bb.max.y, bb.max.z);
   glEnd();
-  glEnable(GL_CULL_FACE);
 }
 
 void QGLTetraMesh::DrawTetraTriangle(const unsigned int triangleIndex,

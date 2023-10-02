@@ -26,7 +26,13 @@ float QGLTetraViewer::getMaxBBox() const { return _maxBBox; }
 void QGLTetraViewer::draw() {
   if (tMesh->IsReady()) {
     BoundingBox bb = tMesh->GetBoundingBox();
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     tMesh->Draw();
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
     std::stringstream ss;
     std::string stdMSG;
     QString msg;
@@ -69,9 +75,14 @@ void QGLTetraViewer::draw() {
       msg = QString::fromStdString(stdMSG);
       glColor3f(0.8f, 0.8f, 0.1f);
       drawText(10, 75, msg);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_DEPTH_TEST);
+      glEnable(GL_CULL_FACE);
     }
   } else {
     //// Draws a spiral
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
     const float nbSteps = 200.0;
     const uint nb = static_cast<uint>(nbSteps);
     glBegin(GL_QUAD_STRIP);

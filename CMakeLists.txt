@@ -59,7 +59,7 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
   ${Qt5Xml_INCLUDE_DIRS}
   ${Qt5OpenGL_INCLUDE_DIRS}
-  #${SOFA_INSTALL_DIR}include/extlibs/QGLViewer
+  #${SOFA_INSTALL_DIR}/include/extlibs/QGLViewer
 )
 
 add_executable(
@@ -116,7 +116,8 @@ target_link_libraries(
   Qt5::Xml
   ${GLUT_LIBRARY}
   ${OPENGL_LIB}
-  ${QGLVIEWER_LIB}
+  #${QGLVIEWER_LIB}
+  QGLViewer
 )
 
 # Sofa namespaces require C++17 features

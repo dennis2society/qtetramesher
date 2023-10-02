@@ -1,7 +1,6 @@
-
 %define version_major 2
-%define version_minor 6
-%define version_revision 3
+%define version_minor 9
+%define version_revision 1
 
 Name:		libQGLViewer
 Version:	%{version_major}.%{version_minor}.%{version_revision}
@@ -155,7 +154,28 @@ rm -rf $RPM_BUILD_ROOT
 %{docDir}/examples/*/*
 
 %changelog
-* Tue Jun 23 2015 Gilles Debunne <contact@libQGLViewer.com> 2.6.3
+* Sat Dec 31 2022 Gilles Debunne <contact@libQGLViewer.com> 2.9.1
+- Qt5 compilation error fix.
+
+* Sat Dec 31 2022 Gilles Debunne <contact@libQGLViewer.com> 2.9.0
+- CMake compilation, Qt6 fixes, high dpi fixes.
+
+* Sun Mar 13 2022 Gilles Debunne <contact@libQGLViewer.com> 2.8.0
+- Updates for Qt6 compatibility.
+
+* Fri Nov 17 2019 Gilles Debunne <contact@libQGLViewer.com> 2.7.2
+- Update include.
+
+* Fri Nov 17 2017 Gilles Debunne <contact@libQGLViewer.com> 2.7.1
+- Fix deprecated message in constructor.
+
+* Wed Jun 14 2017 Gilles Debunne <contact@libQGLViewer.com> 2.7.0
+- QGLViewer extends QOpenGLWidget instead of the deprecated QGLWidget.
+
+* Tue Sep 27 2016 Gilles Debunne <contact@libQGLViewer.com> 2.6.4
+- Fix ARM build, remove contribs examples' compilation.
+
+* Thu Jul 16 2015 Gilles Debunne <contact@libQGLViewer.com> 2.6.3
 - Build library in QGLViewer directory. Simplified examples.pri.
 
 * Fri Jan 23 2015 Gilles Debunne <contact@libQGLViewer.com> 2.6.2
