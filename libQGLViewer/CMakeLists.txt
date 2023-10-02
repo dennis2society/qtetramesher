@@ -49,7 +49,14 @@ add_library(QGLViewer SHARED ${QGLViewer_SRC})
 target_include_directories(QGLViewer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(QGLViewer PRIVATE ${QtLibs} OpenGL::GL OpenGL::GLU)
 
-add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+if(WIN32)
+  add_compile_definitions(NOMINMAX)
+  target_compile_options(${PROJECT_NAME} PRIVATE "-DCREATE_QGLVIEWER_DLL")
+  # remove warnings about deprecation (CRT,etc)
+  target_compile_options(${PROJECT_NAME} PRIVATE "/wd4996")
+endif()
+
+#add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
 add_custom_command(
   TARGET QGLViewer
