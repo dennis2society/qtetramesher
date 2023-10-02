@@ -1,8 +1,9 @@
 /*
  * TriMeshWriter.cpp
  *
- *  Created on: Feb 09, 2013
- *      Author: Dennis Luebke
+ * Created on: Feb 09, 2013
+ * Updated on 09.2023
+ * Author: Dennis Luebke
  */
 
 #include "TetraMeshTools/TriMeshWriter.h"
