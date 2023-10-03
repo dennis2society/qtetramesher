@@ -60,6 +60,8 @@ void QGLTetraViewer::draw() {
       ss.str("");
     }
     if (tMesh->GetTetraMesh() != NULL) {
+      glDisable(GL_LIGHTING);
+      glDisable(GL_DEPTH_TEST);
       ss << "Tetra Mesh: "
          << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
          << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
@@ -75,9 +77,6 @@ void QGLTetraViewer::draw() {
       msg = QString::fromStdString(stdMSG);
       glColor3f(0.8f, 0.8f, 0.1f);
       drawText(10, 75, msg);
-      glEnable(GL_LIGHTING);
-      glEnable(GL_DEPTH_TEST);
-      glEnable(GL_CULL_FACE);
     }
   } else {
     //// Draws a spiral
@@ -103,6 +102,9 @@ void QGLTetraViewer::draw() {
     }
     glEnd();
   }
+  glEnable(GL_LIGHTING);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
 }
 
 QString QGLTetraViewer::helpString() const {
