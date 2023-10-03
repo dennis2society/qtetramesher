@@ -4,7 +4,7 @@ project(QTetraMesher VERSION 0.8.3)
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 # Set this line to where you have installed your Sofa build:
-set(SOFA_INSTALL_DIR "f:/dev/sofa_git/build/install" CACHE PATH "")
+set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 
 # Windows only: Set your Qt5 install path here:
 if (WIN32)
@@ -19,7 +19,6 @@ find_package(Sofa.Config REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-#find_package(QGLViewer REQUIRED)
 find_package(CGAL REQUIRED)
 
 find_library(SofaCore
@@ -87,13 +86,6 @@ add_executable(
   src/quartettetrastuffingdialog.ui
 )
 
-# WIN32 and UNIX/LINUX use different names for the OpenGL lib
-if (WIN32)
-  set(OPENGL_LIB OpenGL32)
-else()
-  set(OPENGL_LIB OpenGL)
-endif()
-
 # Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer
 if (UNIX)
   set(QGLVIEWER_LIB QGLViewer)
@@ -115,8 +107,7 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Xml
   ${GLUT_LIBRARY}
-  ${OPENGL_LIB}
-  #${QGLVIEWER_LIB}
+  OpenGL::GL
   QGLViewer
 )
 
