@@ -76,6 +76,18 @@ void MainWindow::showCGALDialog() {
   ctd->show();
 }
 
+void MainWindow::showTetgenDialog() {
+  if (tts == NULL) {
+    tts = new TetgenDialog();
+    tts->setViewer(ui->viewer);
+    connect(tts, SIGNAL(displayMessage(QString,uint)), this,
+            SLOT(displayMessage(QString,uint)));
+    connect(tts, SIGNAL(notifyDone(QString,uint)), this,
+            SLOT(notifyDone(QString,uint)));
+  }
+  tts->show();
+}
+
 void MainWindow::generateOctree() {
   ui->viewer->generateOctree(ui->octreeDepthSpinbox->value());
   // ui->viewer->updateGL();

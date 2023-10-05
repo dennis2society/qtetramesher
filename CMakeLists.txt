@@ -84,6 +84,9 @@ add_executable(
   src/tetrastuffingdialog.ui
   src/CGALTetrahedralizeDialog.ui
   src/quartettetrastuffingdialog.ui
+  src/tetgendialog.ui
+  src/tetgendialog.h
+  src/tetgendialog.cpp
 )
 
 # Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer

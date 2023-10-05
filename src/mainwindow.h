@@ -11,6 +11,7 @@
 #include "cgaltetrahedralizedialog.h"
 #include "quartetterahedralizedialog.h"
 #include "tetrastuffingdialog.h"
+#include "tetgendialog.h"
 #include <QCloseEvent>
 #include <QMainWindow>
 
@@ -30,6 +31,7 @@ public slots:
   void showTetraStuffingDialog();
   void showQuartetTetraDialog();
   void showCGALDialog();
+  void showTetgenDialog();
   void generateOctree();
   void displayMessage(QString msg_, unsigned int time_);
   void notifyDone(QString msg_, unsigned int time_);
@@ -41,6 +43,7 @@ private:
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
   QuartetTetraStuffingDialog *cts = NULL;
+  TetgenDialog *tts = NULL;
 
 protected:
   // override main window close event to close all child dialogs
