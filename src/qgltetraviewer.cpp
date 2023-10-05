@@ -260,8 +260,8 @@ void QGLTetraViewer::loadSurface(const QString &fileName_) {
                            "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
     s = qfd->getOpenFileName(
         this, "Select mesh File", "",
-        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; 3DS (*.3ds);; "
-           "PLY (*.ply);; AC3D (*.ac)"));
+        tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
+           "*.3ds *.ply *.ac)"));
     delete qfd;
   }
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
