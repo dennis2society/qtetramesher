@@ -93,13 +93,6 @@ add_executable(
   ${UI_FILES}
 )
 
-# Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer
-if (UNIX)
-  set(QGLVIEWER_LIB QGLViewer)
-else()
-  set(QGLVIEWER_LIB QGLViewer)
-endif()
-
 target_link_libraries(
   QTetraMesher
   TetraMeshTools
