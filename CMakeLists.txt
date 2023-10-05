@@ -61,6 +61,14 @@ include_directories(
   #${SOFA_INSTALL_DIR}/include/extlibs/QGLViewer
 )
 
+set(UI_FILES
+  src/mainwindow.ui
+  src/tetrastuffingdialog.ui
+  src/CGALTetrahedralizeDialog.ui
+  src/quartettetrastuffingdialog.ui
+  src/tetgendialog.ui
+)
+
 add_executable(
   QTetraMesher
   src/BaseTetraDialog.cpp
@@ -80,13 +88,9 @@ add_executable(
   src/QGLTetraMesh.cpp
   src/quartetterahedralizedialog.h
   src/tetrastuffingdialog.cpp
-  src/mainwindow.ui
-  src/tetrastuffingdialog.ui
-  src/CGALTetrahedralizeDialog.ui
-  src/quartettetrastuffingdialog.ui
-  src/tetgendialog.ui
   src/tetgendialog.h
   src/tetgendialog.cpp
+  ${UI_FILES}
 )
 
 # Manjaro (LINUX) and Ubuntu (UNIX) use different names for libQGLViewer
