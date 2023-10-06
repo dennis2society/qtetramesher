@@ -77,15 +77,15 @@ void MainWindow::showCGALDialog() {
 }
 
 void MainWindow::showTetgenDialog() {
-  if (tts == NULL) {
-    tts = new TetgenDialog();
-    tts->setViewer(ui->viewer);
-    connect(tts, SIGNAL(displayMessage(QString,uint)), this,
+  if (ttd == NULL) {
+    ttd = new TetgenDialog();
+    ttd->setViewer(ui->viewer);
+    connect(ttd, SIGNAL(displayMessage(QString,uint)), this,
             SLOT(displayMessage(QString,uint)));
-    connect(tts, SIGNAL(notifyDone(QString,uint)), this,
+    connect(ttd, SIGNAL(notifyDone(QString,uint)), this,
             SLOT(notifyDone(QString,uint)));
   }
-  tts->show();
+  ttd->show();
 }
 
 void MainWindow::generateOctree() {

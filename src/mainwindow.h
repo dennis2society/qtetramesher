@@ -43,7 +43,7 @@ private:
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
   QuartetTetraStuffingDialog *cts = NULL;
-  TetgenDialog *tts = NULL;
+  TetgenDialog *ttd = NULL;
 
 protected:
   // override main window close event to close all child dialogs
