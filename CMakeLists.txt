@@ -39,6 +39,7 @@ add_subdirectory(libQGLViewer)
 add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
+add_subdirectory(TetgenWrapper)
 add_subdirectory(quartet_tetrastuffing)
 
 set(CMAKE_INCLUDE_CURRENT_DIR "YES")
@@ -53,6 +54,7 @@ include_directories(
   SofaTetraStuffing/include
   CGALTetrahedralize/include
   quartet_tetrastuffing/include
+  TetgenWrapper/include
   libQGLViewer
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Widgets_INCLUDE_DIRS}
@@ -98,6 +100,7 @@ target_link_libraries(
   SofaTetraStuffing
   CGALTetrahedralize
   QuartetTetraStuffing
+  TetgenWrapper
   CGAL
   ${SofaCore}
   ${SofaComponentEngineGenerator}

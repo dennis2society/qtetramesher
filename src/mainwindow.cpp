@@ -118,6 +118,11 @@ void MainWindow::clearTetraOptions() {
     delete cts;
     cts = NULL;
   }
+  if (ttd != NULL) {
+    ttd->hide();
+    delete ttd;
+    ttd = NULL;
+  }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) { clearTetraOptions(); }

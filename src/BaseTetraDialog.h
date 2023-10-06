@@ -14,6 +14,7 @@
 
 #include "qgltetraviewer.h"
 #include <QDialog>
+#include <QObject>
 
 namespace Ui {
 class BaseTetraDialog;
