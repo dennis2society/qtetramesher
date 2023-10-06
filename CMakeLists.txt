@@ -49,7 +49,6 @@ set(CMAKE_AUTOMOC "YES")
 set(CMAKE_AUTOUIC "YES")
 
 include_directories(
-  include
   src
   TetraMeshTools/include
   TetraMeshTools/include/TetraMeshTools
