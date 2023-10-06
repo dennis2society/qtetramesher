@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.3)
 
+# This line is required to use the PROJECT_VERSION set above
+# in the code.
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 # Set this line to where you have installed your Sofa build:
