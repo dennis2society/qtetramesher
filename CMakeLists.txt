@@ -58,7 +58,6 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
   ${Qt5Xml_INCLUDE_DIRS}
   ${Qt5OpenGL_INCLUDE_DIRS}
-  #${SOFA_INSTALL_DIR}/include/extlibs/QGLViewer
 )
 
 set(UI_FILES
