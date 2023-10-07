@@ -50,9 +50,4 @@ public:
 private:
   std::vector<Vec3f> tetraPoints;
   std::vector<Tetrahedron> tetraIndices;
-
-  const std::vector<double>
-  convertVertsToTetgenPoints(const std::vector<Vec3f> &verts_);
-  const std::vector<int>
-  convertTrisToTetgenFaces(const std::vector<Triangle> &tris_);
 };

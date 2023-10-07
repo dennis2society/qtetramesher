@@ -49,19 +49,21 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   output.firstnumber = 0;
 
   input.firstnumber = 0;
-  std::vector<double> points = convertVertsToTetgenPoints(verts);
   input.numberofpoints = verts.size();
   input.numberofpointattributes = 0;
   input.pointlist = new double[verts.size() * 3];
-  for (auto i = 0; i < input.numberofpoints * 3; ++i) {
-    input.pointlist[i] = points.at(i);
+  for (auto i = 0; i < input.numberofpoints; ++i) {
+    input.pointlist[i * 3] = verts.at(i).x;
+    input.pointlist[i * 3 + 1] = verts.at(i).y;
+    input.pointlist[i * 3 + 2] = verts.at(i).z;
   }
   input.pointattributelist = NULL;
-  std::vector<int> faces = convertTrisToTetgenFaces(tris);
   input.numberoftrifaces = tris.size();
   input.trifacelist = new int[tris.size() * 3];
-  for (auto i = 0; i < input.numberoftrifaces * 3; ++i) {
-    input.trifacelist[i] = faces.at(i);
+  for (auto i = 0; i < input.numberoftrifaces; ++i) {
+    input.trifacelist[i * 3] = tris.at(i).index[0];
+    input.trifacelist[i * 3 + 1] = tris.at(i).index[1];
+    input.trifacelist[i * 3 + 2] = tris.at(i).index[2];
   }
   input.trifacemarkerlist = NULL;
   generateFacets(tris, verts, input);
@@ -97,27 +99,6 @@ TetgenWrapper::~TetgenWrapper() {
 std::vector<Vec3f> &TetgenWrapper::GetTetraVertices() { return tetraPoints; }
 
 std::vector<Tetrahedron> &TetgenWrapper::GetTetras() { return tetraIndices; }
-
-const std::vector<double>
-TetgenWrapper::convertVertsToTetgenPoints(const std::vector<Vec3f> &verts_) {
-  std::vector<double> points;
-  for (auto &v : verts_) {
-    for (auto i = 0; i < 3; ++i) {
-      points.push_back(v[i]);
-    }
-  }
-  return points;
-}
-
-const std::vector<int>
-TetgenWrapper::convertTrisToTetgenFaces(const std::vector<Triangle> &tris_) {
-  std::vector<int> faces;
-  for (auto &t : tris_) {
-    for (auto i = 0; i < 3; ++i)
-      faces.push_back(t.index[i]);
-  }
-  return faces;
-}
 
 bool TetgenWrapper::saveAsTetgen(const std::string path,
                                  const std::string baseName,
