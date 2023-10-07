@@ -466,6 +466,7 @@ public:
 
     if (pointlist != (REAL *) NULL) {
       delete [] pointlist;
+      pointlist = NULL;
     }
     if (pointattributelist != (REAL *) NULL) {
       delete [] pointattributelist;
@@ -2487,6 +2488,37 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
 inline void terminatetetgen(tetgenmesh *m, int x)
 {
 #ifdef TETLIBRARY
+  switch (x) {
+  case 1: // Out of memory.
+    printf("Error:  Out of memory.\n");
+    break;
+  case 2: // Encounter an internal error.
+    printf("Please report this bug to Hang.Si@wias-berlin.de. Include\n");
+    printf("  the message above, your input data set, and the exact\n");
+    printf("  command line you used to run this program, thank you.\n");
+    break;
+  case 3:
+    printf("The input surface mesh contain self-intersections. Program stopped.\n");
+    //printf("Hint: use -d option to detect all self-intersections.\n");
+    break;
+  case 4:
+    printf("A very small input feature size was detected. Program stopped.\n");
+    if (m) {
+      printf("Hint: use -T option to set a smaller tolerance. Current is %g\n",
+             m->b->epsilon);
+    }
+    break;
+  case 5:
+    printf("Two very close input facets were detected. Program stopped.\n");
+    printf("Hint: use -Y option to avoid adding Steiner points in boundary.\n");
+    break;
+  case 10:
+    printf("An input error was detected. Program stopped.\n");
+    break;
+  case 200:
+    printf("Boundary contains Steiner points (-YY option). Program stopped.\n");
+    break;
+  }
   throw x;
 #else
   switch (x) {
