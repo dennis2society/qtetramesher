@@ -9,12 +9,12 @@ configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 
 # Windows only: Set your Qt5 install path here:
-if (WIN32)
-  set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
-endif()
+#if (WIN32)
+#  set(QT5_INSTALL_DIR "C:/Qt/5.15.2/msvc2019_64" CACHE_PATH "")
+#endif()
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
-list(APPEND CMAKE_PREFIX_PATH ${QT5_INSTALL_DIR})
+#list(APPEND CMAKE_PREFIX_PATH ${QT5_INSTALL_DIR})
 
 
 find_package(Sofa.Config REQUIRED)

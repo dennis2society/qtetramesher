@@ -17,7 +17,7 @@
 
 class DLL_EXPORT TetgenWrapper {
 public:
-  TetgenWrapper() {}
+  TetgenWrapper();
 
   ~TetgenWrapper();
 

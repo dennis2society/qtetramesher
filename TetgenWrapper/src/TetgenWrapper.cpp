@@ -38,6 +38,9 @@ void generateFacets(const std::vector<Triangle> &tris,
   }
 }
 
+TetgenWrapper::TetgenWrapper() : m_noSubDivide(false), m_usePLC(true), m_qualityBound(1.5f), m_volumeConstraint(0.3f)
+{}
+
 void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
                                         const std::vector<Vec3f> &verts,
                                         float qualityBounds,
@@ -66,7 +69,7 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   }
   input.pointattributelist = NULL;
   input.numberoftrifaces = tris.size();
-  input.trifacelist = new int[tris.size() * 3];
+  input.trifacelist = new int[tris.size() * sizeof(Triangle)];
   for (auto i = 0; i < input.numberoftrifaces; ++i) {
     input.trifacelist[i * 3] = tris.at(i).index[0];
     input.trifacelist[i * 3 + 1] = tris.at(i).index[1];
@@ -76,8 +79,8 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   generateFacets(tris, verts, input);
 
   /// invoke Tegen tetrahedralize
-  //tetrahedralize("pq1.414a0.01", &input, &output);
-  tetrahedralize(generateTetgenParamString().data(), &input, &output);
+  char* params = strdup(generateTetgenParamString().c_str());
+  tetrahedralize(params, &input, &output);
   std::cout << "Num. Tetgen Tetra Points: " << output.numberofpoints
             << std::endl;
   std::cout << "Num. Tetgen Tetras: " << output.numberoftetrahedra << std::endl;
@@ -97,6 +100,7 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     t.index[3] = output.tetrahedronlist[i * 4 + 3];
     tetraIndices.push_back(t);
   }
+  delete[] params;
 }
 
 TetgenWrapper::~TetgenWrapper() {
