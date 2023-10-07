@@ -6,12 +6,12 @@
  */
 
 // #include "QuartetTetraStuffing.h"
-#include <tetgendialog.h>
-#include <TetgenWrapper.h>
-#include <ui_tetgendialog.h>
 #include <QElapsedTimer>
 #include <QMessageBox>
+#include <TetgenWrapper.h>
 #include <sstream>
+#include <tetgendialog.h>
+#include <ui_tetgendialog.h>
 
 TetgenDialog::TetgenDialog(QWidget *parent)
     : BaseTetraDialog(parent), m_ui(new Ui::TetgenDialog) {
@@ -48,13 +48,9 @@ void TetgenDialog::generateTetras() {
   TetgenWrapper *ttw = new TetgenWrapper;
   try {
     emit displayMessage(QString("Generating tetra mesh..."), 1000);
-    //      cth->GenerateFromSurface(
-    //          tris, verts, m_ui->cellSizeSpinBox->value(),
-    //          m_ui->facetAngleSpinBox->value(),
-    //          m_ui->facetSizeSpinBox->value(),
-    //          m_ui->facetDistanceSpinBox->value(),
-    //          m_ui->crterSpinBox->value());
-    ttw->GenerateFromSurface(tris, verts, 1.41f, 0.3f, true);
+    ttw->GenerateFromSurface(tris, verts, m_ui->qualityBoundSpinBox->value(),
+                             m_ui->volumeConstraintSpinBox->value(),
+                             m_ui->usePlcCheckbox->isChecked());
     emit displayMessage(QString("Updating visual mesh..."), 2000);
     tMesh_->UpdateTetraMesh(ttw->GetTetraVertices(), ttw->GetTetras());
     std::stringstream ss;

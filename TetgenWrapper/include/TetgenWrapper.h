@@ -50,4 +50,11 @@ public:
 private:
   std::vector<Vec3f> tetraPoints;
   std::vector<Tetrahedron> tetraIndices;
+
+  bool m_usePLC;
+  float m_qualityBound;
+  float m_volumeConstraint;
+  bool m_noSubDivide;
+
+  std::string generateTetgenParamString();
 };

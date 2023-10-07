@@ -7,6 +7,7 @@
 
 #include <TetgenWrapper.h>
 #include <iostream>
+#include <sstream>
 #include <tetgen.h>
 
 #ifdef _WIN32
@@ -40,9 +41,15 @@ void generateFacets(const std::vector<Triangle> &tris,
 void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
                                         const std::vector<Vec3f> &verts,
                                         float qualityBounds,
-                                        float volumeConstraint, bool usePLC) {
+                                        float volumeConstraint,
+                                        bool usePLC)
+{
   tetraIndices.clear();
   tetraPoints.clear();
+
+  m_usePLC = usePLC;
+  m_qualityBound = qualityBounds;
+  m_volumeConstraint = volumeConstraint;
 
   tetgenio input;
   tetgenio output;
@@ -69,7 +76,8 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   generateFacets(tris, verts, input);
 
   /// invoke Tegen tetrahedralize
-  tetrahedralize("pq1.414a0.01", &input, &output);
+  //tetrahedralize("pq1.414a0.01", &input, &output);
+  tetrahedralize(generateTetgenParamString().data(), &input, &output);
   std::cout << "Num. Tetgen Tetra Points: " << output.numberofpoints
             << std::endl;
   std::cout << "Num. Tetgen Tetras: " << output.numberoftetrahedra << std::endl;
@@ -105,4 +113,16 @@ bool TetgenWrapper::saveAsTetgen(const std::string path,
                                  const std::vector<Tetrahedron> &tetras,
                                  const std::vector<Vec3f> &verts) {
   return false;
+}
+
+std::string TetgenWrapper::generateTetgenParamString()
+{
+  std::stringstream ss;
+  if (m_usePLC)
+    ss << "p";
+  ss << "q" << m_qualityBound;
+  ss << "a" << m_volumeConstraint;
+  std::cout << "ParamString: " << ss.str() << std::endl;
+  return ss.str();
+
 }
