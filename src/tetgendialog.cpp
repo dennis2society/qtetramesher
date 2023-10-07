@@ -44,7 +44,6 @@ void TetgenDialog::generateTetras() {
     emit displayMessage(QString("ERROR! No surface mesh loaded..."), 5000);
     return;
   }
-  // CGALTetrahedralize *cth = new CGALTetrahedralize();
   TetgenWrapper *ttw = new TetgenWrapper;
   try {
     emit displayMessage(QString("Generating tetra mesh..."), 1000);
