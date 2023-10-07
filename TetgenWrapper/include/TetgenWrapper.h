@@ -17,9 +17,9 @@
 
 class DLL_EXPORT TetgenWrapper {
 public:
-    TetgenWrapper() {}
+  TetgenWrapper() {}
 
-    ~TetgenWrapper();
+  ~TetgenWrapper();
 
   /**
    *  Main function: Generate a tetrahedral mesh from a triangle surface
@@ -28,10 +28,8 @@ public:
    *  Also the output data containers will be filled here after processing.
    */
   void GenerateFromSurface(const std::vector<Triangle> &tris,
-                           const std::vector<Vec3f> &verts,
-                           float qualityBounds,
-                           float volumeConstraint,
-                           bool usePLC);
+                           const std::vector<Vec3f> &verts, float qualityBounds,
+                           float volumeConstraint, bool usePLC);
 
   /**
    * Returns the generated tetrahedra vertices
@@ -43,14 +41,18 @@ public:
    */
   std::vector<Tetrahedron> &GetTetras();
 
-  /// This function will save a Tetgen mesh (consisting of a .node and a .ele file)
+  /// This function will save a Tetgen mesh (consisting of a .node and a .ele
+  /// file)
   bool saveAsTetgen(const std::string path, const std::string baseName,
-                    const std::vector<Tetrahedron> &tetras, const std::vector<Vec3f> &verts);
+                    const std::vector<Tetrahedron> &tetras,
+                    const std::vector<Vec3f> &verts);
 
-  private:
+private:
   std::vector<Vec3f> tetraPoints;
   std::vector<Tetrahedron> tetraIndices;
 
-  const std::vector<double> convertVertsToTetgenPoints(const std::vector<Vec3f> &verts_);
-  const std::vector<int> convertTrisToTetgenFaces(const std::vector<Triangle> &tris_);
+  const std::vector<double>
+  convertVertsToTetgenPoints(const std::vector<Vec3f> &verts_);
+  const std::vector<int>
+  convertTrisToTetgenFaces(const std::vector<Triangle> &tris_);
 };
