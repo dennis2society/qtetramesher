@@ -100,7 +100,7 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     t.index[3] = output.tetrahedronlist[i * 4 + 3];
     tetraIndices.push_back(t);
   }
-  delete[] params;
+  free(params);
 }
 
 TetgenWrapper::~TetgenWrapper() {
