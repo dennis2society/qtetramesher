@@ -358,6 +358,10 @@ void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
     delete top;
     top = NULL;
   }
+  if (verts_.size() == 0 || tetras_.size() == 0) {
+    isReady = false;
+    return;
+  }
   top = new TetraTools::TetrahedronTopology();
   top->Init(verts_, tetras_, false);
   isReady = true;
