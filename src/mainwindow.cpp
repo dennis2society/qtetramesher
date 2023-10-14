@@ -10,6 +10,7 @@
 #include "ui_mainwindow.h"
 #include <QGLViewer/manipulatedFrame.h>
 #include <QUrl>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -76,16 +77,21 @@ void MainWindow::showCGALDialog() {
   ctd->show();
 }
 
-void MainWindow::showTetgenDialog() {
-  if (ttd == NULL) {
-    ttd = new TetgenDialog();
-    ttd->setViewer(ui->viewer);
-    connect(ttd, SIGNAL(displayMessage(QString,uint)), this,
-            SLOT(displayMessage(QString,uint)));
-    connect(ttd, SIGNAL(notifyDone(QString,uint)), this,
-            SLOT(notifyDone(QString,uint)));
-  }
-  ttd->show();
+void MainWindow::showTetgenDialog()
+{
+  //  if (ttd == NULL) {
+  //    ttd = new TetgenDialog();
+  //    ttd->setViewer(ui->viewer);
+  //    connect(ttd, SIGNAL(displayMessage(QString,uint)), this,
+  //            SLOT(displayMessage(QString,uint)));
+  //    connect(ttd, SIGNAL(notifyDone(QString,uint)), this,
+  //            SLOT(notifyDone(QString,uint)));
+  //  }
+  //  ttd->show();
+  QMessageBox msg;
+  msg.setWindowTitle("Tetgen disabled");
+  msg.setText("Sorry, Tetgen tetrahedralize is disabled for now :(");
+  msg.exec();
 }
 
 void MainWindow::generateOctree() {
