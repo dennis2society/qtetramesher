@@ -67,20 +67,6 @@ Sourcecode available at: https://github.com/dennis2society/qtetramesher
  * Automatic parameter guessing for tetrahedralization.
  * Reversible scale mechanism for CGAL performance optimization.
 
-
-## Dependencies / 3rd Party Libraries
-
-  This program is using the following 3rd-party libraries: (Name, Version, License, URL)
-
- * libQGLViewer (2.7.1), GPL, http://www.libqglviewer.com/
- * SOFA Framework (>=17.12), GPL/LGPL, http://www.sofa-framework.org/
- * CGAL (>=4.x), GPL/LGPL, http://www.cgal.org/
- * Qt (5.9/5.10), LGPL, https://www.qt.io/download
- * trimesh2 (2.11), GPL, http://gfx.cs.princeton.edu/proj/trimesh2/
- * Boost (1.64), Boost Software License, http://www.boost.org/
- * GMP (>=5.1.1), LGPL, http://gmplib.org/
- * MPFR (>=3.1.1), LGPL, http://www.mpfr.org/
-
 ## License
 
 This program is free software: you can redistribute it and/or modify it 
@@ -96,4 +82,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see here: http://www.gnu.org/licenses/gpl.html
 
-Copyright (C) 2013 Dennis Luebke, qtm (at) dennis2society.de
+Copyright (C) 2013-2024 Dennis Luebke, qtm (at) dennis2society.de
