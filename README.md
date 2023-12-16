@@ -20,15 +20,15 @@ Sourcecode available at: https://github.com/dennis2society/qtetramesher
 ## Changelog
 ### 0.8.3 - 2023-12-16
  
- * Updated Windows binary build (Visual Studio 2019 Community, x64)
-   * Download: https://github.com/dennis2society/qtetramesher/releases/tag/0.8.3_win64_VS2019
-   * Qt 5.15.2
-   * CGAL 4.12, https://www.cgal.org/download.html
-   * Boost 1.83.0, https://www.boost.org/users/download/
-   * QGLViewer 2.9.1, https://github.com/GillesDebunne/libQGLViewer
-   * SOFA Framework (git checkout 2023-12-15), https://github.com/sofa-framework/sofa
-   * Assimp - Asset Importer Library (git checkout 2023-10-15), https://github.com/assimp/assimp
-   * I hate how big the zip file is (30 MB, 80 MB extracted...), but at least it comes with a SW OpenGL library added automatically by the Qt deployment script.
+ <b>Updated Windows binary build (Visual Studio 2019 Community, x64)</b>
+ * Download: https://github.com/dennis2society/qtetramesher/releases/tag/0.8.3_win64_VS2019
+ * Qt 5.15.2
+ * CGAL 4.12, https://www.cgal.org/download.html
+ * Boost 1.83.0, https://www.boost.org/users/download/
+ * QGLViewer 2.9.1, https://github.com/GillesDebunne/libQGLViewer
+ * SOFA Framework (git checkout 2023-12-15), https://github.com/sofa-framework/sofa
+ * Assimp - Asset Importer Library (git checkout 2023-10-15), https://github.com/assimp/assimp
+ * I hate how big the zip file is (30 MB, 80 MB extracted...), but at least it comes with a ~30MB SW OpenGL library added automatically by the Qt deployment script.
  
  <b>Functional updates:</b>
  * Full CMake build! All projects can now be built with CMake. (Pretty easy on Linux, but a PITA on Windows...)
