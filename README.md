@@ -36,7 +36,7 @@ Sourcecode available at: https://github.com/dennis2society/qtetramesher
  * Replaced old trimesh2 C library with Assimp library
  * New mesh formats available for import
  * Fixed surface normal generation (damn.. the old one was so slow...)
- * libQGLViewer is now included in the repo and not a required as an external dependency anymore
+ * libQGLViewer is now included in the repo and not required as an external dependency anymore
 
 ### 0.8.2 - 2018-05-27
  * Updated Windows binary build (Visual Studio 2015, x64)
