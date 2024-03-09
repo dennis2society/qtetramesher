@@ -14,7 +14,7 @@ As I am using lots of 3rd-party open-source C/C++ libraries, this work is releas
 as GPL software. This includes all self-written code. 3rd-party code remains under 
 its own license.
 
-Usage and build instructions are available at http://qtm.dennis2society.de.
+Usage and build instructions are available at https://qtm.dennis2society.de.
 Sourcecode available at: https://github.com/dennis2society/qtetramesher
 
 ## Changelog
