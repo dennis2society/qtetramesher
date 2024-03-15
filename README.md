@@ -15,6 +15,7 @@ as GPL software. This includes all self-written code. 3rd-party code remains und
 its own license.
 
 History + usage instructions: https://qtm.dennis2society.de
+
 Build instructions: https://qtm.dennis2society.de/#Build
 
 ## Changelog
