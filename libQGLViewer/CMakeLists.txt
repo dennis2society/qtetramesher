@@ -8,8 +8,13 @@ set(CMAKE_AUTOMOC ON)
 # Instruct CMake to run uic automatically when needed.
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
-set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL)
+if (QT_MAJOR_VERSION EQUAL 6)
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGLWidgets OpenGL)
+  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
+else ()
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL)
+endif ()
 
 find_package(OpenGL REQUIRED)
 
