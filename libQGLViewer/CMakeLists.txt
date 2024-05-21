@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(QGLViewer VERSION 2.6.3)
+project(QGLViewer VERSION 2.9.1)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
