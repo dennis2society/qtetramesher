@@ -249,21 +249,18 @@ void QGLTetraViewer::generateOctree(int d) {
   tMesh->generateOctree((unsigned int)d);
 }
 
-void QGLTetraViewer::loadSurface(const QString &fileName_) {
+void QGLTetraViewer::loadSurface() {
   QString s;
-  if (fileName_.compare("") != 0) {
-    s = fileName_;
-  } else {
-    QFileDialog *qfd =
-        new QFileDialog(this, "Select mesh File", "",
-                        tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
-                           "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
-    s = qfd->getOpenFileName(
-        this, "Select mesh File", "",
-        tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
-           "*.3ds *.ply *.ac)"));
-    delete qfd;
-  }
+  QFileDialog *qfd =
+      new QFileDialog(this, "Select mesh File", "",
+                      tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
+                         "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
+  s = qfd->getOpenFileName(
+      this, "Select mesh File", "",
+      tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
+         "*.3ds *.ply *.ac)"));
+  delete qfd;
+
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   if (s.toStdString().empty())
     return;
@@ -282,16 +279,11 @@ void QGLTetraViewer::loadSurface(const QString &fileName_) {
   emit onLoad();
 }
 
-void QGLTetraViewer::loadGMSH(const QString &fileName_) {
+void QGLTetraViewer::loadGMSH() {
   QString s;
-  if (fileName_.compare("") != 0) {
-    s = fileName_;
-    std::cout << "loading from drag and drop..." << std::endl;
-  } else {
-    QFileDialog *qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
-    s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
-    delete qfd;
-  }
+  QFileDialog *qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
+  s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
+  delete qfd;
   std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
   if (s.toStdString().empty())
     return;

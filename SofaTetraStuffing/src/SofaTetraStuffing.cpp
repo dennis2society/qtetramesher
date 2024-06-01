@@ -26,39 +26,39 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle> &tris,
   MeshTetraStuffing::SeqPoints vertData;
   MeshTetraStuffing::SeqTriangles triData;
   // copy by element for conversion from our data types to SOFA's types
-  sofaStuffer->inputPoints.beginEdit();
+  sofaStuffer->d_inputPoints.beginEdit();
   for (unsigned int i = 0; i < verts.size(); ++i) {
     const Vec3f &vOrg = verts[i];
     sofa::type::Vec<3, double> v(vOrg.x, vOrg.y, vOrg.z);
     vertData.push_back(v);
   }
-  sofaStuffer->inputPoints.setValue(vertData);
-  sofaStuffer->inputPoints.endEdit();
-  sofaStuffer->inputTriangles.beginEdit();
+  sofaStuffer->d_inputPoints.setValue(vertData);
+  sofaStuffer->d_inputPoints.endEdit();
+  sofaStuffer->d_inputTriangles.beginEdit();
   for (unsigned int i = 0; i < tris.size(); ++i) {
     const Triangle &orgTri = tris[i];
     sofa::core::topology::BaseMeshTopology::Triangle t(
         orgTri.index[0], orgTri.index[1], orgTri.index[2]);
     triData.push_back(t);
   }
-  sofaStuffer->inputTriangles.setValue(triData);
-  sofaStuffer->inputTriangles.endEdit();
+  sofaStuffer->d_inputTriangles.setValue(triData);
+  sofaStuffer->d_inputTriangles.endEdit();
   // set parameters
-  sofaStuffer->size.beginEdit();
+  sofaStuffer->d_size.beginEdit();
   MeshTetraStuffing::Real ts = (MeshTetraStuffing::Real)size_;
-  sofaStuffer->size.setValue(ts);
-  sofaStuffer->size.endEdit();
+  sofaStuffer->d_size.setValue(ts);
+  sofaStuffer->d_size.endEdit();
   // as the following section is working fine, we obviously don't need
   // SOFA's begin-/endEdit() calls for setting primitive type values
-  sofaStuffer->alphaLong = al_;
-  sofaStuffer->alphaShort = as_;
-  sofaStuffer->bSplitTetrahedra = splitTetras_;
-  sofaStuffer->bSnapPoints = snapToSurface_;
+  sofaStuffer->d_alphaLong = al_;
+  sofaStuffer->d_alphaShort = as_;
+  sofaStuffer->d_bSplitTetrahedra = splitTetras_;
+  sofaStuffer->d_bSnapPoints = snapToSurface_;
   // tetrahedrize....
   sofaStuffer->init();
   // re-convert SOFA's result data to our own data type
   MeshTetraStuffing::SeqTetrahedra tetras =
-      sofaStuffer->outputTetrahedra.getValue();
+      sofaStuffer->d_outputTetrahedra.getValue();
   tetraIndices.clear();
   for (unsigned int i = 0; i < tetras.size(); ++i) {
     sofa::core::topology::BaseMeshTopology::Tetra tout = tetras.at(i);
@@ -69,7 +69,7 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle> &tris,
     t.index[3] = tout[3];
     tetraIndices.push_back(t);
   }
-  MeshTetraStuffing::SeqPoints outVerts = sofaStuffer->outputPoints.getValue();
+  MeshTetraStuffing::SeqPoints outVerts = sofaStuffer->d_outputPoints.getValue();
   tetraPoints.clear();
   for (unsigned int i = 0; i < outVerts.size(); ++i) {
     sofa::defaulttype::Vec3Types::Coord vout = outVerts.at(i);

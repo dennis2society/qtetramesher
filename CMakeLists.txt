@@ -11,7 +11,15 @@ set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
 find_package(Sofa.Config REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+message(INFO "")
+#find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+if (QT_MAJOR_VERSION EQUAL 6)
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGLWidgets OpenGL)
+  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
+else ()
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL)
+endif ()
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(CGAL REQUIRED)
@@ -98,14 +106,20 @@ target_link_libraries(
   CGAL
   ${SofaCore}
   ${SofaComponentEngineGenerator}
-  Qt5::Core
-  Qt5::Widgets
-  Qt5::OpenGL
-  Qt5::Xml
+  Qt${QT_MAJOR_VERSION}::Core
+  Qt${QT_MAJOR_VERSION}::Widgets
+  Qt${QT_MAJOR_VERSION}::OpenGL
+  Qt${QT_MAJOR_VERSION}::Xml
   ${GLUT_LIBRARY}
   OpenGL::GL
   QGLViewer
 )
+if (${QT_MAJOR_VERSION} EQUAL 6)
+  target_link_libraries(
+    QTetraMesher
+    Qt::OpenGLWidgets
+  )
+endif ()
 
 # Sofa namespaces require C++17 features
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

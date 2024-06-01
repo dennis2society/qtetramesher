@@ -134,35 +134,3 @@ void MainWindow::clearTetraOptions() {
 void MainWindow::closeEvent(QCloseEvent *event) { clearTetraOptions(); }
 
 void MainWindow::on_viewer_onLoad() {}
-
-void MainWindow::dragEnterEvent(QDragEnterEvent *event_) {
-  if (event_->mimeData()->hasFormat("text/uri-list")) {
-    event_->acceptProposedAction();
-  }
-}
-
-void MainWindow::dropEvent(QDropEvent *event_) {
-  QList<QUrl> urls = event_->mimeData()->urls();
-  if (urls.isEmpty())
-    return;
-
-  QString fileName = urls.first().toLocalFile();
-  if (fileName.isEmpty())
-    return;
-  if (fileName.endsWith("msh", Qt::CaseInsensitive)) {
-    std::cout << "Dropped GMSH file " << fileName.toStdString()
-              << " on mainwindow..." << std::endl;
-    ui->viewer->loadGMSH(fileName);
-  }
-  if (fileName.endsWith("obj", Qt::CaseInsensitive) ||
-      fileName.endsWith("stl", Qt::CaseInsensitive) ||
-      fileName.endsWith("3ds", Qt::CaseInsensitive) ||
-      fileName.endsWith("dae", Qt::CaseInsensitive) ||
-      fileName.endsWith("ac3", Qt::CaseInsensitive) ||
-      fileName.endsWith("ply", Qt::CaseInsensitive)) {
-    std::cout << "Dropped surface file " << fileName.toStdString()
-              << " on mainwindow..." << std::endl;
-    ui->viewer->loadSurface(fileName);
-  }
-}
-
