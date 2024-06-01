@@ -57,9 +57,10 @@ Build instructions: https://qtm.dennis2society.de/#Build
  * Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
 
 ## Features
- * Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10/.../15.10 and Arch based Manjaro 2015-12).
+ * As of 2024-06-01 this project can now be built with Qt6 (at least on Linux)
+ * Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10/.../22.04, Arch based Manjaro 2024-05, Fedora 40).
  * Integration of QGLViewer for easy mesh preview.
- * Surface mesh import and export for *.obj, *.ply, *.off, *.stl (using trimesh2).
+ * Surface mesh import and export for *.obj, *.ply, *.off, *.stl (using assimp).
  * Import and export of tetrahedral meshes in (a simplified subset of the) GMSH format *.msh (compatible with the SOFA Framework).
  * Two different methods for tetrahedralization: Delaunay Triangulation (CGAL implementation) and Johnathan Shewchuk's Isosurface Stuffing: Fast Tetrahedral Meshes with Good Dihedral Angles (implementation taken from the SOFA Framework, non-graded variant only).
  * Wireframe and solid/shaded drawing.
