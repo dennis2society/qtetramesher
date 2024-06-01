@@ -48,9 +48,6 @@ private:
 protected:
   // override main window close event to close all child dialogs
   void closeEvent(QCloseEvent *event);
-  // drag and drop of mesh files on the main window
-  void dragEnterEvent(QDragEnterEvent *event_);
-  void dropEvent(QDropEvent *event_);
 
 private slots:
   void on_viewer_onLoad();

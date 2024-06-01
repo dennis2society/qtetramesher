@@ -36,8 +36,8 @@ public :
 	void SetCutPlane(int i);
     void SetZRange(int lower, int upper);
 	void ShowStatusMessage(const QString& msg_, int duration_ = 2000);
-    void loadSurface(const QString& fileName_ = "");
-    void loadGMSH(const QString& fileName_ = "");
+    void loadSurface();
+    void loadGMSH();
     void saveGMSH();
     void saveTetgen();
     void saveSurface();
