@@ -58,10 +58,10 @@ include_directories(
   quartet_tetrastuffing/include
   TetgenWrapper/include
   libQGLViewer
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
-  ${Qt5Xml_INCLUDE_DIRS}
-  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt${QT_MAJOR_VERSION}Core_INCLUDE_DIRS}
+  ${Qt${QT_MAJOR_VERSION}Widgets_INCLUDE_DIRS}
+  ${Qt${QT_MAJOR_VERSION}Xml_INCLUDE_DIRS}
+  ${Qt${QT_MAJOR_VERSION}OpenGL_INCLUDE_DIRS}
 )
 
 set(UI_FILES
