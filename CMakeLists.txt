@@ -74,6 +74,10 @@ set(UI_FILES
 
 add_executable(
   QTetraMesher
+  src/baseOptionsWidget.hpp
+  src/baseOptionsWidget.cpp
+  src/surfaceVisWidget.hpp
+  src/surfaceVisWidget.cpp
   src/BaseTetraDialog.cpp
   src/main.cpp
   src/QGLTetraMesh.h

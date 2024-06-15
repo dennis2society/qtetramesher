@@ -22,6 +22,8 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QLabel>
+#include <surfaceVisWidget.hpp>
 
 // namespace Ui {
 // class MainWindow;
@@ -55,7 +57,7 @@ private:
   QGridLayout centralLayout;
   QHBoxLayout mainLayout;
   QFrame viewerFrame;
-  QFrame optionsFrame;
+  QFrame surfaceOptionsFrame;
   QVBoxLayout viewerLayout;
   QVBoxLayout optionsLayout;
   QMenu fileMenu;
@@ -70,11 +72,21 @@ private:
   QAction actionAbout;
   QAction actionHelp;
   QPushButton huiButton;
+  // Visualization options
+  QLabel labelSurfaceVisOptions;
+  QLabel labelTetraVisOptions;
+  QLabel labelOctree;
+  QLabel labelMeshOps;
+  // task widgets
+  SurfaceVisWidget surfaceVisWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
   QuartetTetraStuffingDialog *cts = NULL;
   TetgenDialog *ttd = NULL;
+
+  void setupUI();
+  void connectSlots();
 
 protected:
   // override main window close event to close all child dialogs

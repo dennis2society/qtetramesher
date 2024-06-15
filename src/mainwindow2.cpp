@@ -14,10 +14,17 @@
 #include <iostream>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
-    : QMainWindow(parent) //, ui(new Ui::MainWindow)
+    : QMainWindow(parent), surfaceVisWidget(this) //, ui(new Ui::MainWindow),
 {
   //setlocale(LC_NUMERIC, "C");
-  this->setSizeIncrement(0, 0);
+  setupUI();
+  connectSlots();
+}
+
+// QTetraMesherMainWindow::~QTetraMesherMainWindow() { delete ui; }
+
+void QTetraMesherMainWindow::setupUI()
+{
   this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   // Menu stuff
   fileMenu.setTitle("File");
@@ -62,20 +69,38 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   viewerLayout.addWidget(&viewerFrame);
-  optionsFrame.setMinimumSize(230, 220);
-  optionsFrame.setMaximumSize(380, 2160);
-  optionsFrame.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
-  optionsFrame.setFrameShape(QFrame::Box);
-  optionsFrame.setFrameShadow(QFrame::Raised);
-  optionsFrame.setContentsMargins(1, 1, 1, 1);
-  huiButton.setParent(&optionsFrame);
-  huiButton.setText("Button");
-  optionsLayout.addWidget(&optionsFrame);
+  surfaceOptionsFrame.setMinimumSize(230, 220);
+  surfaceOptionsFrame.setMaximumSize(380, 260);
+  surfaceOptionsFrame.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+  surfaceOptionsFrame.setFrameShape(QFrame::Box);
+  surfaceOptionsFrame.setFrameShadow(QFrame::Raised);
+  surfaceOptionsFrame.setContentsMargins(1, 1, 1, 1);
+  huiButton.setText("HUIII Button");
+  optionsLayout.addWidget(&huiButton);
+  QFont boldFont;
+  boldFont.setBold(true);
+  labelSurfaceVisOptions.setText("Surface Visualization");
+  labelSurfaceVisOptions.setFont(boldFont);
+  optionsLayout.addWidget(&surfaceVisWidget);
+  surfaceVisWidget.setMinimumSize(230, 160);
+  labelTetraVisOptions.setText("TetraMesh Visualization");
+  labelTetraVisOptions.setFont(boldFont);
+  labelOctree.setText("Octree Visualization");
+  labelOctree.setFont(boldFont);
+  labelMeshOps.setText("Mesh Ops");
+  labelMeshOps.setFont(boldFont);
+  optionsLayout.addWidget(&labelSurfaceVisOptions);
+  optionsLayout.addWidget(&labelTetraVisOptions);
+  optionsLayout.addWidget(&labelOctree);
+  optionsLayout.addWidget(&labelMeshOps);
+  optionsLayout.addWidget(&surfaceOptionsFrame);
   centralWidget.setLayout(&mainLayout);
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
   centralLayout.addLayout(&mainLayout, 0, 0);
+}
 
+void QTetraMesherMainWindow::connectSlots() {
   // connect actions to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
   connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
@@ -83,8 +108,6 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(clearTetraOptions()));
   connect(&huiButton, SIGNAL(clicked()), this, SLOT(buttonSlot()));
 }
-
-// QTetraMesherMainWindow::~QTetraMesherMainWindow() { delete ui; }
 
 void QTetraMesherMainWindow::buttonSlot()
 {
