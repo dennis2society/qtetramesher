@@ -61,7 +61,6 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   viewer->setMinimumSize(820, 760);
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
-  viewer->setSizeIncrement(QSize(1, 1));
   viewerLayout.addWidget(&viewerFrame);
   optionsFrame.setMinimumSize(230, 220);
   optionsFrame.setMaximumSize(380, 2160);
@@ -90,6 +89,10 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
 void QTetraMesherMainWindow::buttonSlot()
 {
   std::cout << "HUIIIIII! Buttons!" << std::endl;
+}
+
+void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
+  viewer->resize(viewerFrame.size());
 }
 
 void QTetraMesherMainWindow::toggleFullScreen(bool value) {

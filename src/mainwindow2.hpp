@@ -80,6 +80,8 @@ protected:
   // override main window close event to close all child dialogs
   void closeEvent(QCloseEvent *event);
 
+  void resizeEvent(QResizeEvent *event);
+
 private slots:
   void on_viewer_onLoad();
 };
