@@ -80,11 +80,13 @@ add_executable(
   src/quartettetrahedralizedialog.cpp
   src/tetrastuffingdialog.h
   src/BaseTetraDialog.h
-  src/mainwindow.cpp
+  #src/mainwindow.cpp
+  src/mainwindow2.cpp
   src/qgltetraviewer.cpp
   src/Timer.cpp
   src/cgaltetrahedralizedialog.cpp
-  src/mainwindow.h
+  #src/mainwindow.h
+  src/mainwindow2.hpp
   src/qgltetraviewer.h
   src/Timer.h
   src/cgaltetrahedralizedialog.h
