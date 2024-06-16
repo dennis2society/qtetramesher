@@ -21,12 +21,8 @@ SurfaceVisWidget::SurfaceVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   surfaceVisComboBox.addItem("Surface Solid");
   surfaceVisComboBox.addItem("Surface Wireframe");
   surfaceVisComboBox.addItem("Surface Hidden");
-  drawEdgesCheckbox.setText("Draw Edges?");
-  edgeColorButton.setText("Edge Color");
   layout.addWidget(&labelTitle);
   layout.addWidget(&surfaceVisComboBox);
   layout.addWidget(&surfaceColorButton);
   layout.addWidget(&surfaceWireframeColorButton);
-  layout.addWidget(&drawEdgesCheckbox);
-  layout.addWidget(&edgeColorButton);
 }

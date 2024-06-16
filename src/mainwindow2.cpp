@@ -76,6 +76,7 @@ void QTetraMesherMainWindow::setupUI()
   boldFont.setBold(true);
   optionsLayout.addWidget(&surfaceVisWidget);
   optionsLayout.addWidget(&tetraVisWidget);
+  optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
   //optionsLayout.addWidget(&surfaceOptionsFrame);
   centralWidget.setLayout(&mainLayout);
