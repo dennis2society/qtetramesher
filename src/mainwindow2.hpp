@@ -24,6 +24,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <surfaceVisWidget.hpp>
+#include <tetraVisWidget.hpp>
 
 // namespace Ui {
 // class MainWindow;
@@ -47,7 +48,9 @@ public slots:
   void notifyDone(QString msg_, unsigned int time_);
   void clearTetraOptions(); // call this when loading a new mesh to reset the
                             // settings
-  void buttonSlot();
+  void surfaceButtonSlot();
+  void surfaceVisChanged();
+  void surfaceColorButtonSlot();
 
 private:
   // QGLViewer variant
@@ -71,14 +74,10 @@ private:
   QAction actionQuit;
   QAction actionAbout;
   QAction actionHelp;
-  QPushButton huiButton;
   // Visualization options
-  QLabel labelSurfaceVisOptions;
-  QLabel labelTetraVisOptions;
-  QLabel labelOctree;
-  QLabel labelMeshOps;
   // task widgets
   SurfaceVisWidget surfaceVisWidget;
+  TetraVisWidget tetraVisWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;

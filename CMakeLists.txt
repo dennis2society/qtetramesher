@@ -78,6 +78,8 @@ add_executable(
   src/baseOptionsWidget.cpp
   src/surfaceVisWidget.hpp
   src/surfaceVisWidget.cpp
+  src/tetraVisWidget.hpp
+  src/tetraVisWidget.cpp
   src/BaseTetraDialog.cpp
   src/main.cpp
   src/QGLTetraMesh.h

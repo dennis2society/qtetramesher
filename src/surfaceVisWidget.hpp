@@ -1,0 +1,33 @@
+/*
+ * surfaceVisWidget.hpp
+ *
+ * This widget provides options for the surface visualization.
+ *
+ *  Created 2024
+ *      Author: Dennis Luebke
+ */
+
+#ifndef SURFACE_VIS_WIDGET_H
+#define SURFACE_VIS_WIDGET_H
+
+#include <baseOptionsWidget.hpp>
+#include <QPushButton>
+#include <QComboBox>
+#include <QCheckBox>
+
+class SurfaceVisWidget : public BaseOptionsWidget
+{
+  Q_OBJECT
+
+public:
+  SurfaceVisWidget(QWidget *parent);
+  void update();
+
+  QComboBox surfaceVisComboBox;
+  QPushButton surfaceColorButton;
+  QPushButton surfaceWireframeColorButton;
+  QCheckBox drawEdgesCheckbox;
+  QPushButton edgeColorButton;
+};
+
+#endif //SURFACE_VIS_WIDGET_H

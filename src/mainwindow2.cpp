@@ -14,14 +14,12 @@
 #include <iostream>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
-    : QMainWindow(parent), surfaceVisWidget(this) //, ui(new Ui::MainWindow),
+    : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this)
 {
   //setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
 }
-
-// QTetraMesherMainWindow::~QTetraMesherMainWindow() { delete ui; }
 
 void QTetraMesherMainWindow::setupUI()
 {
@@ -74,26 +72,12 @@ void QTetraMesherMainWindow::setupUI()
   surfaceOptionsFrame.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
   surfaceOptionsFrame.setFrameShape(QFrame::Box);
   surfaceOptionsFrame.setFrameShadow(QFrame::Raised);
-  surfaceOptionsFrame.setContentsMargins(1, 1, 1, 1);
-  huiButton.setText("HUIII Button");
-  optionsLayout.addWidget(&huiButton);
   QFont boldFont;
   boldFont.setBold(true);
-  labelSurfaceVisOptions.setText("Surface Visualization");
-  labelSurfaceVisOptions.setFont(boldFont);
   optionsLayout.addWidget(&surfaceVisWidget);
+  optionsLayout.addWidget(&tetraVisWidget);
   surfaceVisWidget.setMinimumSize(230, 160);
-  labelTetraVisOptions.setText("TetraMesh Visualization");
-  labelTetraVisOptions.setFont(boldFont);
-  labelOctree.setText("Octree Visualization");
-  labelOctree.setFont(boldFont);
-  labelMeshOps.setText("Mesh Ops");
-  labelMeshOps.setFont(boldFont);
-  optionsLayout.addWidget(&labelSurfaceVisOptions);
-  optionsLayout.addWidget(&labelTetraVisOptions);
-  optionsLayout.addWidget(&labelOctree);
-  optionsLayout.addWidget(&labelMeshOps);
-  optionsLayout.addWidget(&surfaceOptionsFrame);
+  //optionsLayout.addWidget(&surfaceOptionsFrame);
   centralWidget.setLayout(&mainLayout);
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
@@ -101,21 +85,38 @@ void QTetraMesherMainWindow::setupUI()
 }
 
 void QTetraMesherMainWindow::connectSlots() {
-  // connect actions to slots
+  // connect stuff to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
   connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
   connect(&actionLoadSurface, SIGNAL(triggered()), viewer, SLOT(loadSurface()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(clearTetraOptions()));
-  connect(&huiButton, SIGNAL(clicked()), this, SLOT(buttonSlot()));
+  connect(&surfaceVisWidget.surfaceVisComboBox,
+          SIGNAL(currentIndexChanged(int)),
+          this,
+          SLOT(surfaceVisChanged()));
+  connect(&surfaceVisWidget.surfaceColorButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(surfaceColorButtonSlot()));
 }
 
-void QTetraMesherMainWindow::buttonSlot()
+void QTetraMesherMainWindow::surfaceButtonSlot()
 {
-  std::cout << "HUIIIIII! Buttons!" << std::endl;
+  std::cout << "HUIIIIII! SurfaceVisButton!" << std::endl;
+}
+
+void QTetraMesherMainWindow::surfaceVisChanged()
+{
+  int selectedIndex = surfaceVisWidget.surfaceVisComboBox.currentIndex();
+  viewer->ToggleTriangleVis(selectedIndex);
 }
 
 void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
   viewer->resize(viewerFrame.size());
+}
+
+void QTetraMesherMainWindow::surfaceColorButtonSlot() {
+  viewer->selectSurfaceColor();
 }
 
 void QTetraMesherMainWindow::toggleFullScreen(bool value) {
