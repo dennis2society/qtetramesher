@@ -14,7 +14,8 @@
 #include <iostream>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
-    : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this)
+    : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this), octreeVisWidget(this),
+    sofaTetraStuffingWidget(this)
 {
   //setlocale(LC_NUMERIC, "C");
   setupUI();
@@ -23,6 +24,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
 
 void QTetraMesherMainWindow::setupUI()
 {
+  QFont boldFont;
+  boldFont.setBold(true);
   this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   // Menu stuff
   fileMenu.setTitle("File");
@@ -39,6 +42,12 @@ void QTetraMesherMainWindow::setupUI()
   fileMenu.addSeparator();
   actionQuit.setText("Quit");
   fileMenu.addAction(&actionQuit);
+  viewMenu.setTitle("View");
+  menuBar()->addMenu(&viewMenu);
+  actionShowBBox.setText("Show BBox");
+  actionShowBBox.setCheckable(true);
+  viewMenu.addAction(&actionShowBBox);
+
   helpMenu.setTitle("Help");
   menuBar()->addMenu(&helpMenu);
   actionAbout.setText("About");
@@ -63,19 +72,27 @@ void QTetraMesherMainWindow::setupUI()
   viewer->setManipulatedFrame(new qglviewer::ManipulatedFrame);
   viewer->manipulatedFrame()->setSpinningSensitivity(85.0);
   viewer->manipulatedFrame()->setRotationSensitivity(0.2);
-  viewer->setMinimumSize(820, 760);
+  viewer->setMinimumSize(820, 780);
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   viewerLayout.addWidget(&viewerFrame);
-  surfaceOptionsFrame.setMinimumSize(230, 220);
-  surfaceOptionsFrame.setMaximumSize(380, 260);
-  surfaceOptionsFrame.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+  //surfaceOptionsFrame.setMinimumSize(530, 220);
+  //surfaceOptionsFrame.setMaximumSize(580, 260);
+  surfaceOptionsFrame.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   surfaceOptionsFrame.setFrameShape(QFrame::Box);
   surfaceOptionsFrame.setFrameShadow(QFrame::Raised);
-  QFont boldFont;
-  boldFont.setBold(true);
+  tetraMeshMethodLabel.setText("Tetra Mesh Method");
+  tetraMeshMethodLabel.setFont(boldFont);
+  tetraMeshMethodComboBox.addItem("SOFA TetraStuffing");
+  tetraMeshMethodComboBox.addItem("CGAL Tetrahedralize");
+  tetraMeshMethodComboBox.addItem("Quartet TetraStuffing");
+  tetraMeshMethodComboBox.addItem("Tetgen TetraStuffing");
   optionsLayout.addWidget(&surfaceVisWidget);
   optionsLayout.addWidget(&tetraVisWidget);
+  optionsLayout.addWidget(&octreeVisWidget);
+  optionsLayout.addWidget(&tetraMeshMethodLabel);
+  optionsLayout.addWidget(&tetraMeshMethodComboBox);
+  optionsLayout.addWidget(&sofaTetraStuffingWidget);
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
   //optionsLayout.addWidget(&surfaceOptionsFrame);
@@ -99,6 +116,17 @@ void QTetraMesherMainWindow::connectSlots() {
           SIGNAL(clicked()),
           this,
           SLOT(surfaceColorButtonSlot()));
+  connect(&surfaceVisWidget.surfaceWireframeColorButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(surfaceWireframeColorButtonSlot()));
+  connect(&tetraVisWidget.tetraVisComboBox,
+          SIGNAL(currentIndexChanged(int)),
+          this,
+          SLOT(tetraVisChangedSlot()));
+  connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this, SLOT(tetraColorButtonSlot()));
+  connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this, SLOT(tetraWirefraceColorButtonSlot()));
+  connect(&tetraVisWidget.tetraCutplaneSlider, SIGNAL(valueChanged(int)), this, SLOT(cutplaneSliderSlot()));
 }
 
 void QTetraMesherMainWindow::surfaceButtonSlot()
@@ -118,6 +146,31 @@ void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
 
 void QTetraMesherMainWindow::surfaceColorButtonSlot() {
   viewer->selectSurfaceColor();
+}
+
+void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot()
+{
+  viewer->selectSurfaceColorWireframe();
+}
+
+void QTetraMesherMainWindow::tetraVisChangedSlot()
+{
+  int selectedIndex = tetraVisWidget.tetraVisComboBox.currentIndex();
+  viewer->ToggleTetraVis(selectedIndex);
+}
+
+void QTetraMesherMainWindow::tetraColorButtonSlot()
+{
+  viewer->selectTetraColor();
+}
+
+void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot()
+{
+  viewer->selectTetraColorWireframe();
+}
+
+void QTetraMesherMainWindow::cutplaneSliderSlot() {
+  viewer->SetCutPlane(tetraVisWidget.tetraCutplaneSlider.value());
 }
 
 void QTetraMesherMainWindow::toggleFullScreen(bool value) {

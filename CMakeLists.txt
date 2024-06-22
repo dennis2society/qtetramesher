@@ -74,13 +74,15 @@ set(UI_FILES
 
 add_executable(
   QTetraMesher
-  src/baseOptionsWidget.hpp
-  src/baseOptionsWidget.cpp
-  src/surfaceVisWidget.hpp
-  src/surfaceVisWidget.cpp
-  src/tetraVisWidget.hpp
-  src/tetraVisWidget.cpp
+  src/BaseOptionsWidget.hpp
+  src/BaseOptionsWidget.cpp
+  src/SurfaceVisWidget.hpp
+  src/SurfaceVisWidget.cpp
+  src/TetraVisWidget.hpp
+  src/TetraVisWidget.cpp
   src/BaseTetraDialog.cpp
+  src/OctreeVisWidget.hpp
+  src/OctreeVisWidget.cpp
   src/main.cpp
   src/QGLTetraMesh.h
   src/quartettetrahedralizedialog.cpp
@@ -102,6 +104,8 @@ add_executable(
   src/tetgendialog.h
   src/tetgendialog.cpp
   ${UI_FILES}
+  src/SofaTetraStuffingWidget.hpp
+  src/SofaTetraStuffingWidget.cpp
 )
 
 target_link_libraries(

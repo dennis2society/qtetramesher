@@ -7,7 +7,7 @@
  *      Author: Dennis Luebke
  */
 
-#include <surfaceVisWidget.hpp>
+#include <SurfaceVisWidget.hpp>
 #include <QFont>
 
 SurfaceVisWidget::SurfaceVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
@@ -17,12 +17,17 @@ SurfaceVisWidget::SurfaceVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   boldFont.setBold(true);
   labelTitle.setFont(boldFont);
   surfaceColorButton.setText("Surface Color");
+  surfaceColorButton.setMaximumHeight(20);
   surfaceWireframeColorButton.setText("Wireframe Color");
-  surfaceVisComboBox.addItem("Surface Solid");
-  surfaceVisComboBox.addItem("Surface Wireframe");
-  surfaceVisComboBox.addItem("Surface Hidden");
+  surfaceWireframeColorButton.setMaximumHeight(20);
+  surfaceVisComboBox.addItem("Solid");
+  surfaceVisComboBox.addItem("Wireframe");
+  surfaceVisComboBox.addItem("Hidden");
+  surfaceVisComboBox.setMaximumHeight(20);
   layout.addWidget(&labelTitle);
   layout.addWidget(&surfaceVisComboBox);
   layout.addWidget(&surfaceColorButton);
   layout.addWidget(&surfaceWireframeColorButton);
+  this->setLayout(&layout);
+  layout.addStretch();
 }

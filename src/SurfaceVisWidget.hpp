@@ -1,7 +1,7 @@
 /*
  * surfaceVisWidget.hpp
  *
- * This widget provides options for the surface visualization.
+ * This widget provides the UI options for the surface visualization.
  *
  *  Created 2024
  *      Author: Dennis Luebke
@@ -10,7 +10,7 @@
 #ifndef SURFACE_VIS_WIDGET_H
 #define SURFACE_VIS_WIDGET_H
 
-#include <baseOptionsWidget.hpp>
+#include <BaseOptionsWidget.hpp>
 #include <QPushButton>
 #include <QComboBox>
 #include <QCheckBox>

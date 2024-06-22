@@ -5,7 +5,7 @@
  *      Author: Dennis Luebke
  */
 
-#include <baseOptionsWidget.hpp>
+#include <BaseOptionsWidget.hpp>
 
 BaseOptionsWidget::BaseOptionsWidget(QWidget *parent) {
   this->setLayout(&layout);

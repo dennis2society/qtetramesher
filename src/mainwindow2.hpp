@@ -23,8 +23,10 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QLabel>
-#include <surfaceVisWidget.hpp>
-#include <tetraVisWidget.hpp>
+#include <SurfaceVisWidget.hpp>
+#include <TetraVisWidget.hpp>
+#include <OctreeVisWidget.hpp>
+#include <SofaTetraStuffingWidget.hpp>
 
 // namespace Ui {
 // class MainWindow;
@@ -51,6 +53,11 @@ public slots:
   void surfaceButtonSlot();
   void surfaceVisChanged();
   void surfaceColorButtonSlot();
+  void surfaceWireframeColorButtonSlot();
+  void tetraVisChangedSlot();
+  void tetraColorButtonSlot();
+  void tetraWirefraceColorButtonSlot();
+  void cutplaneSliderSlot();
 
 private:
   // QGLViewer variant
@@ -65,19 +72,24 @@ private:
   QVBoxLayout optionsLayout;
   QMenu fileMenu;
   QMenu helpMenu;
-  QMenu meshMenu;
+  QMenu viewMenu;
   // Menu bar actions
   QAction actionLoadSurface;
   QAction actionLoadGMSH;
   QAction actionExportGMSH;
   QAction actionExportSurface;
   QAction actionQuit;
+  QAction actionShowBBox;
   QAction actionAbout;
   QAction actionHelp;
   // Visualization options
   // task widgets
   SurfaceVisWidget surfaceVisWidget;
   TetraVisWidget tetraVisWidget;
+  OctreeVisWidget octreeVisWidget;
+  QLabel tetraMeshMethodLabel;
+  QComboBox tetraMeshMethodComboBox;
+  SofaTetraStuffingWidget sofaTetraStuffingWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
