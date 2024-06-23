@@ -10,14 +10,13 @@
 #define OCTREE_VIS_WIDGET_HPP
 
 #include <BaseOptionsWidget.hpp>
-#include <QPushButton>
 #include <QComboBox>
 #include <QLabel>
-#include <QSpinBox>
 #include <QLayout>
+#include <QPushButton>
+#include <QSpinBox>
 
-class OctreeVisWidget : public BaseOptionsWidget
-{
+class OctreeVisWidget : public BaseOptionsWidget {
   Q_OBJECT
 
 public:

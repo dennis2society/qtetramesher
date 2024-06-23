@@ -7,11 +7,10 @@
  *      Author: Dennis Luebke
  */
 
-#include <TetraVisWidget.hpp>
 #include <QFont>
+#include <TetraVisWidget.hpp>
 
-TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
-{
+TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   labelTitle.setText("TetraMesh Visualization");
   QFont boldFont;
   boldFont.setBold(true);
@@ -29,7 +28,8 @@ TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   tetraCutplaneSlider.setValue(0);
   tetraCutplaneSlider.setRange(0, 100);
   tetraCutplaneSlider.setOrientation(Qt::Orientation::Horizontal);
-  tetraCutplaneSlider.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+  tetraCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
+                                    QSizePolicy::Preferred);
   tetraCutplaneSlider.setSingleStep(1);
   tetraCutplaneSlider.setMinimumSize(280, 20);
   tetraCutplaneSlider.setMaximumHeight(20);

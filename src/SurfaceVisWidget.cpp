@@ -7,11 +7,11 @@
  *      Author: Dennis Luebke
  */
 
-#include <SurfaceVisWidget.hpp>
 #include <QFont>
+#include <SurfaceVisWidget.hpp>
 
-SurfaceVisWidget::SurfaceVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
-{
+SurfaceVisWidget::SurfaceVisWidget(QWidget *parent)
+    : BaseOptionsWidget(parent) {
   labelTitle.setText("Surface Visualization");
   QFont boldFont;
   boldFont.setBold(true);

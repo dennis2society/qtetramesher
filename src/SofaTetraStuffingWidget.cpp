@@ -1,21 +1,21 @@
 /*
  * SofaTetraStuffingWidget.cpp
  *
- * This widget provides the UI options for the SOFA TetraStuffing implementation.
+ * This widget provides the UI options for the SOFA TetraStuffing
+ * implementation.
  *
  *  Created 2024
  *      Author: Dennis Luebke
  */
 
 #include "SofaTetraStuffingWidget.hpp"
-#include <QFont>
-#include <QElapsedTimer>
-#include <sstream>
 #include "SofaTetraStuffing.h"
+#include <QElapsedTimer>
+#include <QFont>
+#include <sstream>
 
 SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
-    : BaseOptionsWidget(parent)
-{
+    : BaseOptionsWidget(parent) {
   labelTitle.setText("SOFA TetraStuffing");
   QFont boldFont;
   boldFont.setBold(true);
@@ -57,26 +57,29 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   layout.addStretch();
 }
 
-void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_)
-{
+void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   QElapsedTimer t;
   t.start();
   QGLTetraMesh *tMesh_ = viewer_->tMesh;
   if (tMesh_ == NULL) {
     return;
   }
-  const std::vector<Triangle> &tris = tMesh_->GetTriangleTopology()->GetTriangles();
-  const std::vector<Vec3f> &verts = tMesh_->GetTriangleTopology()->GetVertices();
+  const std::vector<Triangle> &tris =
+      tMesh_->GetTriangleTopology()->GetTriangles();
+  const std::vector<Vec3f> &verts =
+      tMesh_->GetTriangleTopology()->GetVertices();
   if (tMesh_->GetSurface() == NULL) {
     return;
   }
   SofaTetraStuffing sts;
   sts.GenerateFromSurface(tris, verts, tetraSizeSpinBox.value(),
-                           alphaShortSpinBox.value(),
-                           alphaLongSpinBox.value(),
-                           snapToPointsCheckBox.isChecked(),
-                           splitTetrasCheckBox.isChecked());
+                          alphaShortSpinBox.value(), alphaLongSpinBox.value(),
+                          snapToPointsCheckBox.isChecked(),
+                          splitTetrasCheckBox.isChecked());
   tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
   tMesh_->Draw();
   viewer_->update();
+  std::cout << "Generated tetrahedral mesh in " << t.elapsed()
+            << " ms.\nTetras: " << sts.GetTetras().size()
+            << "; Vertices: " << sts.GetTetraVertices().size() << std::endl;
 }

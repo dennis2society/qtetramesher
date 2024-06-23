@@ -8,26 +8,25 @@
 #include "mainwindow2.hpp"
 #include "QMimeData"
 // #include "ui_mainwindow.h"
+#include <QFrame>
 #include <QGLViewer/manipulatedFrame.h>
 #include <QMessageBox>
 #include <QUrl>
 #include <iostream>
-#include <QFrame>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
-    : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this), octreeVisWidget(this),
-    sofaTetraStuffingWidget(this)
-{
-  //setlocale(LC_NUMERIC, "C");
+    : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this),
+      octreeVisWidget(this), sofaTetraStuffingWidget(this) {
+  // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
 }
 
-void QTetraMesherMainWindow::setupUI()
-{
+void QTetraMesherMainWindow::setupUI() {
   QFont boldFont;
   boldFont.setBold(true);
-  this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  this->setSizePolicy(QSizePolicy::MinimumExpanding,
+                      QSizePolicy::MinimumExpanding);
   // Menu stuff
   fileMenu.setTitle("File");
   this->menuBar()->addMenu(&fileMenu);
@@ -60,10 +59,12 @@ void QTetraMesherMainWindow::setupUI()
   centralWidget.setLayout(&centralLayout);
   centralWidget.setMinimumWidth(1024);
   centralWidget.setMinimumHeight(800);
-  centralWidget.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+  centralWidget.setSizePolicy(QSizePolicy::Expanding,
+                              QSizePolicy::MinimumExpanding);
   viewerFrame.setMaximumSize(820, 760);
   viewerFrame.setMaximumSize(3840, 2160);
-  viewerFrame.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+  viewerFrame.setSizePolicy(QSizePolicy::Expanding,
+                            QSizePolicy::MinimumExpanding);
   viewerFrame.setFrameShape(QFrame::Box);
   viewerFrame.setFrameShadow(QFrame::Raised);
   viewer = new QGLTetraViewer(&viewerFrame);
@@ -77,7 +78,8 @@ void QTetraMesherMainWindow::setupUI()
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   viewerLayout.addWidget(&viewerFrame);
-  surfaceOptionsFrame.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+  surfaceOptionsFrame.setSizePolicy(QSizePolicy::Expanding,
+                                    QSizePolicy::MinimumExpanding);
   surfaceOptionsFrame.setFrameShape(QFrame::Box);
   surfaceOptionsFrame.setFrameShadow(QFrame::Raised);
   tetraMeshMethodLabel.setText("Tetra Mesh Method");
@@ -113,37 +115,33 @@ void QTetraMesherMainWindow::connectSlots() {
   // connect stuff to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
   connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
-  connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(loadSurfaceSlot()));
-  connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(clearTetraOptions()));
+  connect(&actionLoadSurface, SIGNAL(triggered()), this,
+          SLOT(loadSurfaceSlot()));
+  connect(&actionLoadSurface, SIGNAL(triggered()), this,
+          SLOT(clearTetraOptions()));
   connect(&surfaceVisWidget.surfaceVisComboBox,
-          SIGNAL(currentIndexChanged(int)),
-          this,
-          SLOT(surfaceVisChanged()));
-  connect(&surfaceVisWidget.surfaceColorButton,
-          SIGNAL(clicked()),
-          this,
+          SIGNAL(currentIndexChanged(int)), this, SLOT(surfaceVisChanged()));
+  connect(&surfaceVisWidget.surfaceColorButton, SIGNAL(clicked()), this,
           SLOT(surfaceColorButtonSlot()));
-  connect(&surfaceVisWidget.surfaceWireframeColorButton,
-          SIGNAL(clicked()),
-          this,
-          SLOT(surfaceWireframeColorButtonSlot()));
-  connect(&tetraVisWidget.tetraVisComboBox,
-          SIGNAL(currentIndexChanged(int)),
-          this,
-          SLOT(tetraVisChangedSlot()));
-  connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this, SLOT(tetraColorButtonSlot()));
-  connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this, SLOT(tetraWirefraceColorButtonSlot()));
-  connect(&tetraVisWidget.tetraCutplaneSlider, SIGNAL(valueChanged(int)), this, SLOT(cutplaneSliderSlot()));
-  connect(&sofaTetraStuffingWidget.generateTetrahedraButton, SIGNAL(clicked()), this, SLOT(generateSofaTetraStuffingSlot()));
+  connect(&surfaceVisWidget.surfaceWireframeColorButton, SIGNAL(clicked()),
+          this, SLOT(surfaceWireframeColorButtonSlot()));
+  connect(&tetraVisWidget.tetraVisComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(tetraVisChangedSlot()));
+  connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this,
+          SLOT(tetraColorButtonSlot()));
+  connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this,
+          SLOT(tetraWirefraceColorButtonSlot()));
+  connect(&tetraVisWidget.tetraCutplaneSlider, SIGNAL(valueChanged(int)), this,
+          SLOT(cutplaneSliderSlot()));
+  connect(&sofaTetraStuffingWidget.generateTetrahedraButton, SIGNAL(clicked()),
+          this, SLOT(generateSofaTetraStuffingSlot()));
 }
 
-void QTetraMesherMainWindow::surfaceButtonSlot()
-{
+void QTetraMesherMainWindow::surfaceButtonSlot() {
   std::cout << "HUIIIIII! SurfaceVisButton!" << std::endl;
 }
 
-void QTetraMesherMainWindow::surfaceVisChanged()
-{
+void QTetraMesherMainWindow::surfaceVisChanged() {
   int selectedIndex = surfaceVisWidget.surfaceVisComboBox.currentIndex();
   viewer->ToggleTriangleVis(selectedIndex);
 }
@@ -156,24 +154,20 @@ void QTetraMesherMainWindow::surfaceColorButtonSlot() {
   viewer->selectSurfaceColor();
 }
 
-void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot()
-{
+void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
   viewer->selectSurfaceColorWireframe();
 }
 
-void QTetraMesherMainWindow::tetraVisChangedSlot()
-{
+void QTetraMesherMainWindow::tetraVisChangedSlot() {
   int selectedIndex = tetraVisWidget.tetraVisComboBox.currentIndex();
   viewer->ToggleTetraVis(selectedIndex);
 }
 
-void QTetraMesherMainWindow::tetraColorButtonSlot()
-{
+void QTetraMesherMainWindow::tetraColorButtonSlot() {
   viewer->selectTetraColor();
 }
 
-void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot()
-{
+void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
   viewer->selectTetraColorWireframe();
 }
 
@@ -189,10 +183,10 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
   }
 }
 
-void QTetraMesherMainWindow::loadSurfaceSlot()
-{
+void QTetraMesherMainWindow::loadSurfaceSlot() {
   viewer->loadSurface();
-  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05f);
+  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
+                                                    0.05f);
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
@@ -203,10 +197,10 @@ void QTetraMesherMainWindow::showTetraStuffingDialog() {
   if (tsd == NULL) {
     tsd = new TetraStuffingDialog();
     // tsd->setViewer(ui->viewer);
-    connect(tsd, SIGNAL(displayMessage(QString,uint)), this,
-            SLOT(displayMessage(QString,uint)));
-    connect(tsd, SIGNAL(notifyDone(QString,uint)), this,
-            SLOT(notifyDone(QString,uint)));
+    connect(tsd, SIGNAL(displayMessage(QString, uint)), this,
+            SLOT(displayMessage(QString, uint)));
+    connect(tsd, SIGNAL(notifyDone(QString, uint)), this,
+            SLOT(notifyDone(QString, uint)));
     // tsd->setTetraSize(ui->viewer->getMaxBBox() * 0.05f);
   }
   tsd->show();
@@ -216,10 +210,10 @@ void QTetraMesherMainWindow::showQuartetTetraDialog() {
   if (cts == NULL) {
     cts = new QuartetTetraStuffingDialog();
     // cts->setViewer(ui->viewer);
-    connect(cts, SIGNAL(displayMessage(QString,uint)), this,
-            SLOT(displayMessage(QString,uint)));
-    connect(cts, SIGNAL(notifyDone(QString,uint)), this,
-            SLOT(notifyDone(QString,uint)));
+    connect(cts, SIGNAL(displayMessage(QString, uint)), this,
+            SLOT(displayMessage(QString, uint)));
+    connect(cts, SIGNAL(notifyDone(QString, uint)), this,
+            SLOT(notifyDone(QString, uint)));
   }
   cts->show();
 }
@@ -228,10 +222,10 @@ void QTetraMesherMainWindow::showCGALDialog() {
   if (ctd == NULL) {
     ctd = new CGALTetrahedralizeDialog();
     // ctd->setViewer(ui->viewer);
-    connect(ctd, SIGNAL(displayMessage(QString,uint)), this,
-            SLOT(displayMessage(QString,uint)));
-    connect(ctd, SIGNAL(notifyDone(QString,uint)), this,
-            SLOT(notifyDone(QString,uint)));
+    connect(ctd, SIGNAL(displayMessage(QString, uint)), this,
+            SLOT(displayMessage(QString, uint)));
+    connect(ctd, SIGNAL(notifyDone(QString, uint)), this,
+            SLOT(notifyDone(QString, uint)));
     // ctd->setParams(ui->viewer->getMaxBBox() * 0.1f,
     //                    ui->viewer->getMaxBBox() * 0.05);
   }

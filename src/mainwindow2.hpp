@@ -9,24 +9,24 @@
 #define MAINWINDOW_H
 
 #include "cgaltetrahedralizedialog.h"
+#include "qgltetraviewer.h"
 #include "quartetterahedralizedialog.h"
 #include "tetgendialog.h"
 #include "tetrastuffingdialog.h"
-#include <QCloseEvent>
-#include <QMainWindow>
-#include <QMenuBar>
+#include <OctreeVisWidget.hpp>
 #include <QAction>
-#include <QLayout>
+#include <QCloseEvent>
 #include <QFrame>
-#include "qgltetraviewer.h"
-#include <QWidget>
-#include <QPushButton>
 #include <QGridLayout>
 #include <QLabel>
+#include <QLayout>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QPushButton>
+#include <QWidget>
+#include <SofaTetraStuffingWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetraVisWidget.hpp>
-#include <OctreeVisWidget.hpp>
-#include <SofaTetraStuffingWidget.hpp>
 
 // namespace Ui {
 // class MainWindow;

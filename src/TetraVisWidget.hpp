@@ -11,13 +11,12 @@
 #define TETRA_VIS_WIDGET_H
 
 #include <BaseOptionsWidget.hpp>
-#include <QPushButton>
-#include <QComboBox>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QPushButton>
 #include <QSlider>
 
-class TetraVisWidget : public BaseOptionsWidget
-{
+class TetraVisWidget : public BaseOptionsWidget {
   Q_OBJECT
 
 public:
@@ -31,4 +30,4 @@ public:
   QSlider tetraCutplaneSlider;
 };
 
-#endif //TETRA_VIS_WIDGET_H
+#endif // TETRA_VIS_WIDGET_H

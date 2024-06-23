@@ -11,12 +11,11 @@
 #define SURFACE_VIS_WIDGET_H
 
 #include <BaseOptionsWidget.hpp>
-#include <QPushButton>
-#include <QComboBox>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QPushButton>
 
-class SurfaceVisWidget : public BaseOptionsWidget
-{
+class SurfaceVisWidget : public BaseOptionsWidget {
   Q_OBJECT
 
 public:
@@ -28,4 +27,4 @@ public:
   QPushButton surfaceWireframeColorButton;
 };
 
-#endif //SURFACE_VIS_WIDGET_H
+#endif // SURFACE_VIS_WIDGET_H

@@ -42,8 +42,8 @@ QGLTetraMesh::~QGLTetraMesh() {
 }
 
 void QGLTetraMesh::Draw() {
-  //glEnable(GL_LIGHTING);
-  //glEnable(GL_DEPTH_TEST);
+  // glEnable(GL_LIGHTING);
+  // glEnable(GL_DEPTH_TEST);
   glEnable(GL_COLOR_MATERIAL);
   static const float zero[4] = {0.0f, 0.0f, 0.0f};
   static const float diff[4] = {0.8f, 0.8f, 0.85f};
@@ -500,12 +500,13 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
   return success;
 }
 
-bool QGLTetraMesh::SaveSurface(const std::string &fileName_, const std::string extension_) {
+bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
+                               const std::string extension_) {
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;
-  bool success =
-      twriter.writeFile(fileName_, extension_, surf->GetVertices(), surf->GetTriangles());
+  bool success = twriter.writeFile(fileName_, extension_, surf->GetVertices(),
+                                   surf->GetTriangles());
   t.stop();
   std::cout << "Finished saving Surface in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;
@@ -596,8 +597,7 @@ void QGLTetraMesh::SetZRange(int lower, int upper) {
             << std::endl;
 }
 
-void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_)
-{
+void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_) {
   for (auto &it : surf->GetVertices()) {
     it += offset_;
   }
