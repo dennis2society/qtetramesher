@@ -8,11 +8,13 @@
  */
 
 #include "qgltetraviewer.h"
+
+#include <math.h>
+#include <qtetramesher_version.h>
+
 #include <QColorDialog>
 #include <QDateTime>
 #include <QFileDialog>
-#include <math.h>
-#include <qtetramesher_version.h>
 #include <sstream>
 #include <string>
 
@@ -46,10 +48,8 @@ void QGLTetraViewer::draw() {
       drawText(10, 30, msg);
       ss.str("");
       _maxBBox = bb.max.x - bb.min.x;
-      if (_maxBBox < (bb.max.y - bb.min.y))
-        _maxBBox = bb.max.y - bb.min.y;
-      if (_maxBBox < (bb.max.z - bb.min.z))
-        _maxBBox = bb.max.z - bb.min.z;
+      if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+      if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
       ss << "BBox Min:" << bb.min.x << "/" << bb.min.y << "/" << bb.min.z
          << "; BBox Max: " << bb.max.x << "/" << bb.max.y << "/" << bb.max.z
          << "; Max Value: " << _maxBBox;
@@ -148,8 +148,9 @@ QString QGLTetraViewer::helpString() const {
       "Usage/build instructions available at <a "
       "href=\"http://qtm.dennis2society.de\">qtm.dennis2society.de</a>.<br />";
   text += "<br />";
-  text += "Sourcecode available at <a href=\"https://github.com/dennis2society/"
-          "qtetramesher\">QTetraMesher at Github</a>.<br />";
+  text +=
+      "Sourcecode available at <a href=\"https://github.com/dennis2society/"
+      "qtetramesher\">QTetraMesher at Github</a>.<br />";
   text += "<br />";
   text +=
       "<pre>This program is free software: you can redistribute it and/or "
@@ -217,10 +218,8 @@ void QGLTetraViewer::scale10() {
   tMesh->scalex10();
   BoundingBox bb = tMesh->GetBoundingBox();
   _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y))
-    _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z))
-    _maxBBox = bb.max.z - bb.min.z;
+  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   // updateGL();
@@ -237,10 +236,8 @@ void QGLTetraViewer::scale01() {
   tMesh->scalex01();
   BoundingBox bb = tMesh->GetBoundingBox();
   _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y))
-    _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z))
-    _maxBBox = bb.max.z - bb.min.z;
+  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   // updateGL();
@@ -267,19 +264,20 @@ void QGLTetraViewer::loadSurface() {
   delete qfd;
 
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
-  if (s.toStdString().empty())
-    return;
+  if (s.toStdString().empty()) return;
   ShowStatusMessage("Loading Surface...");
   tMesh->LoadSurface(s.toStdString());
+  if (!tMesh) {
+    std::cerr << "ERROR! Surface Mesh is empty..." << std::endl;
+    return;
+  }
   BoundingBox bb = tMesh->GetBoundingBox();
   Vec3f bboxCenter = bb.min + ((bb.max - bb.min) / 2.0f);
   tMesh->translateSurfaceMesh(bboxCenter * -1.0);
   bb = tMesh->GetBoundingBox();
   _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y))
-    _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z))
-    _maxBBox = bb.max.z - bb.min.z;
+  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   this->camera()->showEntireScene();
@@ -293,17 +291,14 @@ void QGLTetraViewer::loadGMSH() {
   s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
   delete qfd;
   std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
-  if (s.toStdString().empty())
-    return;
+  if (s.toStdString().empty()) return;
   ShowStatusMessage("Loading GMSH...");
   tMesh->ClearSurface();
   tMesh->LoadGMSH(s.toStdString());
   BoundingBox bb = tMesh->GetBoundingBox();
   float _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y))
-    _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z))
-    _maxBBox = bb.max.z - bb.min.z;
+  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   this->showEntireScene();
@@ -376,8 +371,9 @@ void QGLTetraViewer::saveSurface() {
     return;
   }
   if (tMesh->GetSurface() != NULL) {
-    QString selfilter = tr("OBJ (*.obj);; STL (*.stl);; Collada(*.dae);; "
-                           "3DS (*.3ds);; PLY (*.ply)");
+    QString selfilter =
+        tr("OBJ (*.obj);; STL (*.stl);; Collada(*.dae);; "
+           "3DS (*.3ds);; PLY (*.ply)");
     QFileDialog *qfd =
         new QFileDialog(this, "Select Surface Output File", "", selfilter);
     qfd->setDefaultSuffix("obj");

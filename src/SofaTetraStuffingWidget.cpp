@@ -9,10 +9,12 @@
  */
 
 #include "SofaTetraStuffingWidget.hpp"
-#include "SofaTetraStuffing.h"
+
 #include <QElapsedTimer>
 #include <QFont>
 #include <sstream>
+
+#include "SofaTetraStuffing.h"
 
 SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
     : BaseOptionsWidget(parent) {
@@ -79,7 +81,12 @@ void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
   tMesh_->Draw();
   viewer_->update();
-  std::cout << "Generated tetrahedral mesh in " << t.elapsed()
-            << " ms.\nTetras: " << sts.GetTetras().size()
-            << "; Vertices: " << sts.GetTetraVertices().size() << std::endl;
+  viewer_->displayMessage(QString("Updating visual mesh..."), 2000);
+  tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
+  std::stringstream ss;
+  ss << "Generated tetrahedral mesh in " << t.elapsed()
+     << "ms. Tetras: " << sts.GetTetras().size()
+     << "; Vertices: " << sts.GetTetraVertices().size();
+  std::string stdMSG = ss.str();
+  viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
 }
