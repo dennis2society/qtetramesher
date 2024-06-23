@@ -267,6 +267,9 @@ void QGLTetraViewer::loadSurface() {
   ShowStatusMessage("Loading Surface...");
   tMesh->LoadSurface(s.toStdString());
   BoundingBox bb = tMesh->GetBoundingBox();
+  Vec3f bboxCenter = bb.min + ((bb.max - bb.min) / 2.0f);
+  tMesh->translateSurfaceMesh(bboxCenter * -1.0);
+  bb = tMesh->GetBoundingBox();
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y))
     _maxBBox = bb.max.y - bb.min.y;
@@ -275,7 +278,7 @@ void QGLTetraViewer::loadSurface() {
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   this->camera()->showEntireScene();
-  this->ShowStatusMessage("OBJ successfully loaded...", 10000);
+  this->ShowStatusMessage("Surface mesh successfully loaded...", 10000);
   emit onLoad();
 }
 

@@ -12,6 +12,8 @@
 #include <BaseOptionsWidget.hpp>
 #include <QPushButton>
 #include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <qgltetraviewer.h>
 
 class SofaTetraStuffingWidget : public BaseOptionsWidget
 {
@@ -21,6 +23,8 @@ public:
   SofaTetraStuffingWidget(QWidget *parent);
   void update();
 
+  void generateTetrahedra(QGLTetraViewer *viewer_);
+
   QHBoxLayout tetraSizeLayout;
   QLabel tetraSizeLabel;
   QDoubleSpinBox tetraSizeSpinBox;
@@ -29,8 +33,10 @@ public:
   QDoubleSpinBox alphaShortSpinBox;
   QLabel alphaLongLabel;
   QDoubleSpinBox alphaLongSpinBox;
+  QCheckBox splitTetrasCheckBox;
+  QCheckBox snapToPointsCheckBox;
   QPushButton generateTetrahedraButton;
-
+  QHBoxLayout additionalOptionsLayout;
 };
 
 #endif // SOFA_TETRA_STUFFING_WIDGET_HPP

@@ -595,3 +595,10 @@ void QGLTetraMesh::SetZRange(int lower, int upper) {
   std::cout << "Z-Range set to " << zLowerThreshold << "/" << zUpperThreshold
             << std::endl;
 }
+
+void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_)
+{
+  for (auto &it : surf->GetVertices()) {
+    it += offset_;
+  }
+}

@@ -40,6 +40,5 @@ TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   layout.addWidget(&tetraWireframeColorButton);
   layout.addWidget(&tetraCutplaneLabel);
   layout.addWidget(&tetraCutplaneSlider);
-  this->setLayout(&layout);
   layout.addStretch();
 }

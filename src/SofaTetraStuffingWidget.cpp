@@ -9,6 +9,9 @@
 
 #include "SofaTetraStuffingWidget.hpp"
 #include <QFont>
+#include <QElapsedTimer>
+#include <sstream>
+#include "SofaTetraStuffing.h"
 
 SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
     : BaseOptionsWidget(parent)
@@ -20,7 +23,7 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   tetraSizeLabel.setText("TetraSize");
   tetraSizeLabel.setFont(boldFont);
   tetraSizeSpinBox.setValue(2.0);
-  tetraSizeSpinBox.setSingleStep(0.05);
+  tetraSizeSpinBox.setSingleStep(0.01);
   tetraSizeLabel.setMaximumHeight(20);
   tetraSizeSpinBox.setMaximumHeight(20);
   tetraSizeLayout.addWidget(&tetraSizeLabel);
@@ -39,11 +42,41 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   alphaOptionsLayout.addWidget(&alphaShortSpinBox);
   alphaOptionsLayout.addWidget(&alphaLongLabel);
   alphaOptionsLayout.addWidget(&alphaLongSpinBox);
+  splitTetrasCheckBox.setText("Split Tetras");
+  splitTetrasCheckBox.setChecked(true);
+  snapToPointsCheckBox.setText("Snap To Points");
+  snapToPointsCheckBox.setChecked(true);
+  additionalOptionsLayout.addWidget(&splitTetrasCheckBox);
+  additionalOptionsLayout.addWidget(&snapToPointsCheckBox);
   generateTetrahedraButton.setText("Generate Tetrahedra");
   layout.addWidget(&labelTitle);
   layout.addLayout(&tetraSizeLayout);
   layout.addLayout(&alphaOptionsLayout);
+  layout.addLayout(&additionalOptionsLayout);
   layout.addWidget(&generateTetrahedraButton);
-  this->setLayout(&layout);
   layout.addStretch();
+}
+
+void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_)
+{
+  QElapsedTimer t;
+  t.start();
+  QGLTetraMesh *tMesh_ = viewer_->tMesh;
+  if (tMesh_ == NULL) {
+    return;
+  }
+  const std::vector<Triangle> &tris = tMesh_->GetTriangleTopology()->GetTriangles();
+  const std::vector<Vec3f> &verts = tMesh_->GetTriangleTopology()->GetVertices();
+  if (tMesh_->GetSurface() == NULL) {
+    return;
+  }
+  SofaTetraStuffing sts;
+  sts.GenerateFromSurface(tris, verts, tetraSizeSpinBox.value(),
+                           alphaShortSpinBox.value(),
+                           alphaLongSpinBox.value(),
+                           snapToPointsCheckBox.isChecked(),
+                           splitTetrasCheckBox.isChecked());
+  tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
+  tMesh_->Draw();
+  viewer_->update();
 }

@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QUrl>
 #include <iostream>
+#include <QFrame>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
     : QMainWindow(parent), surfaceVisWidget(this), tetraVisWidget(this), octreeVisWidget(this),
@@ -76,8 +77,6 @@ void QTetraMesherMainWindow::setupUI()
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   viewerLayout.addWidget(&viewerFrame);
-  //surfaceOptionsFrame.setMinimumSize(530, 220);
-  //surfaceOptionsFrame.setMaximumSize(580, 260);
   surfaceOptionsFrame.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
   surfaceOptionsFrame.setFrameShape(QFrame::Box);
   surfaceOptionsFrame.setFrameShadow(QFrame::Raised);
@@ -88,14 +87,22 @@ void QTetraMesherMainWindow::setupUI()
   tetraMeshMethodComboBox.addItem("Quartet TetraStuffing");
   tetraMeshMethodComboBox.addItem("Tetgen TetraStuffing");
   optionsLayout.addWidget(&surfaceVisWidget);
+  QFrame f1;
+  f1.setFrameShape(QFrame::HLine);
+  f1.setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(&f1);
   optionsLayout.addWidget(&tetraVisWidget);
+  QFrame f2;
+  f2.setFrameShape(QFrame::HLine);
+  f2.setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(&f2);
   optionsLayout.addWidget(&octreeVisWidget);
   optionsLayout.addWidget(&tetraMeshMethodLabel);
   optionsLayout.addWidget(&tetraMeshMethodComboBox);
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
-  //optionsLayout.addWidget(&surfaceOptionsFrame);
+
   centralWidget.setLayout(&mainLayout);
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
@@ -106,7 +113,7 @@ void QTetraMesherMainWindow::connectSlots() {
   // connect stuff to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
   connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
-  connect(&actionLoadSurface, SIGNAL(triggered()), viewer, SLOT(loadSurface()));
+  connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(loadSurfaceSlot()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this, SLOT(clearTetraOptions()));
   connect(&surfaceVisWidget.surfaceVisComboBox,
           SIGNAL(currentIndexChanged(int)),
@@ -127,6 +134,7 @@ void QTetraMesherMainWindow::connectSlots() {
   connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this, SLOT(tetraColorButtonSlot()));
   connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this, SLOT(tetraWirefraceColorButtonSlot()));
   connect(&tetraVisWidget.tetraCutplaneSlider, SIGNAL(valueChanged(int)), this, SLOT(cutplaneSliderSlot()));
+  connect(&sofaTetraStuffingWidget.generateTetrahedraButton, SIGNAL(clicked()), this, SLOT(generateSofaTetraStuffingSlot()));
 }
 
 void QTetraMesherMainWindow::surfaceButtonSlot()
@@ -179,6 +187,16 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
   } else {
     this->showNormal();
   }
+}
+
+void QTetraMesherMainWindow::loadSurfaceSlot()
+{
+  viewer->loadSurface();
+  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05f);
+}
+
+void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
+  sofaTetraStuffingWidget.generateTetrahedra(viewer);
 }
 
 void QTetraMesherMainWindow::showTetraStuffingDialog() {

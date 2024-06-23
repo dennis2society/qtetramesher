@@ -28,6 +28,5 @@ SurfaceVisWidget::SurfaceVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   layout.addWidget(&surfaceVisComboBox);
   layout.addWidget(&surfaceColorButton);
   layout.addWidget(&surfaceWireframeColorButton);
-  this->setLayout(&layout);
   layout.addStretch();
 }

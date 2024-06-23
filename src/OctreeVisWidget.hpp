@@ -27,6 +27,7 @@ public:
   QComboBox octreeVisComboBox;
   QLabel octreeVisOptionsLabel;
   QHBoxLayout innerLayout;
+  QLabel octreeDepthLabel;
   QSpinBox octreeDepthSpinBox;
   QPushButton octreeGenerateButton;
 };

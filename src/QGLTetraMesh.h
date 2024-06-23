@@ -214,6 +214,8 @@ public:
   }
 
   void generateOctree(const unsigned int depth_);
+
+  void translateSurfaceMesh(const Vec3f offset_);
 };
 
 #endif /* QGLTETRAMESH_H_ */

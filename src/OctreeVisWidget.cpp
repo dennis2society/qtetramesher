@@ -23,21 +23,20 @@ OctreeVisWidget::OctreeVisWidget(QWidget *parent) : BaseOptionsWidget(parent)
   octreeGenerateButton.setText("Generate Octree");
   octreeGenerateButton.setToolTip("Generate the octree with the selected depth");
   octreeGenerateButton.setMaximumHeight(20);
+  octreeDepthLabel.setText("Octree Depth");
   octreeDepthSpinBox.setRange(1, 7);
   octreeDepthSpinBox.setValue(3);
   octreeDepthSpinBox.setMaximumHeight(20);
   octreeVisOptionsLabel.setText("Octree Options");
   octreeVisOptionsLabel.setFont(boldFont);
   octreeVisOptionsLabel.setMaximumHeight(20);
+  innerLayout.addWidget(&octreeDepthLabel);
   innerLayout.addWidget(&octreeDepthSpinBox);
-  innerLayout.addWidget(&octreeGenerateButton);
   layout.addWidget(&labelTitle);
   layout.addWidget(&octreeVisComboBox);
   layout.addWidget(&octreeVisOptionsLabel);
   layout.addLayout(&innerLayout);
-  //layout.addWidget(&surfaceVisComboBox);
-  //layout.addWidget(&surfaceColorButton);
-  //layout.addWidget(&surfaceWireframeColorButton);
-  this->setLayout(&layout);
+  layout.addWidget(&octreeGenerateButton);
+  //this->setLayout(&layout);
   layout.addStretch();
 }

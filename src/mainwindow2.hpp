@@ -58,6 +58,8 @@ public slots:
   void tetraColorButtonSlot();
   void tetraWirefraceColorButtonSlot();
   void cutplaneSliderSlot();
+  void loadSurfaceSlot();
+  void generateSofaTetraStuffingSlot();
 
 private:
   // QGLViewer variant
