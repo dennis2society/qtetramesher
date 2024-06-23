@@ -17,7 +17,7 @@ OctreeVisWidget::OctreeVisWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   labelTitle.setFont(boldFont);
   octreeVisComboBox.addItem("Hidden");
   octreeVisComboBox.addItem("Octree");
-  octreeVisComboBox.addItem("leaves Only");
+  octreeVisComboBox.addItem("Leaves Only");
   octreeVisComboBox.setMaximumHeight(20);
   octreeGenerateButton.setText("Generate Octree");
   octreeGenerateButton.setToolTip(

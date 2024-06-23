@@ -44,10 +44,17 @@ void QTetraMesherMainWindow::setupUI() {
   fileMenu.addAction(&actionQuit);
   viewMenu.setTitle("View");
   menuBar()->addMenu(&viewMenu);
+  actionShowAxis.setText("Show Axis");
+  actionShowGrid.setText("Show Grid");
   actionShowBBox.setText("Show BBox");
+  actionShowAxis.setCheckable(true);
+  actionShowGrid.setCheckable(true);
   actionShowBBox.setCheckable(true);
+  actionShowAxis.setChecked(true);
+  actionShowGrid.setChecked(true);
+  viewMenu.addAction(&actionShowAxis);
+  viewMenu.addAction(&actionShowGrid);
   viewMenu.addAction(&actionShowBBox);
-
   helpMenu.setTitle("Help");
   menuBar()->addMenu(&helpMenu);
   actionAbout.setText("About");
@@ -115,6 +122,7 @@ void QTetraMesherMainWindow::connectSlots() {
   // connect stuff to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
   connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
+  connect(&actionAbout, SIGNAL(triggered()), viewer, SLOT(aboutQGLViewer()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
           SLOT(loadSurfaceSlot()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
@@ -123,18 +131,54 @@ void QTetraMesherMainWindow::connectSlots() {
           SIGNAL(currentIndexChanged(int)), this, SLOT(surfaceVisChanged()));
   connect(&surfaceVisWidget.surfaceColorButton, SIGNAL(clicked()), this,
           SLOT(surfaceColorButtonSlot()));
-  connect(&surfaceVisWidget.surfaceWireframeColorButton, SIGNAL(clicked()),
-          this, SLOT(surfaceWireframeColorButtonSlot()));
-  connect(&tetraVisWidget.tetraVisComboBox, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(tetraVisChangedSlot()));
-  connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this,
-          SLOT(tetraColorButtonSlot()));
-  connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this,
+  connect(&surfaceVisWidget.surfaceWireframeColorButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(surfaceWireframeColorButtonSlot()));
+  connect(&tetraVisWidget.tetraVisComboBox,
+          SIGNAL(currentIndexChanged(int)),
+          this,
+          SLOT(tetraVisChangedSlot()));
+  connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this, SLOT(tetraColorButtonSlot()));
+  connect(&tetraVisWidget.tetraWireframeColorButton,
+          SIGNAL(clicked()),
+          this,
           SLOT(tetraWirefraceColorButtonSlot()));
-  connect(&tetraVisWidget.tetraCutplaneSlider, SIGNAL(valueChanged(int)), this,
+  connect(&tetraVisWidget.tetraCutplaneSlider,
+          SIGNAL(valueChanged(int)),
+          this,
           SLOT(cutplaneSliderSlot()));
-  connect(&sofaTetraStuffingWidget.generateTetrahedraButton, SIGNAL(clicked()),
-          this, SLOT(generateSofaTetraStuffingSlot()));
+  connect(&sofaTetraStuffingWidget.generateTetrahedraButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(generateSofaTetraStuffingSlot()));
+  // View Menu
+  connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
+  connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
+  connect(&actionShowBBox, SIGNAL(changed()), this, SLOT(setBBoxVisibleSlot()));
+  connect(&octreeVisWidget.octreeGenerateButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(generateOctreeSlot()));
+  connect(&octreeVisWidget.octreeVisComboBox,
+          SIGNAL(currentIndexChanged(int)),
+          this,
+          SLOT(octreeVisChangedSlot()));
+}
+
+void QTetraMesherMainWindow::setAxisShownSlot()
+{
+  viewer->setAxisIsDrawn(actionShowAxis.isChecked());
+}
+
+void QTetraMesherMainWindow::setGridShownSlot()
+{
+  viewer->setGridIsDrawn(actionShowGrid.isChecked());
+}
+
+void QTetraMesherMainWindow::setBBoxVisibleSlot()
+{
+  viewer->tMesh->ToggleBBox(actionShowBBox.isChecked());
 }
 
 void QTetraMesherMainWindow::surfaceButtonSlot() {
@@ -187,6 +231,7 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
   viewer->loadSurface();
   sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                     0.05f);
+  viewer->tMesh->GetSurface()->GenerateBoundingBox();
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
@@ -248,45 +293,25 @@ void QTetraMesherMainWindow::showTetgenDialog() {
   msg.exec();
 }
 
-void QTetraMesherMainWindow::generateOctree() {
-  // ui->viewer->generateOctree(ui->octreeDepthSpinbox->value());
-  //  ui->viewer->updateGL();
+void QTetraMesherMainWindow::generateOctreeSlot() {
+  viewer->generateOctree(octreeVisWidget.octreeDepthSpinBox.value());
+}
+
+void QTetraMesherMainWindow::octreeVisChangedSlot()
+{
+  viewer->ToggleOctreeVis(octreeVisWidget.octreeVisComboBox.currentIndex());
 }
 
 void QTetraMesherMainWindow::displayMessage(QString msg_, unsigned int time_) {
-  // ui->viewer->ShowStatusMessage(msg_, time_);
+  viewer->ShowStatusMessage(msg_, time_);
 }
 
 void QTetraMesherMainWindow::notifyDone(QString msg_, unsigned int time_) {
-  // ui->viewer->ShowStatusMessage(msg_, time_);
-  //  ui->viewer->updateGL();
-}
-
-void QTetraMesherMainWindow::clearTetraOptions() {
-  if (tsd != NULL) {
-    tsd->hide();
-    delete tsd;
-    tsd = NULL;
-  }
-  if (ctd != NULL) {
-    ctd->hide();
-    delete ctd;
-    ctd = NULL;
-  }
-  if (cts != NULL) {
-    cts->hide();
-    delete cts;
-    cts = NULL;
-  }
-  if (ttd != NULL) {
-    ttd->hide();
-    delete ttd;
-    ttd = NULL;
-  }
+  viewer->ShowStatusMessage(msg_, time_);
+  viewer->update();
 }
 
 void QTetraMesherMainWindow::closeEvent(QCloseEvent *event) {
-  clearTetraOptions();
 }
 
 void QTetraMesherMainWindow::on_viewer_onLoad() {}

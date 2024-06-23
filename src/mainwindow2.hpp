@@ -45,11 +45,13 @@ public slots:
   void showQuartetTetraDialog();
   void showCGALDialog();
   void showTetgenDialog();
-  void generateOctree();
+  void generateOctreeSlot();
+  void octreeVisChangedSlot();
   void displayMessage(QString msg_, unsigned int time_);
   void notifyDone(QString msg_, unsigned int time_);
-  void clearTetraOptions(); // call this when loading a new mesh to reset the
-                            // settings
+  void setAxisShownSlot();
+  void setGridShownSlot();
+  void setBBoxVisibleSlot();
   void surfaceButtonSlot();
   void surfaceVisChanged();
   void surfaceColorButtonSlot();
@@ -81,11 +83,12 @@ private:
   QAction actionExportGMSH;
   QAction actionExportSurface;
   QAction actionQuit;
+  QAction actionShowAxis;
+  QAction actionShowGrid;
   QAction actionShowBBox;
   QAction actionAbout;
   QAction actionHelp;
-  // Visualization options
-  // task widgets
+  // Visualization options and task widgets
   SurfaceVisWidget surfaceVisWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;
