@@ -9,17 +9,17 @@
 #ifndef SOFA_TETRA_STUFFING_WIDGET_HPP
 #define SOFA_TETRA_STUFFING_WIDGET_HPP
 
-#include <BaseOptionsWidget.hpp>
-#include <QPushButton>
-#include <QDoubleSpinBox>
-#include <QCheckBox>
 #include <qgltetraviewer.h>
 
-class SofaTetraStuffingWidget : public BaseOptionsWidget
-{
+#include <BaseOptionsWidget.hpp>
+#include <QCheckBox>
+#include <QDoubleSpinBox>
+#include <QPushButton>
+
+class SofaTetraStuffingWidget : public BaseOptionsWidget {
   Q_OBJECT
 
-public:
+ public:
   SofaTetraStuffingWidget(QWidget *parent);
   void update();
 
@@ -39,4 +39,4 @@ public:
   QHBoxLayout additionalOptionsLayout;
 };
 
-#endif // SOFA_TETRA_STUFFING_WIDGET_HPP
+#endif  // SOFA_TETRA_STUFFING_WIDGET_HPP

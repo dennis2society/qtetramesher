@@ -8,11 +8,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "cgaltetrahedralizedialog.h"
-#include "qgltetraviewer.h"
-#include "quartetterahedralizedialog.h"
-#include "tetgendialog.h"
-#include "tetrastuffingdialog.h"
 #include <OctreeVisWidget.hpp>
 #include <QAction>
 #include <QCloseEvent>
@@ -28,6 +23,12 @@
 #include <SurfaceVisWidget.hpp>
 #include <TetraVisWidget.hpp>
 
+#include "cgaltetrahedralizedialog.h"
+#include "qgltetraviewer.h"
+#include "quartetterahedralizedialog.h"
+#include "tetgendialog.h"
+#include "tetrastuffingdialog.h"
+
 // namespace Ui {
 // class MainWindow;
 // }
@@ -35,11 +36,11 @@
 class QTetraMesherMainWindow : public QMainWindow {
   Q_OBJECT
 
-public:
+ public:
   explicit QTetraMesherMainWindow(QWidget *parent = 0);
   //~QTetraMesherMainWindow();
 
-public slots:
+ public slots:
   void toggleFullScreen(bool value);
   void showTetraStuffingDialog();
   void showQuartetTetraDialog();
@@ -52,7 +53,6 @@ public slots:
   void setAxisShownSlot();
   void setGridShownSlot();
   void setBBoxVisibleSlot();
-  void surfaceButtonSlot();
   void surfaceVisChanged();
   void surfaceColorButtonSlot();
   void surfaceWireframeColorButtonSlot();
@@ -61,9 +61,10 @@ public slots:
   void tetraWirefraceColorButtonSlot();
   void cutplaneSliderSlot();
   void loadSurfaceSlot();
+  void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
 
-private:
+ private:
   // QGLViewer variant
   QGLTetraViewer *viewer;
   // UI elements
@@ -100,18 +101,19 @@ private:
   CGALTetrahedralizeDialog *ctd = NULL;
   QuartetTetraStuffingDialog *cts = NULL;
   TetgenDialog *ttd = NULL;
+  uint selectedTetraMethod;
 
   void setupUI();
   void connectSlots();
 
-protected:
+ protected:
   // override main window close event to close all child dialogs
   void closeEvent(QCloseEvent *event);
 
   void resizeEvent(QResizeEvent *event);
 
-private slots:
+ private slots:
   void on_viewer_onLoad();
 };
 
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

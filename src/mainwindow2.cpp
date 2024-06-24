@@ -25,6 +25,7 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
+  selectedTetraMethod = 0;
 }
 
 void QTetraMesherMainWindow::setupUI() {
@@ -156,8 +157,11 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(generateOctreeSlot()));
   connect(&octreeVisWidget.octreeVisComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(octreeVisChangedSlot()));
+  connect(&tetraMeshMethodComboBox, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(tetraMethodComboBoxSlot()));
 }
 
+// visualization slots
 void QTetraMesherMainWindow::setAxisShownSlot() {
   viewer->setAxisIsDrawn(actionShowAxis.isChecked());
 }
@@ -168,10 +172,6 @@ void QTetraMesherMainWindow::setGridShownSlot() {
 
 void QTetraMesherMainWindow::setBBoxVisibleSlot() {
   viewer->tMesh->ToggleBBox(actionShowBBox.isChecked());
-}
-
-void QTetraMesherMainWindow::surfaceButtonSlot() {
-  std::cout << "HUIIIIII! SurfaceVisButton!" << std::endl;
 }
 
 void QTetraMesherMainWindow::surfaceVisChanged() {
@@ -214,6 +214,37 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
   } else {
     this->showNormal();
   }
+}
+
+// menu + method slots
+void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
+  int newSelectedMethod = tetraMeshMethodComboBox.currentIndex();
+  // replace method options here
+  switch (selectedTetraMethod) {
+    case 0:
+      sofaTetraStuffingWidget.hide();
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    default:
+      break;
+  }
+  switch (newSelectedMethod) {
+    case 0:
+      sofaTetraStuffingWidget.show();
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    default:
+      break;
+  }
+  selectedTetraMethod = tetraMeshMethodComboBox.currentIndex();
 }
 
 void QTetraMesherMainWindow::loadSurfaceSlot() {
