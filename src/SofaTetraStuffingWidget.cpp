@@ -24,7 +24,7 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   labelTitle.setFont(boldFont);
   tetraSizeLabel.setText("TetraSize");
   tetraSizeLabel.setFont(boldFont);
-  tetraSizeSpinBox.setValue(2.0);
+  tetraSizeSpinBox.setValue(1.0);
   tetraSizeSpinBox.setSingleStep(0.01);
   tetraSizeLabel.setMaximumHeight(20);
   tetraSizeSpinBox.setMaximumHeight(20);

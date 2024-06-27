@@ -21,7 +21,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       surfaceVisWidget(this),
       tetraVisWidget(this),
       octreeVisWidget(this),
-      sofaTetraStuffingWidget(this) {
+      sofaTetraStuffingWidget(this),
+      cgalTetrahedralizeWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
@@ -115,6 +116,8 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&tetraMeshMethodLabel);
   optionsLayout.addWidget(&tetraMeshMethodComboBox);
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
+  optionsLayout.addWidget(&cgalTetrahedralizeWidget);
+  cgalTetrahedralizeWidget.hide();
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
 
@@ -149,6 +152,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(cutplaneSliderSlot()));
   connect(&sofaTetraStuffingWidget.generateTetrahedraButton, SIGNAL(clicked()),
           this, SLOT(generateSofaTetraStuffingSlot()));
+  connect(&cgalTetrahedralizeWidget.generateTetrahedraButton, SIGNAL(clicked()),
+          this, SLOT(generateCGALTetrahedralizeSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -220,22 +225,15 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
 void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   int newSelectedMethod = tetraMeshMethodComboBox.currentIndex();
   // replace method options here
-  switch (selectedTetraMethod) {
-    case 0:
-      sofaTetraStuffingWidget.hide();
-    case 1:
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    default:
-      break;
-  }
+  cgalTetrahedralizeWidget.hide();
+  sofaTetraStuffingWidget.hide();
   switch (newSelectedMethod) {
     case 0:
       sofaTetraStuffingWidget.show();
+      cgalTetrahedralizeWidget.hide();
     case 1:
+      cgalTetrahedralizeWidget.show();
+      sofaTetraStuffingWidget.hide();
       break;
     case 2:
       break;
@@ -251,11 +249,18 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
   viewer->loadSurface();
   sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                     0.05f);
+  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
+  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() *
+                                                     0.05);
   // viewer->tMesh->GetSurface()->GenerateBoundingBox();
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
   sofaTetraStuffingWidget.generateTetrahedra(viewer);
+}
+
+void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
+  cgalTetrahedralizeWidget.generateTetrahedra(viewer);
 }
 
 void QTetraMesherMainWindow::showTetraStuffingDialog() {

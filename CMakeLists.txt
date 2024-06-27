@@ -106,6 +106,8 @@ add_executable(
   ${UI_FILES}
   src/SofaTetraStuffingWidget.hpp
   src/SofaTetraStuffingWidget.cpp
+  src/CGALTetrahedralizeWidget.hpp
+  src/CGALTetrahedralizeWidget.cpp
 )
 
 target_link_libraries(

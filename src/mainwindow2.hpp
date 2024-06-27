@@ -8,6 +8,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <CGALTetrahedralizeWidget.hpp>
 #include <OctreeVisWidget.hpp>
 #include <QAction>
 #include <QCloseEvent>
@@ -63,6 +64,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void loadSurfaceSlot();
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
+  void generateCGALTetrahedralizeSlot();
 
  private:
   // QGLViewer variant
@@ -96,6 +98,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QLabel tetraMeshMethodLabel;
   QComboBox tetraMeshMethodComboBox;
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
+  CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
