@@ -229,8 +229,9 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   sofaTetraStuffingWidget.hide();
   switch (newSelectedMethod) {
     case 0:
-      sofaTetraStuffingWidget.show();
       cgalTetrahedralizeWidget.hide();
+      sofaTetraStuffingWidget.show();
+      break;
     case 1:
       cgalTetrahedralizeWidget.show();
       sofaTetraStuffingWidget.hide();

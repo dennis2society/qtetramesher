@@ -39,7 +39,6 @@ class CGALTetrahedralizeWidget : public BaseOptionsWidget {
   QLabel cellRadiusToEdgeRatioLabel;
   QDoubleSpinBox cellRadiusToEdgeRatioSpinBox;
   QPushButton generateTetrahedraButton;
-  QHBoxLayout additionalOptionsLayout;
 };
 
 #endif  // CGAL_TETRAHEDRALIZE_WIDGET_HPP
