@@ -108,6 +108,8 @@ add_executable(
   src/SofaTetraStuffingWidget.cpp
   src/CGALTetrahedralizeWidget.hpp
   src/CGALTetrahedralizeWidget.cpp
+  src/QuartetTetraStuffingWidget.hpp
+  src/QuartetTetraStuffingWidget.cpp
 )
 
 target_link_libraries(

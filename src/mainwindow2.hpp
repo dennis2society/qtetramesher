@@ -20,6 +20,7 @@
 #include <QMenuBar>
 #include <QPushButton>
 #include <QWidget>
+#include <QuartetTetraStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetraVisWidget.hpp>
@@ -65,6 +66,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();
+  void generateQuartetTetraStuffingSlot();
 
  private:
   // QGLViewer variant
@@ -99,6 +101,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QComboBox tetraMeshMethodComboBox;
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
+  QuartetTetraStuffingWidget quartetTetraStuffingWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;

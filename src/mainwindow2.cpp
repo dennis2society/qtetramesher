@@ -22,7 +22,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       tetraVisWidget(this),
       octreeVisWidget(this),
       sofaTetraStuffingWidget(this),
-      cgalTetrahedralizeWidget(this) {
+      cgalTetrahedralizeWidget(this),
+      quartetTetraStuffingWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
@@ -117,7 +118,9 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&tetraMeshMethodComboBox);
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
   optionsLayout.addWidget(&cgalTetrahedralizeWidget);
+  optionsLayout.addWidget(&quartetTetraStuffingWidget);
   cgalTetrahedralizeWidget.hide();
+  quartetTetraStuffingWidget.hide();
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
 
@@ -154,6 +157,8 @@ void QTetraMesherMainWindow::connectSlots() {
           this, SLOT(generateSofaTetraStuffingSlot()));
   connect(&cgalTetrahedralizeWidget.generateTetrahedraButton, SIGNAL(clicked()),
           this, SLOT(generateCGALTetrahedralizeSlot()));
+  connect(&quartetTetraStuffingWidget.generateTetrahedraButton,
+          SIGNAL(clicked()), this, SLOT(generateQuartetTetraStuffingSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -227,16 +232,16 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   // replace method options here
   cgalTetrahedralizeWidget.hide();
   sofaTetraStuffingWidget.hide();
+  quartetTetraStuffingWidget.hide();
   switch (newSelectedMethod) {
     case 0:
-      cgalTetrahedralizeWidget.hide();
       sofaTetraStuffingWidget.show();
       break;
     case 1:
       cgalTetrahedralizeWidget.show();
-      sofaTetraStuffingWidget.hide();
       break;
     case 2:
+      quartetTetraStuffingWidget.show();
       break;
     case 3:
       break;
@@ -262,6 +267,10 @@ void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
 
 void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
   cgalTetrahedralizeWidget.generateTetrahedra(viewer);
+}
+
+void QTetraMesherMainWindow::generateQuartetTetraStuffingSlot() {
+  quartetTetraStuffingWidget.generateTetrahedra(viewer);
 }
 
 void QTetraMesherMainWindow::showTetraStuffingDialog() {

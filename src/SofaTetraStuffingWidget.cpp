@@ -82,7 +82,6 @@ void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   tMesh_->Draw();
   viewer_->update();
   viewer_->displayMessage(QString("Updating visual mesh..."), 2000);
-  tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
   std::stringstream ss;
   ss << "Generated tetrahedral mesh in " << t.elapsed()
      << "ms. Tetras: " << sts.GetTetras().size()
