@@ -28,27 +28,27 @@
 #define QGRID_EXPORT
 #endif
 
-#include "TetraMeshTools/Octree.h"
-#include "TetraMeshTools/TetrahedronTopology.h"
 #include <QtGui/QColor>
 #include <string>
 #include <vector>
 
-class QGLTetraMesh {
+#include "TetraMeshTools/Octree.h"
+#include "TetraMeshTools/TetrahedronTopology.h"
 
-private:
-  TetraTools::TetrahedronTopology *top; /// tetra mesh topology
-  TetraTools::TriangleTopology *surf;   /// triangle mesh for surface
+class QGLTetraMesh {
+ private:
+  TetraTools::TetrahedronTopology *top;  /// tetra mesh topology
+  TetraTools::TriangleTopology *surf;    /// triangle mesh for surface
   bool drawTetraMesh;
   bool drawTriangleMesh;
   bool drawTetraSurface;
   bool drawSolid;
   bool showBoundingBox;
   bool isReady;
-  int bboxMode;    // 0 = hide, 1 = bounding box
-  int tetraMode;   // 0 = solid, 1 = wireframe, 2 = hidden
-  int surfaceMode; // 0 = solid, 1 = wireframe, 2 = hidden
-  int octreeMode;  // 0 = hidden, 1 = visible
+  int bboxMode;     // 0 = hide, 1 = bounding box
+  int tetraMode;    // 0 = solid, 1 = wireframe, 2 = hidden
+  int surfaceMode;  // 0 = solid, 1 = wireframe, 2 = hidden
+  int octreeMode;   // 0 = hidden, 1 = visible
 
   float cutPlaneOffset;
 
@@ -71,7 +71,7 @@ private:
 
   Octree *oct;
 
-public:
+ public:
   QGLTetraMesh();
   ~QGLTetraMesh();
 
@@ -136,10 +136,8 @@ public:
   bool IsReady() { return isReady; }
 
   BoundingBox GetBoundingBox() {
-    if (surf)
-      return surf->GetBoundingBox();
-    if (top)
-      return top->GetBoundingBox();
+    if (surf) return surf->GetBoundingBox();
+    if (top) return top->GetBoundingBox();
     BoundingBox bb;
     bb.min = Vec3f(0, 0, 0);
     bb.max = Vec3f(0, 0, 0);
@@ -147,10 +145,8 @@ public:
   }
 
   BoundingCube GetBoundingCube() {
-    if (surf)
-      return surf->GetLargeBoundingCube();
-    if (top)
-      return top->GetLargeBoundingCube();
+    if (surf) return surf->GetLargeBoundingCube();
+    if (top) return top->GetLargeBoundingCube();
     BoundingCube bc;
     bc.size = 1.0f;
     bc.center = Vec3f(0, 0, 0);

@@ -10,7 +10,10 @@
 #include <QFont>
 #include <TetraVisWidget.hpp>
 
-TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent) {
+TetraVisWidget::TetraVisWidget(QWidget *parent)
+    : BaseOptionsWidget(parent),
+      tetraZCutplaneSlider(Qt::Horizontal, RangeSlider::Option::DoubleHandles,
+                           this) {
   labelTitle.setText("TetraMesh Visualization");
   QFont boldFont;
   boldFont.setBold(true);
@@ -23,22 +26,22 @@ TetraVisWidget::TetraVisWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   tetraVisComboBox.addItem("Wireframe");
   tetraVisComboBox.addItem("Hidden");
   tetraVisComboBox.setMaximumHeight(20);
-  tetraCutplaneLabel.setText("Cutplane Z");
-  tetraCutplaneLabel.setMaximumHeight(20);
-  tetraCutplaneSlider.setValue(0);
-  tetraCutplaneSlider.setRange(0, 100);
-  tetraCutplaneSlider.setOrientation(Qt::Orientation::Horizontal);
-  tetraCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
-                                    QSizePolicy::Preferred);
-  tetraCutplaneSlider.setSingleStep(1);
-  tetraCutplaneSlider.setMinimumSize(280, 20);
-  tetraCutplaneSlider.setMaximumHeight(20);
-  tetraCutplaneSlider.setMaximumWidth(320);
+  tetraZCutplaneLabel.setText("Cutplanes Z");
+  tetraZCutplaneLabel.setMaximumHeight(20);
+  tetraZCutplaneSlider.SetLowerValue(0);
+  tetraZCutplaneSlider.SetUpperValue(100);
+  tetraZCutplaneSlider.SetRange(0, 100);
+  tetraZCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
+                                     QSizePolicy::Preferred);
+  // tetraCutplaneSlider.setSingleStep(1);
+  tetraZCutplaneSlider.setMinimumSize(280, 20);
+  tetraZCutplaneSlider.setMaximumHeight(20);
+  tetraZCutplaneSlider.setMaximumWidth(320);
   layout.addWidget(&labelTitle);
   layout.addWidget(&tetraVisComboBox);
   layout.addWidget(&tetraColorButton);
   layout.addWidget(&tetraWireframeColorButton);
-  layout.addWidget(&tetraCutplaneLabel);
-  layout.addWidget(&tetraCutplaneSlider);
+  layout.addWidget(&tetraZCutplaneLabel);
+  layout.addWidget(&tetraZCutplaneSlider);
   layout.addStretch();
 }

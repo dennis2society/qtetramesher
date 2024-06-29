@@ -79,6 +79,7 @@ void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
                           snapToPointsCheckBox.isChecked(),
                           splitTetrasCheckBox.isChecked());
   tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
+  tMesh_->GetBoundingBox();
   tMesh_->Draw();
   viewer_->update();
   viewer_->displayMessage(QString("Updating visual mesh..."), 2000);

@@ -15,19 +15,20 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QSlider>
+#include <RangeSlider.hpp>
 
 class TetraVisWidget : public BaseOptionsWidget {
   Q_OBJECT
 
-public:
+ public:
   TetraVisWidget(QWidget *parent);
   void update();
 
   QComboBox tetraVisComboBox;
   QPushButton tetraColorButton;
   QPushButton tetraWireframeColorButton;
-  QLabel tetraCutplaneLabel;
-  QSlider tetraCutplaneSlider;
+  QLabel tetraZCutplaneLabel;
+  RangeSlider tetraZCutplaneSlider;
 };
 
-#endif // TETRA_VIS_WIDGET_H
+#endif  // TETRA_VIS_WIDGET_H

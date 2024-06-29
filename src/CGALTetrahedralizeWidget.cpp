@@ -38,7 +38,7 @@ CGALTetrahedralizeWidget::CGALTetrahedralizeWidget(QWidget *parent)
   facetSizeSpinBox.setSingleStep(0.01);
   facetSizeLabel.setMaximumHeight(20);
   facetSizeSpinBox.setMaximumHeight(20);
-  facetSizeLabel.setMaximumHeight(20);
+  facetAngleSpinBox.setMaximumHeight(20);
   facetSizeSpinBox.setMaximumHeight(20);
   facetAngleLayout.addWidget(&facetAngleLabel);
   facetAngleLayout.addWidget(&facetAngleSpinBox);
@@ -50,8 +50,10 @@ CGALTetrahedralizeWidget::CGALTetrahedralizeWidget(QWidget *parent)
   cellRadiusToEdgeRatioLabel.setMaximumHeight(20);
   facetDistanceSpinBox.setValue(0.03);
   facetDistanceSpinBox.setSingleStep(0.01);
+  facetDistanceSpinBox.setMaximumHeight(20);
   cellRadiusToEdgeRatioSpinBox.setValue(3.0);
   cellRadiusToEdgeRatioSpinBox.setSingleStep(0.01);
+  cellRadiusToEdgeRatioSpinBox.setMaximumHeight(20);
   facetDistanceLayout.addWidget(&facetDistanceLabel);
   facetDistanceLayout.addWidget(&facetDistanceSpinBox);
   facetDistanceLayout.addWidget(&cellRadiusToEdgeRatioLabel);

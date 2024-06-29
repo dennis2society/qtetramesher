@@ -26,11 +26,7 @@
 #include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
 
-#include "cgaltetrahedralizedialog.h"
 #include "qgltetraviewer.h"
-#include "quartetterahedralizedialog.h"
-#include "tetgendialog.h"
-#include "tetrastuffingdialog.h"
 
 // namespace Ui {
 // class MainWindow;
@@ -45,10 +41,6 @@ class QTetraMesherMainWindow : public QMainWindow {
 
  public slots:
   void toggleFullScreen(bool value);
-  void showTetraStuffingDialog();
-  void showQuartetTetraDialog();
-  void showCGALDialog();
-  void showTetgenDialog();
   void generateOctreeSlot();
   void octreeVisChangedSlot();
   void displayMessage(QString msg_, unsigned int time_);
@@ -62,7 +54,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
   void tetraWirefraceColorButtonSlot();
-  void cutplaneSliderSlot();
+  void cutplaneZSliderSlot();
   void loadSurfaceSlot();
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
@@ -98,18 +90,13 @@ class QTetraMesherMainWindow : public QMainWindow {
   SurfaceVisWidget surfaceVisWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;
+  // Tetra mesh methods widgets
   QLabel tetraMeshMethodLabel;
   QComboBox tetraMeshMethodComboBox;
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
   QuartetTetraStuffingWidget quartetTetraStuffingWidget;
   TetgenWidget tetgenWidget;
-  // Ui::MainWindow *ui;
-  TetraStuffingDialog *tsd = NULL;
-  CGALTetrahedralizeDialog *ctd = NULL;
-  QuartetTetraStuffingDialog *cts = NULL;
-  TetgenDialog *ttd = NULL;
-  uint selectedTetraMethod;
 
   void setupUI();
   void connectSlots();

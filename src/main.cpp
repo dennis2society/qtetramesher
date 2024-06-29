@@ -5,7 +5,7 @@
  *      Author: Dennis Luebke
  */
 
-#include "mainwindow2.hpp"
+#include "mainwindow.hpp"
 #include <QApplication>
 
 int main(int argc, char *argv[]) {

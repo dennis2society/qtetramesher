@@ -64,14 +64,6 @@ include_directories(
   ${Qt${QT_MAJOR_VERSION}OpenGL_INCLUDE_DIRS}
 )
 
-set(UI_FILES
-  src/mainwindow.ui
-  src/tetrastuffingdialog.ui
-  src/CGALTetrahedralizeDialog.ui
-  src/quartettetrastuffingdialog.ui
-  src/tetgendialog.ui
-)
-
 add_executable(
   QTetraMesher
   src/BaseOptionsWidget.hpp
@@ -80,30 +72,17 @@ add_executable(
   src/SurfaceVisWidget.cpp
   src/TetraVisWidget.hpp
   src/TetraVisWidget.cpp
-  src/BaseTetraDialog.cpp
   src/OctreeVisWidget.hpp
   src/OctreeVisWidget.cpp
   src/main.cpp
   src/QGLTetraMesh.h
-  src/quartettetrahedralizedialog.cpp
-  src/tetrastuffingdialog.h
-  src/BaseTetraDialog.h
-  #src/mainwindow.cpp
-  src/mainwindow2.cpp
+  src/mainwindow.hpp
+  src/mainwindow.cpp
   src/qgltetraviewer.cpp
   src/Timer.cpp
-  src/cgaltetrahedralizedialog.cpp
-  #src/mainwindow.h
-  src/mainwindow2.hpp
   src/qgltetraviewer.h
   src/Timer.h
-  src/cgaltetrahedralizedialog.h
   src/QGLTetraMesh.cpp
-  src/quartetterahedralizedialog.h
-  src/tetrastuffingdialog.cpp
-  src/tetgendialog.h
-  src/tetgendialog.cpp
-  ${UI_FILES}
   src/SofaTetraStuffingWidget.hpp
   src/SofaTetraStuffingWidget.cpp
   src/CGALTetrahedralizeWidget.hpp
@@ -112,6 +91,8 @@ add_executable(
   src/QuartetTetraStuffingWidget.cpp
   src/TetgenWidget.hpp
   src/TetgenWidget.cpp
+  src/RangeSlider.hpp
+  src/RangeSlider.cpp
 )
 
 target_link_libraries(

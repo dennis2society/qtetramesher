@@ -179,30 +179,25 @@ void QGLTetraViewer::ToggleTetraVis(int i) {
 
 void QGLTetraViewer::ToggleTriangleVis(int i) {
   tMesh->ToggleTriangleMesh(i);
-  // updateGL();
   update();
 }
 
 void QGLTetraViewer::ToggleOctreeVis(int i) {
   tMesh->ToggleOctreeVis(i);
-  // updateGL();
   update();
 }
 
 void QGLTetraViewer::ToggleBBox(int i) {
   tMesh->ToggleBBox(i);
-  // updateGL();
   update();
 }
 
 void QGLTetraViewer::SetCutPlane(int i) {
   tMesh->SetCutPlaneOffset(i);
-  // updateGL();
   update();
 }
 
 void QGLTetraViewer::SetZRange(int lower, int upper) {
-  std::cout << lower << "/" << upper << std::endl;
   tMesh->SetZRange(lower, upper);
 }
 
@@ -222,7 +217,6 @@ void QGLTetraViewer::scale10() {
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));
   this->setSceneRadius(_maxBBox);
-  // updateGL();
   update();
   // this->camera()->showEntireScene();
   // this->ShowStatusMessage("Mesh successfully scale by 10", 3000);
