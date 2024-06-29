@@ -8,14 +8,14 @@
 #ifndef Q_TETRA_VIEWER_H_
 #define Q_TETRA_VIEWER_H_
 
-#include "QGLTetraMesh.h"
 #include <QGLViewer/qglviewer.h>
 
-class QGLTetraViewer : public QGLViewer {
+#include "QGLTetraMesh.h"
 
+class QGLTetraViewer : public QGLViewer {
   Q_OBJECT
 
-public:
+ public:
 #if QT_VERSION < 0x040000
   QGLTetraViewer(QWidget *parent, const char *name);
 #else
@@ -27,7 +27,7 @@ public:
   void generateOctree(int d);
   float getMaxBBox() const;
 
-public slots:
+ public slots:
   void ToggleTetraVis(int i);
   void ToggleTriangleVis(int i);
   void ToggleOctreeVis(int i);
@@ -47,15 +47,15 @@ public slots:
   void scale10();
   void scale01();
 
-signals:
+ signals:
   void onLoad();
 
-protected:
+ protected:
   virtual void draw();
   virtual QString helpString() const;
 
-  float _maxBBox; // maximum value in BBox lengths to determine suggested tetra
-                  // size
+  float _maxBBox;  // maximum value in BBox lengths to determine suggested tetra
+                   // size
 };
 
 #endif /* Q_TETRA_VIEWER_H_ */

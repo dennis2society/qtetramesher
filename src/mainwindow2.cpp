@@ -23,7 +23,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       octreeVisWidget(this),
       sofaTetraStuffingWidget(this),
       cgalTetrahedralizeWidget(this),
-      quartetTetraStuffingWidget(this) {
+      quartetTetraStuffingWidget(this),
+      tetgenWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
@@ -102,7 +103,7 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("SOFA TetraStuffing");
   tetraMeshMethodComboBox.addItem("CGAL Tetrahedralize");
   tetraMeshMethodComboBox.addItem("Quartet TetraStuffing");
-  tetraMeshMethodComboBox.addItem("Tetgen TetraStuffing");
+  tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
   optionsLayout.addWidget(&surfaceVisWidget);
   QFrame f1;
   f1.setFrameShape(QFrame::HLine);
@@ -119,8 +120,10 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
   optionsLayout.addWidget(&cgalTetrahedralizeWidget);
   optionsLayout.addWidget(&quartetTetraStuffingWidget);
+  optionsLayout.addWidget(&tetgenWidget);
   cgalTetrahedralizeWidget.hide();
   quartetTetraStuffingWidget.hide();
+  tetgenWidget.hide();
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
 
@@ -195,10 +198,22 @@ void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
 
 void QTetraMesherMainWindow::surfaceColorButtonSlot() {
   viewer->selectSurfaceColor();
+  const QColor surfaceColor = viewer->tMesh->GetSurfaceColor();
+  surfaceVisWidget.surfaceColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(surfaceColor.red()) + "," +
+      QString::number(surfaceColor.green()) + "," +
+      QString::number(surfaceColor.blue()) + ");}\n");
 }
 
 void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
   viewer->selectSurfaceColorWireframe();
+  const QColor wireframeeColor = viewer->tMesh->GetSurfaceWireframeColor();
+  surfaceVisWidget.surfaceWireframeColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(wireframeeColor.red()) + "," +
+      QString::number(wireframeeColor.green()) + "," +
+      QString::number(wireframeeColor.blue()) + ");}\n");
 }
 
 void QTetraMesherMainWindow::tetraVisChangedSlot() {
@@ -208,10 +223,21 @@ void QTetraMesherMainWindow::tetraVisChangedSlot() {
 
 void QTetraMesherMainWindow::tetraColorButtonSlot() {
   viewer->selectTetraColor();
+  const QColor tetraColor = viewer->tMesh->GetTetraColor();
+  tetraVisWidget.tetraColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" + QString::number(tetraColor.red()) +
+      "," + QString::number(tetraColor.green()) + "," +
+      QString::number(tetraColor.blue()) + ");}\n");
 }
 
 void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
   viewer->selectTetraColorWireframe();
+  const QColor tetraWireframeColor = viewer->tMesh->GetTetraWireframeColor();
+  tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(tetraWireframeColor.red()) + "," +
+      QString::number(tetraWireframeColor.green()) + "," +
+      QString::number(tetraWireframeColor.blue()) + ");}\n");
 }
 
 void QTetraMesherMainWindow::cutplaneSliderSlot() {
@@ -233,6 +259,7 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   cgalTetrahedralizeWidget.hide();
   sofaTetraStuffingWidget.hide();
   quartetTetraStuffingWidget.hide();
+  tetgenWidget.hide();
   switch (newSelectedMethod) {
     case 0:
       sofaTetraStuffingWidget.show();
@@ -244,6 +271,7 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
       quartetTetraStuffingWidget.show();
       break;
     case 3:
+      tetgenWidget.show();
       break;
     default:
       break;

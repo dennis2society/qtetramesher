@@ -110,6 +110,8 @@ add_executable(
   src/CGALTetrahedralizeWidget.cpp
   src/QuartetTetraStuffingWidget.hpp
   src/QuartetTetraStuffingWidget.cpp
+  src/TetgenWidget.hpp
+  src/TetgenWidget.cpp
 )
 
 target_link_libraries(

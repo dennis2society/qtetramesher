@@ -23,6 +23,7 @@
 #include <QuartetTetraStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
 #include <SurfaceVisWidget.hpp>
+#include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
 
 #include "cgaltetrahedralizedialog.h"
@@ -102,6 +103,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
   QuartetTetraStuffingWidget quartetTetraStuffingWidget;
+  TetgenWidget tetgenWidget;
   // Ui::MainWindow *ui;
   TetraStuffingDialog *tsd = NULL;
   CGALTetrahedralizeDialog *ctd = NULL;
