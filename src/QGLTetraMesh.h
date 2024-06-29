@@ -50,8 +50,10 @@ class QGLTetraMesh {
   int surfaceMode;  // 0 = solid, 1 = wireframe, 2 = hidden
   int octreeMode;   // 0 = hidden, 1 = visible
 
-  float cutPlaneOffset;
-
+  float xLowerThreshold;
+  float xUpperThreshold;
+  float yLowerThreshold;
+  float yUpperThreshold;
   float zLowerThreshold;
   float zUpperThreshold;
 
@@ -124,11 +126,8 @@ class QGLTetraMesh {
 
   void ToggleTetraSurface() { drawTetraSurface = !drawTetraSurface; }
 
-  void SetCutPlaneOffset(int i) {
-    float f = (float)i / 100.0f;
-    cutPlaneOffset = f;
-  }
-
+  void SetXRange(int lower, int upper);
+  void SetYRange(int lower, int upper);
   void SetZRange(int lower, int upper);
 
   float GetSceneRadius() { return surf->GetRadius(); }

@@ -27,6 +27,10 @@ class TetraVisWidget : public BaseOptionsWidget {
   QComboBox tetraVisComboBox;
   QPushButton tetraColorButton;
   QPushButton tetraWireframeColorButton;
+  QLabel tetraXCutplaneLabel;
+  RangeSlider tetraXCutplaneSlider;
+  QLabel tetraYCutplaneLabel;
+  RangeSlider tetraYCutplaneSlider;
   QLabel tetraZCutplaneLabel;
   RangeSlider tetraZCutplaneSlider;
 };

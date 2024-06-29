@@ -242,9 +242,10 @@ void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
 }
 
 void QTetraMesherMainWindow::cutplaneZSliderSlot() {
-  viewer->SetCutPlane(tetraVisWidget.tetraZCutplaneSlider.GetLowerValue());
-  viewer->SetZRange(tetraVisWidget.tetraZCutplaneSlider.GetLowerValue(),
-                    tetraVisWidget.tetraZCutplaneSlider.GetUpperValue());
+  viewer->tMesh->SetZRange(tetraVisWidget.tetraZCutplaneSlider.GetLowerValue(),
+                           tetraVisWidget.tetraZCutplaneSlider.GetUpperValue());
+  viewer->tMesh->Draw();
+  viewer->update();
 }
 
 void QTetraMesherMainWindow::toggleFullScreen(bool value) {
@@ -291,19 +292,28 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
                                                      0.05);
   quartetTetraStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                       0.2);
-  // viewer->tMesh->GetSurface()->GenerateBoundingBox();
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
   sofaTetraStuffingWidget.generateTetrahedra(viewer);
+  tetraVisWidget.tetraXCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraXCutplaneSlider.setUpperValue(100);
+  tetraVisWidget.tetraYCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraYCutplaneSlider.setUpperValue(100);
+  tetraVisWidget.tetraZCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraZCutplaneSlider.setUpperValue(100);
 }
 
 void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
   cgalTetrahedralizeWidget.generateTetrahedra(viewer);
+  tetraVisWidget.tetraZCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraZCutplaneSlider.setUpperValue(100);
 }
 
 void QTetraMesherMainWindow::generateQuartetTetraStuffingSlot() {
   quartetTetraStuffingWidget.generateTetrahedra(viewer);
+  tetraVisWidget.tetraZCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraZCutplaneSlider.setUpperValue(100);
 }
 
 void QTetraMesherMainWindow::generateOctreeSlot() {

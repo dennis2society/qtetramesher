@@ -32,8 +32,6 @@ class QGLTetraViewer : public QGLViewer {
   void ToggleTriangleVis(int i);
   void ToggleOctreeVis(int i);
   void ToggleBBox(int i);
-  void SetCutPlane(int i);
-  void SetZRange(int lower, int upper);
   void ShowStatusMessage(const QString &msg_, int duration_ = 2000);
   void loadSurface();
   void loadGMSH();

@@ -192,15 +192,6 @@ void QGLTetraViewer::ToggleBBox(int i) {
   update();
 }
 
-void QGLTetraViewer::SetCutPlane(int i) {
-  tMesh->SetCutPlaneOffset(i);
-  update();
-}
-
-void QGLTetraViewer::SetZRange(int lower, int upper) {
-  tMesh->SetZRange(lower, upper);
-}
-
 void QGLTetraViewer::ShowStatusMessage(const QString &msg_, int duration_) {
   displayMessage(msg_, duration_);
 }

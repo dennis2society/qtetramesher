@@ -27,8 +27,7 @@ QGLTetraMesh::QGLTetraMesh()
       showBoundingBox(false),
       bboxMode(0),
       tetraMode(0),
-      surfaceMode(0),
-      cutPlaneOffset(0) {
+      surfaceMode(0) {
   top = NULL;
   surf = NULL;
   surfaceColorSolid = Vec3f(0.5f, 0.5f, 0.5f);
@@ -94,6 +93,12 @@ void QGLTetraMesh::Draw() {
             Vec3f centroid =
                 t.Centroid(vertices[t.index[0]], vertices[t.index[1]],
                            vertices[t.index[2]], vertices[t.index[3]]);
+            float xDist = b.max.x - b.min.x;
+            float xLowerCutDist = xDist * xLowerThreshold;
+            float xUpperCutDist = xDist * xUpperThreshold;
+            float yDist = b.max.y - b.min.y;
+            float yLowerCutDist = yDist * yLowerThreshold;
+            float yUpperCutDist = yDist * yUpperThreshold;
             float zDist = b.max.z - b.min.z;
             float zLowerCutDist = zDist * zLowerThreshold;
             float zUpperCutDist = zDist * zUpperThreshold;
@@ -107,10 +112,14 @@ void QGLTetraMesh::Draw() {
             Vec3f vc3 = (v3 - centroid) * 0.95f;
             /// draw tetra when its centroid is between the front and back
             /// cutplanes
-            if ((centroid.z <= (b.max.z - zLowerCutDist)) &&
+            if (/*(centroid.x <= (b.max.x - xLowerCutDist)) &&
+                (centroid.x >= (b.max.x - xUpperCutDist)) &&
+                (centroid.y <= (b.max.y - yLowerCutDist)) &&
+                (centroid.y >= (b.max.y - yUpperCutDist)) &&*/
+                (centroid.z <= (b.max.z - zLowerCutDist)) &&
                 (centroid.z >= (b.max.z - zUpperCutDist))) {
-              /// draw 4 correctly faced tetra triangles based on the triangles
-              /// in relation to the tetrahedron's centroid
+              /// draw 4 correctly faced tetra triangles based on the
+              /// triangles in relation to the tetrahedron's centroid
               glBegin(GL_TRIANGLES);
               Vec3f normal = (vc3 - vc0).cross((vc2 - vc0));
               normal.normalize();
@@ -599,6 +608,16 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   t.stop();
   std::cout << "Octree Level " << oct->getDepth() << " generated in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
+}
+
+void QGLTetraMesh::SetXRange(int lower, int upper) {
+  xLowerThreshold = (float)lower / 100.0f;
+  xUpperThreshold = (float)upper / 100.0f;
+}
+
+void QGLTetraMesh::SetYRange(int lower, int upper) {
+  yLowerThreshold = (float)lower / 100.0f;
+  yUpperThreshold = (float)upper / 100.0f;
 }
 
 void QGLTetraMesh::SetZRange(int lower, int upper) {
