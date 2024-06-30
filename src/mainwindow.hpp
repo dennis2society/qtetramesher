@@ -54,6 +54,8 @@ class QTetraMesherMainWindow : public QMainWindow {
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
   void tetraWirefraceColorButtonSlot();
+  void cutplaneXSliderSlot();
+  void cutplaneYSliderSlot();
   void cutplaneZSliderSlot();
   void loadSurfaceSlot();
   void tetraMethodComboBoxSlot();
@@ -100,6 +102,8 @@ class QTetraMesherMainWindow : public QMainWindow {
 
   void setupUI();
   void connectSlots();
+
+  void updateCutplaneSliders();
 
  protected:
   // override main window close event to close all child dialogs

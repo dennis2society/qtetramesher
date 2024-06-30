@@ -112,10 +112,10 @@ void QGLTetraMesh::Draw() {
             Vec3f vc3 = (v3 - centroid) * 0.95f;
             /// draw tetra when its centroid is between the front and back
             /// cutplanes
-            if (/*(centroid.x <= (b.max.x - xLowerCutDist)) &&
+            if ((centroid.x <= (b.max.x - xLowerCutDist)) &&
                 (centroid.x >= (b.max.x - xUpperCutDist)) &&
                 (centroid.y <= (b.max.y - yLowerCutDist)) &&
-                (centroid.y >= (b.max.y - yUpperCutDist)) &&*/
+                (centroid.y >= (b.max.y - yUpperCutDist)) &&
                 (centroid.z <= (b.max.z - zLowerCutDist)) &&
                 (centroid.z >= (b.max.z - zUpperCutDist))) {
               /// draw 4 correctly faced tetra triangles based on the
