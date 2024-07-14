@@ -7,6 +7,11 @@
 
 #include "SofaTetraStuffing.h"
 #ifdef _WIN32
+// This is required for the Windows build to avoid
+// min/max macro collisions
+#ifndef NOMINMAX
+# define NOMINMAX
+#endif
 #include <windows.h>
 #endif
 #include "sofa/component/engine/generate/MeshTetraStuffing.h"
