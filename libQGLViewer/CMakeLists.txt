@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 if (QT_MAJOR_VERSION EQUAL 6)
-  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGLWidgets OpenGL)
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
   set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
 else ()
   find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
