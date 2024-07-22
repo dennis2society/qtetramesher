@@ -24,7 +24,7 @@ Build instructions: https://qtm.dennis2society.de/#Build
  <b>Updated Windows binary build (Visual Studio 2019 Community, x64)</b>
  * Download: https://github.com/dennis2society/qtetramesher/releases/tag/0.8.3_win64_VS2019
  * Qt 5.15.2
- * CGAL 4.12, https://www.cgal.org/download.html
+ * CGAL 5.6, https://www.cgal.org/download.html
  * Boost 1.83.0, https://www.boost.org/users/download/
  * QGLViewer 2.9.1, https://github.com/GillesDebunne/libQGLViewer
  * SOFA Framework (git checkout 2023-12-15), https://github.com/sofa-framework/sofa
