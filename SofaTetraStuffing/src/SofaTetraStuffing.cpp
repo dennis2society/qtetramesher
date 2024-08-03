@@ -10,7 +10,7 @@
 // This is required for the Windows build to avoid
 // min/max macro collisions
 #ifndef NOMINMAX
-# define NOMINMAX
+#define NOMINMAX
 #endif
 #include <windows.h>
 #endif
@@ -74,7 +74,8 @@ void SofaTetraStuffing::GenerateFromSurface(const std::vector<Triangle> &tris,
     t.index[3] = tout[3];
     tetraIndices.push_back(t);
   }
-  MeshTetraStuffing::SeqPoints outVerts = sofaStuffer->d_outputPoints.getValue();
+  MeshTetraStuffing::SeqPoints outVerts =
+      sofaStuffer->d_outputPoints.getValue();
   tetraPoints.clear();
   for (unsigned int i = 0; i < outVerts.size(); ++i) {
     sofa::defaulttype::Vec3Types::Coord vout = outVerts.at(i);

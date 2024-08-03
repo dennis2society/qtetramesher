@@ -28,10 +28,6 @@
 
 #include "qgltetraviewer.h"
 
-// namespace Ui {
-// class MainWindow;
-// }
-
 class QTetraMesherMainWindow : public QMainWindow {
   Q_OBJECT
 

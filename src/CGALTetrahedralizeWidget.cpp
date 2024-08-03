@@ -95,6 +95,7 @@ void CGALTetrahedralizeWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
        << "ms. Tetras: " << cth->GetTetras().size()
        << "; Vertices: " << cth->GetTetraVertices().size();
     std::string stdMSG = ss.str();
+    viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
     delete cth;
     cth = NULL;
   } catch (std::exception e) {
