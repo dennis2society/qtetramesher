@@ -141,6 +141,10 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(loadSurfaceSlot()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
           SLOT(clearTetraOptions()));
+  connect(&actionExportSurface, SIGNAL(triggered()), this,
+          SLOT(exportSurfaceSlot()));
+  connect(&actionLoadGMSH, SIGNAL(triggered()), this, SLOT(loadGMSHSlot()));
+  connect(&actionExportGMSH, SIGNAL(triggered()), this, SLOT(exportGMSHSlot()));
   connect(&surfaceVisWidget.surfaceVisComboBox,
           SIGNAL(currentIndexChanged(int)), this, SLOT(surfaceVisChanged()));
   connect(&surfaceVisWidget.surfaceColorButton, SIGNAL(clicked()), this,
@@ -281,7 +285,7 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
 // menu + method slots
 void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   int newSelectedMethod = tetraMeshMethodComboBox.currentIndex();
-  // hide all
+  // hide allexport
   cgalTetrahedralizeWidget.hide();
   sofaTetraStuffingWidget.hide();
   quartetTetraStuffingWidget.hide();
@@ -314,6 +318,22 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
                                                      0.05);
   quartetTetraStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                       0.2);
+}
+
+void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
+
+void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
+
+void QTetraMesherMainWindow::loadGMSHSlot() {
+  viewer->loadGMSH();
+  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
+                                                    0.05f);
+  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
+  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() *
+                                                     0.05);
+  quartetTetraStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() *
+                                                      0.2);
+  updateCutplaneSliders();
 }
 
 void QTetraMesherMainWindow::updateCutplaneSliders() {

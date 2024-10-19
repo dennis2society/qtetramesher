@@ -278,10 +278,9 @@ void QGLTetraViewer::loadGMSH() {
   std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
   if (s.toStdString().empty()) return;
   ShowStatusMessage("Loading GMSH...");
-  tMesh->ClearSurface();
   tMesh->LoadGMSH(s.toStdString());
   BoundingBox bb = tMesh->GetBoundingBox();
-  float _maxBBox = bb.max.x - bb.min.x;
+  _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(qglviewer::Vec(0, 0, 0));

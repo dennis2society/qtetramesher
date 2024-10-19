@@ -9,13 +9,12 @@
 #define GMSHMESHLOADER_H_
 
 #include "BaseMeshLoader.h"
-
 #include "TetraToolsExports.h"
 
 namespace TetraTools {
 
 class DLL_EXPORT GMSHMeshLoader : public BaseMeshLoader {
-protected:
+ protected:
   std::string _fileName;
   std::string _fileContent;
 
@@ -26,7 +25,7 @@ protected:
 
   void ParseGMSH(std::ifstream &file, const unsigned int gmshFormat_);
 
-public:
+ public:
   GMSHMeshLoader();
 
   GMSHMeshLoader(const std::string &fileName_);
@@ -42,6 +41,6 @@ public:
   void Clear();
 };
 
-} // namespace TetraTools
+}  // namespace TetraTools
 
 #endif /* GMSHMESHLOADER_H_ */

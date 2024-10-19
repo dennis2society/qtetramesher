@@ -54,6 +54,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   void cutplaneYSliderSlot();
   void cutplaneZSliderSlot();
   void loadSurfaceSlot();
+  void exportSurfaceSlot();
+  void loadGMSHSlot();
+  void exportGMSHSlot();
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();

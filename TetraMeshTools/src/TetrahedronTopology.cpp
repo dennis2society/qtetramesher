@@ -6,11 +6,13 @@
  */
 
 #include "TetrahedronTopology.h"
+
 #include <algorithm>
 #include <map>
 #ifndef WIN32
-#include <cfloat>
 #include <math.h>
+
+#include <cfloat>
 #else
 #include <float.h>
 #endif
@@ -43,13 +45,13 @@ void TetraTools::TetrahedronTopology::Init(
   GenerateTriangles();
   GenerateEdges();
   if (complete_) {
-    // GenerateEdgeMap();
-    // GenerateTetraEdges();
-    // GenerateTetraTriangles();
-    // GenerateTetrahedronMap();
-    // GenerateTriangleEdges();
-    // GenerateTriangleMap();
-    // GenerateSurfaceTriangles();
+    GenerateEdgeMap();
+    GenerateTetraEdges();
+    GenerateTetraTriangles();
+    GenerateTetrahedronMap();
+    GenerateTriangleEdges();
+    GenerateTriangleMap();
+    GenerateSurfaceTriangles();
   }
 }
 
@@ -114,7 +116,7 @@ void TetraTools::TetrahedronTopology::GenerateTriangles() {
         triangleMap[tr] = triangleIndex;
         _triangles.push_back(tr);
       } else {
-        triangleIndex = -1; // itt->second;
+        triangleIndex = -1;  // itt->second;
       }
     }
   }
@@ -125,8 +127,7 @@ void TetraTools::TetrahedronTopology::GenerateTriangles() {
 
 void TetraTools::TetrahedronTopology::GenerateTetraEdges() {
   std::cout << "Generating TetraEdges..." << std::endl;
-  if (_tetraEdges.size() != 0)
-    _tetraEdges.clear();
+  if (_tetraEdges.size() != 0) _tetraEdges.clear();
   /// generate Edge map for faster lookup
   std::map<Edge, unsigned int> edgeMap;
   std::map<Edge, unsigned int>::iterator itt;
@@ -320,8 +321,7 @@ void TetraTools::TetrahedronTopology::GenerateSurfaceTriangles() {
 
 void TetraTools::TetrahedronTopology::GenerateTetraTriangles() {
   std::cout << "Generating triangles per tetrahedron..." << std::endl;
-  if (_tetraTriangles.size() != 0)
-    _tetraTriangles.clear();
+  if (_tetraTriangles.size() != 0) _tetraTriangles.clear();
   /// generate Triangle-To-Indices map for faster lookup
   std::map<Triangle, unsigned int> triangleMap;
   std::map<Triangle, unsigned int>::iterator itm;
@@ -361,8 +361,7 @@ void TetraTools::TetrahedronTopology::GenerateTetraTriangles() {
       itm = triangleMap.find(tri);
       /// assume that itm always exists. If first find fails, the triangle
       /// should exist in the reverse orientation
-      if (itm == triangleMap.end())
-        itm = triangleMap.find(rTri);
+      if (itm == triangleMap.end()) itm = triangleMap.find(rTri);
       tt.index[f] = itm->second;
     }
     _tetraTriangles.push_back(tt);

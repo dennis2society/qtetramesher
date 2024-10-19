@@ -383,7 +383,7 @@ void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
     return;
   }
   top = new TetraTools::TetrahedronTopology();
-  top->Init(verts_, tetras_, false);
+  top->Init(verts_, tetras_, true);
   isReady = true;
 }
 
