@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(QTetraMesher VERSION 0.8.3)
+project(QTetraMesher VERSION 0.8.4)
 
 # This line is required to use the PROJECT_VERSION set above
 # in the code.
@@ -7,13 +7,12 @@ configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 # Set this line to where you have installed your Sofa build:
 set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
+# example line for how it should look on Windows
 #set(SOFA_INSTALL_DIR "F:/dev/sofa_git/build/install" CACHE PATH "")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
 find_package(Sofa.Config REQUIRED)
-message(INFO "")
-#find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
 if (QT_MAJOR_VERSION EQUAL 6)
   find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
   set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
