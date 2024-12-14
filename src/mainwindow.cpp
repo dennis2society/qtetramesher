@@ -130,6 +130,30 @@ void QTetraMesherMainWindow::setupUI() {
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
   centralLayout.addLayout(&mainLayout, 0, 0);
+  // set color button colors
+  const QColor surfaceColor = viewer->tMesh->GetSurfaceColor();
+  surfaceVisWidget.surfaceColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(surfaceColor.red()) + "," +
+      QString::number(surfaceColor.green()) + "," +
+      QString::number(surfaceColor.blue()) + ");}\n");
+  const QColor wireframeeColor = viewer->tMesh->GetSurfaceWireframeColor();
+  surfaceVisWidget.surfaceWireframeColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(wireframeeColor.red()) + "," +
+      QString::number(wireframeeColor.green()) + "," +
+      QString::number(wireframeeColor.blue()) + ");}\n");
+  const QColor tetraColor = viewer->tMesh->GetTetraColor();
+  tetraVisWidget.tetraColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" + QString::number(tetraColor.red()) +
+      "," + QString::number(tetraColor.green()) + "," +
+      QString::number(tetraColor.blue()) + ");}\n");
+  const QColor tetraWireframeColor = viewer->tMesh->GetTetraWireframeColor();
+  tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
+      "QPushButton{background-color: rgb(" +
+      QString::number(tetraWireframeColor.red()) + "," +
+      QString::number(tetraWireframeColor.green()) + "," +
+      QString::number(tetraWireframeColor.blue()) + ");}\n");
 }
 
 void QTetraMesherMainWindow::connectSlots() {

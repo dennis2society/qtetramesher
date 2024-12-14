@@ -31,10 +31,10 @@ QGLTetraMesh::QGLTetraMesh()
       surfaceMode(0) {
   top = NULL;
   surf = NULL;
-  surfaceColorSolid = Vec3f(0.5f, 0.5f, 0.5f);
-  tetraColorSolid = Vec3f(0.7f, 0.7f, 0.1f);
-  surfaceColorWireframe = Vec3f(0.1f, 0.8f, 0.1f);
-  tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.8f);
+  surfaceColorSolid = Vec3f(0.3f, 0.3f, 0.3f);
+  tetraColorSolid = Vec3f(0.5f, 0.5f, 0.1f);
+  surfaceColorWireframe = Vec3f(0.1f, 0.6f, 0.1f);
+  tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.6f);
   oct = NULL;
 }
 
