@@ -45,8 +45,9 @@ class QGLTetraMesh {
   bool drawSolid;
   bool showBoundingBox;
   bool isReady;
-  int bboxMode;     // 0 = hide, 1 = bounding box
-  int tetraMode;    // 0 = solid, 1 = wireframe, 2 = hidden
+  int bboxMode;  // 0 = hide, 1 = bounding box
+  bool drawTetraSolid;
+  bool drawTetraWireframe;
   int surfaceMode;  // 0 = solid, 1 = wireframe, 2 = hidden
   int octreeMode;   // 0 = hidden, 1 = visible
 
@@ -100,8 +101,6 @@ class QGLTetraMesh {
 
   int GetBoundingMode() { return bboxMode; }
 
-  int GetTetraMode() { return tetraMode; }
-
   int GetSurfaceMode() { return surfaceMode; }
 
   bool GetDrawTetraMesh() { return drawTetraMesh; }
@@ -116,7 +115,10 @@ class QGLTetraMesh {
 
   void ToggleBBox(int i) { bboxMode = i; }
 
-  void ToggleTetraMesh(int i) { tetraMode = i; }
+  void ToggleTetraMesh(bool drawWireframe_, bool drawSolid_) {
+    drawTetraWireframe = drawWireframe_;
+    drawTetraSolid = drawSolid_;
+  }
 
   void ToggleOctreeVis(int i) { octreeMode = i; }
 

@@ -22,15 +22,17 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   QFont boldFont;
   boldFont.setBold(true);
   labelTitle.setFont(boldFont);
+  drawWireframeCheckbox.setText("Draw Wireframe");
+  drawWireframeCheckbox.setChecked(true);
+  drawWireframeCheckbox.setMaximumHeight(20);
+  drawSolidCheckbox.setText("Draw Solid");
+  drawSolidCheckbox.setChecked(true);
+  drawSolidCheckbox.setMaximumHeight(20);
   tetraColorButton.setText("Tetrahedra Color");
   tetraColorButton.setMaximumHeight(20);
   tetraWireframeColorButton.setText("Wireframe Color");
   tetraWireframeColorButton.setMaximumHeight(20);
-  tetraVisComboBox.addItem("Solid");
-  tetraVisComboBox.addItem("Wireframe");
-  tetraVisComboBox.addItem("Hidden");
-  tetraVisComboBox.setMaximumHeight(20);
-  // X cutplanes
+  //  X cutplanes
   tetraXCutplaneLabel.setText("Cutplanes X");
   tetraXCutplaneLabel.setMaximumHeight(20);
   tetraXCutplaneSlider.SetLowerValue(1);
@@ -65,7 +67,10 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   tetraZCutplaneSlider.setMaximumWidth(320);
   // add everything to the layout
   layout.addWidget(&labelTitle);
-  layout.addWidget(&tetraVisComboBox);
+  // layout.addWidget(&tetraVisComboBox);
+  drawOptionsLayout.addWidget(&drawWireframeCheckbox);
+  drawOptionsLayout.addWidget(&drawSolidCheckbox);
+  layout.addLayout(&drawOptionsLayout);
   layout.addWidget(&tetraColorButton);
   layout.addWidget(&tetraWireframeColorButton);
   layout.addWidget(&tetraXCutplaneLabel);

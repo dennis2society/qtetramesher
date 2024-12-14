@@ -7,7 +7,7 @@
  *      Author: Dennis Luebke
  */
 
-#include "qgltetraviewer.h"
+#include "qgltetraviewer.hpp"
 
 #include <math.h>
 #include <qtetramesher_version.h>
@@ -171,8 +171,8 @@ QString QGLTetraViewer::helpString() const {
   return text;
 }
 
-void QGLTetraViewer::ToggleTetraVis(int i) {
-  tMesh->ToggleTetraMesh(i);
+void QGLTetraViewer::ToggleTetraVis(bool drawWireframe_, bool drawSolid_) {
+  tMesh->ToggleTetraMesh(drawWireframe_, drawSolid_);
   // updateGL();
   update();
 }

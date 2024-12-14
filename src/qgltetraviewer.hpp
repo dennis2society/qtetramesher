@@ -10,7 +10,7 @@
 
 #include <QGLViewer/qglviewer.h>
 
-#include "QGLTetraMesh.h"
+#include "QGLTetraMesh.hpp"
 
 class QGLTetraViewer : public QGLViewer {
   Q_OBJECT
@@ -28,7 +28,7 @@ class QGLTetraViewer : public QGLViewer {
   float getMaxBBox() const;
 
  public slots:
-  void ToggleTetraVis(int i);
+  void ToggleTetraVis(bool drawWireframe_, bool drawSolid_);
   void ToggleTriangleVis(int i);
   void ToggleOctreeVis(int i);
   void ToggleBBox(int i);

@@ -76,12 +76,12 @@ add_executable(
   src/OctreeVisWidget.hpp
   src/OctreeVisWidget.cpp
   src/main.cpp
-  src/QGLTetraMesh.h
+  src/QGLTetraMesh.hpp
   src/mainwindow.hpp
   src/mainwindow.cpp
   src/qgltetraviewer.cpp
   src/Timer.cpp
-  src/qgltetraviewer.h
+  src/qgltetraviewer.hpp
   src/Timer.h
   src/QGLTetraMesh.cpp
   src/SofaTetraStuffingWidget.hpp

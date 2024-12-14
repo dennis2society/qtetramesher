@@ -13,6 +13,7 @@
 #include <BaseOptionsWidget.hpp>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QSlider>
 #include <RangeSlider.hpp>
@@ -24,7 +25,9 @@ class TetraVisWidget : public BaseOptionsWidget {
   TetraVisWidget(QWidget *parent);
   void update();
 
-  QComboBox tetraVisComboBox;
+  QHBoxLayout drawOptionsLayout;
+  QCheckBox drawWireframeCheckbox;
+  QCheckBox drawSolidCheckbox;
   QPushButton tetraColorButton;
   QPushButton tetraWireframeColorButton;
   QLabel tetraXCutplaneLabel;

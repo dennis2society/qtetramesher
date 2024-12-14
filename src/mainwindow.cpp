@@ -151,8 +151,10 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(surfaceColorButtonSlot()));
   connect(&surfaceVisWidget.surfaceWireframeColorButton, SIGNAL(clicked()),
           this, SLOT(surfaceWireframeColorButtonSlot()));
-  connect(&tetraVisWidget.tetraVisComboBox, SIGNAL(currentIndexChanged(int)),
-          this, SLOT(tetraVisChangedSlot()));
+  connect(&tetraVisWidget.drawWireframeCheckbox, SIGNAL(toggled(bool)), this,
+          SLOT(tetraVisChangedSlot()));
+  connect(&tetraVisWidget.drawSolidCheckbox, SIGNAL(toggled(bool)), this,
+          SLOT(tetraVisChangedSlot()));
   connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this,
           SLOT(tetraColorButtonSlot()));
   connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this,
@@ -230,8 +232,8 @@ void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
 }
 
 void QTetraMesherMainWindow::tetraVisChangedSlot() {
-  int selectedIndex = tetraVisWidget.tetraVisComboBox.currentIndex();
-  viewer->ToggleTetraVis(selectedIndex);
+  viewer->ToggleTetraVis(tetraVisWidget.drawWireframeCheckbox.isChecked(),
+                         tetraVisWidget.drawSolidCheckbox.isChecked());
 }
 
 void QTetraMesherMainWindow::tetraColorButtonSlot() {

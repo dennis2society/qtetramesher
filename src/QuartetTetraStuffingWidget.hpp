@@ -11,7 +11,7 @@
 #define QUARTET_TETRA_STUFFING_WIDGET_HPP
 
 #include <QuartetTetraStuffing.h>
-#include <qgltetraviewer.h>
+#include <qgltetraviewer.hpp>
 
 #include <BaseOptionsWidget.hpp>
 #include <QCheckBox>

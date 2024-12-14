@@ -26,7 +26,7 @@
 #include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
 
-#include "qgltetraviewer.h"
+#include "qgltetraviewer.hpp"
 
 class QTetraMesherMainWindow : public QMainWindow {
   Q_OBJECT

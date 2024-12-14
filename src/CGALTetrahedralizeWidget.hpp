@@ -9,7 +9,7 @@
 #ifndef CGAL_TETRAHEDRALIZE_WIDGET_HPP
 #define CGAL_TETRAHEDRALIZE_WIDGET_HPP
 
-#include <qgltetraviewer.h>
+#include <qgltetraviewer.hpp>
 
 #include <BaseOptionsWidget.hpp>
 #include <QCheckBox>

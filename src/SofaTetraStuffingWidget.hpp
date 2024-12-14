@@ -9,7 +9,7 @@
 #ifndef SOFA_TETRA_STUFFING_WIDGET_HPP
 #define SOFA_TETRA_STUFFING_WIDGET_HPP
 
-#include <qgltetraviewer.h>
+#include <qgltetraviewer.hpp>
 
 #include <BaseOptionsWidget.hpp>
 #include <QCheckBox>

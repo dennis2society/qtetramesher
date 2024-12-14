@@ -10,7 +10,7 @@
 #endif
 #include "GL/gl.h"
 // #include "GL/glut.h"
-#include "QGLTetraMesh.h"
+#include "QGLTetraMesh.hpp"
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
 #include "TetraMeshTools/TetgenWriter.h"
@@ -26,14 +26,15 @@ QGLTetraMesh::QGLTetraMesh()
       isReady(false),
       showBoundingBox(false),
       bboxMode(0),
-      tetraMode(0),
+      drawTetraSolid(true),
+      drawTetraWireframe(true),
       surfaceMode(0) {
   top = NULL;
   surf = NULL;
   surfaceColorSolid = Vec3f(0.5f, 0.5f, 0.5f);
   tetraColorSolid = Vec3f(0.7f, 0.7f, 0.1f);
   surfaceColorWireframe = Vec3f(0.1f, 0.8f, 0.1f);
-  tetraColorWireframe = Vec3f(0.8f, 0.8f, 0.1f);
+  tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.8f);
   oct = NULL;
 }
 
@@ -63,107 +64,99 @@ void QGLTetraMesh::Draw() {
 
   if (isReady) {
     /// draw tetra mesh
-    switch (tetraMode) {
-      case 2:  // hide
-        break;
-      case 1:  // wireframe
-        if (top != NULL) {
-          glDisable(GL_LIGHTING);
-          glColor3f(tetraColorWireframe.x, tetraColorWireframe.y,
-                    tetraColorWireframe.z);  /// yellow wireframe
-          glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(top->GetVertices()[0]));
-          // draw triangles
-          glEnableClientState(GL_VERTEX_ARRAY);
-          glDrawElements(GL_LINES, top->GetNumEdges() * 2, GL_UNSIGNED_INT,
-                         &(top->GetEdges()[0]));
-          glDisableClientState(GL_VERTEX_ARRAY);
-        }
-        break;
-      case 0:  // solid tetras with cut plane
-        if (top != NULL) {
-          glEnable(GL_LIGHTING);
-          glEnable(GL_DEPTH_TEST);
-          glEnable(GL_CULL_FACE);
-          const std::vector<Tetrahedron> &tetras = top->GetTetrahedra();
-          const std::vector<Vec3f> &vertices = top->GetVertices();
-          BoundingBox b = top->GetBoundingBox();
-          glColor3f(tetraColorSolid.x, tetraColorSolid.y, tetraColorSolid.z);
-          for (unsigned int i = 0; i < tetras.size(); ++i) {
-            const Tetrahedron &t = tetras[i];
-            Vec3f centroid =
-                t.Centroid(vertices[t.index[0]], vertices[t.index[1]],
-                           vertices[t.index[2]], vertices[t.index[3]]);
-            float xDist = b.max.x - b.min.x;
-            float xLowerCutDist = xDist * xLowerThreshold;
-            float xUpperCutDist = xDist * xUpperThreshold;
-            float yDist = b.max.y - b.min.y;
-            float yLowerCutDist = yDist * yLowerThreshold;
-            float yUpperCutDist = yDist * yUpperThreshold;
-            float zDist = b.max.z - b.min.z;
-            float zLowerCutDist = zDist * zLowerThreshold;
-            float zUpperCutDist = zDist * zUpperThreshold;
-            Vec3f v0 = vertices[t.index[0]];
-            Vec3f v1 = vertices[t.index[1]];
-            Vec3f v2 = vertices[t.index[2]];
-            Vec3f v3 = vertices[t.index[3]];
-            Vec3f vc0 = (v0 - centroid) * 0.95f;
-            Vec3f vc1 = (v1 - centroid) * 0.95f;
-            Vec3f vc2 = (v2 - centroid) * 0.95f;
-            Vec3f vc3 = (v3 - centroid) * 0.95f;
-            /// draw tetra when its centroid is between the front and back
-            /// cutplanes
-            if ((centroid.x <= (b.max.x - xLowerCutDist)) &&
-                (centroid.x >= (b.max.x - xUpperCutDist)) &&
-                (centroid.y <= (b.max.y - yLowerCutDist)) &&
-                (centroid.y >= (b.max.y - yUpperCutDist)) &&
-                (centroid.z <= (b.max.z - zLowerCutDist)) &&
-                (centroid.z >= (b.max.z - zUpperCutDist))) {
-              /// draw 4 correctly faced tetra triangles based on the
-              /// triangles in relation to the tetrahedron's centroid
-              glBegin(GL_TRIANGLES);
-              Vec3f normal = (vc3 - vc0).cross((vc2 - vc0));
-              normal.normalize();
-              glNormal3f(normal.x, normal.y, normal.z);
-              glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                         centroid.z + vc0.z);
-              glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                         centroid.z + vc3.z);
-              glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                         centroid.z + vc2.z);
-              normal = (vc1 - vc3).cross((vc2 - vc3));
-              normal.normalize();
-              glNormal3f(normal.x, normal.y, normal.z);
-              glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                         centroid.z + vc3.z);
-              glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                         centroid.z + vc1.z);
-              glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                         centroid.z + vc2.z);
-              normal = (vc0 - vc1).cross((vc2 - vc1));
-              normal.normalize();
-              glNormal3f(normal.x, normal.y, normal.z);
-              glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                         centroid.z + vc1.z);
-              glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                         centroid.z + vc0.z);
-              glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                         centroid.z + vc2.z);
-              normal = (vc1 - vc0).cross((vc3 - vc0));
-              normal.normalize();
-              glNormal3f(normal.x, normal.y, normal.z);
-              glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                         centroid.z + vc0.z);
-              glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                         centroid.z + vc1.z);
-              glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                         centroid.z + vc3.z);
-              glEnd();
-            }
+    if (top != NULL) {
+      if (drawTetraWireframe) {
+        glDisable(GL_LIGHTING);
+        glColor3f(tetraColorWireframe.x, tetraColorWireframe.y,
+                  tetraColorWireframe.z);  /// yellow wireframe
+        glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(top->GetVertices()[0]));
+        // draw triangles
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glDrawElements(GL_LINES, top->GetNumEdges() * 2, GL_UNSIGNED_INT,
+                       &(top->GetEdges()[0]));
+        glDisableClientState(GL_VERTEX_ARRAY);
+      }
+      if (drawTetraSolid) {
+        glEnable(GL_LIGHTING);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        const std::vector<Tetrahedron> &tetras = top->GetTetrahedra();
+        const std::vector<Vec3f> &vertices = top->GetVertices();
+        BoundingBox b = top->GetBoundingBox();
+        glColor3f(tetraColorSolid.x, tetraColorSolid.y, tetraColorSolid.z);
+        for (unsigned int i = 0; i < tetras.size(); ++i) {
+          const Tetrahedron &t = tetras[i];
+          Vec3f centroid =
+              t.Centroid(vertices[t.index[0]], vertices[t.index[1]],
+                         vertices[t.index[2]], vertices[t.index[3]]);
+          float xDist = b.max.x - b.min.x;
+          float xLowerCutDist = xDist * xLowerThreshold;
+          float xUpperCutDist = xDist * xUpperThreshold;
+          float yDist = b.max.y - b.min.y;
+          float yLowerCutDist = yDist * yLowerThreshold;
+          float yUpperCutDist = yDist * yUpperThreshold;
+          float zDist = b.max.z - b.min.z;
+          float zLowerCutDist = zDist * zLowerThreshold;
+          float zUpperCutDist = zDist * zUpperThreshold;
+          Vec3f v0 = vertices[t.index[0]];
+          Vec3f v1 = vertices[t.index[1]];
+          Vec3f v2 = vertices[t.index[2]];
+          Vec3f v3 = vertices[t.index[3]];
+          Vec3f vc0 = (v0 - centroid) * 0.95f;
+          Vec3f vc1 = (v1 - centroid) * 0.95f;
+          Vec3f vc2 = (v2 - centroid) * 0.95f;
+          Vec3f vc3 = (v3 - centroid) * 0.95f;
+          /// draw tetra when its centroid is between the front and back
+          /// cutplanes
+          if ((centroid.x <= (b.max.x - xLowerCutDist)) &&
+              (centroid.x >= (b.max.x - xUpperCutDist)) &&
+              (centroid.y <= (b.max.y - yLowerCutDist)) &&
+              (centroid.y >= (b.max.y - yUpperCutDist)) &&
+              (centroid.z <= (b.max.z - zLowerCutDist)) &&
+              (centroid.z >= (b.max.z - zUpperCutDist))) {
+            /// draw 4 correctly faced tetra triangles based on the
+            /// triangles in relation to the tetrahedron's centroid
+            glBegin(GL_TRIANGLES);
+            Vec3f normal = (vc3 - vc0).cross((vc2 - vc0));
+            normal.normalize();
+            glNormal3f(normal.x, normal.y, normal.z);
+            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
+                       centroid.z + vc0.z);
+            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
+                       centroid.z + vc3.z);
+            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
+                       centroid.z + vc2.z);
+            normal = (vc1 - vc3).cross((vc2 - vc3));
+            normal.normalize();
+            glNormal3f(normal.x, normal.y, normal.z);
+            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
+                       centroid.z + vc3.z);
+            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
+                       centroid.z + vc1.z);
+            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
+                       centroid.z + vc2.z);
+            normal = (vc0 - vc1).cross((vc2 - vc1));
+            normal.normalize();
+            glNormal3f(normal.x, normal.y, normal.z);
+            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
+                       centroid.z + vc1.z);
+            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
+                       centroid.z + vc0.z);
+            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
+                       centroid.z + vc2.z);
+            normal = (vc1 - vc0).cross((vc3 - vc0));
+            normal.normalize();
+            glNormal3f(normal.x, normal.y, normal.z);
+            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
+                       centroid.z + vc0.z);
+            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
+                       centroid.z + vc1.z);
+            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
+                       centroid.z + vc3.z);
+            glEnd();
           }
         }
-        break;
-      default:
-        break;
+      }
     }
     /// draw surface if possible
     switch (surfaceMode) {
