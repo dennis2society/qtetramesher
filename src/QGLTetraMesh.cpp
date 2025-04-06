@@ -10,7 +10,7 @@
 #endif
 #include "GL/gl.h"
 // #include "GL/glut.h"
-#include "QGLTetraMesh.h"
+#include "QGLTetraMesh.hpp"
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
 #include "TetraMeshTools/TetgenWriter.h"
@@ -19,15 +19,22 @@
 #include "Timer.h"
 
 QGLTetraMesh::QGLTetraMesh()
-    : drawSolid(false), drawTetraMesh(false), drawTetraSurface(false),
-      drawTriangleMesh(true), isReady(false), showBoundingBox(false),
-      bboxMode(0), tetraMode(0), surfaceMode(0), cutPlaneOffset(0) {
+    : drawSolid(false),
+      drawTetraMesh(false),
+      drawTetraSurface(false),
+      drawTriangleMesh(true),
+      isReady(false),
+      showBoundingBox(false),
+      bboxMode(0),
+      drawTetraSolid(true),
+      drawTetraWireframe(true),
+      surfaceMode(0) {
   top = NULL;
   surf = NULL;
-  surfaceColorSolid = Vec3f(0.5f, 0.5f, 0.5f);
-  tetraColorSolid = Vec3f(0.7f, 0.7f, 0.1f);
-  surfaceColorWireframe = Vec3f(0.1f, 0.8f, 0.1f);
-  tetraColorWireframe = Vec3f(0.8f, 0.8f, 0.1f);
+  surfaceColorSolid = Vec3f(0.3f, 0.3f, 0.3f);
+  tetraColorSolid = Vec3f(0.5f, 0.5f, 0.1f);
+  surfaceColorWireframe = Vec3f(0.1f, 0.6f, 0.1f);
+  tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.6f);
   oct = NULL;
 }
 
@@ -42,8 +49,8 @@ QGLTetraMesh::~QGLTetraMesh() {
 }
 
 void QGLTetraMesh::Draw() {
-  //glEnable(GL_LIGHTING);
-  //glEnable(GL_DEPTH_TEST);
+  // glEnable(GL_LIGHTING);
+  // glEnable(GL_DEPTH_TEST);
   glEnable(GL_COLOR_MATERIAL);
   static const float zero[4] = {0.0f, 0.0f, 0.0f};
   static const float diff[4] = {0.8f, 0.8f, 0.85f};
@@ -57,14 +64,11 @@ void QGLTetraMesh::Draw() {
 
   if (isReady) {
     /// draw tetra mesh
-    switch (tetraMode) {
-    case 2: // hide
-      break;
-    case 1: // wireframe
-      if (top != NULL) {
+    if (top != NULL) {
+      if (drawTetraWireframe) {
         glDisable(GL_LIGHTING);
         glColor3f(tetraColorWireframe.x, tetraColorWireframe.y,
-                  tetraColorWireframe.z); /// yellow wireframe
+                  tetraColorWireframe.z);  /// yellow wireframe
         glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(top->GetVertices()[0]));
         // draw triangles
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -72,9 +76,7 @@ void QGLTetraMesh::Draw() {
                        &(top->GetEdges()[0]));
         glDisableClientState(GL_VERTEX_ARRAY);
       }
-      break;
-    case 0: // solid tetras with cut plane
-      if (top != NULL) {
+      if (drawTetraSolid) {
         glEnable(GL_LIGHTING);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -87,9 +89,15 @@ void QGLTetraMesh::Draw() {
           Vec3f centroid =
               t.Centroid(vertices[t.index[0]], vertices[t.index[1]],
                          vertices[t.index[2]], vertices[t.index[3]]);
-          float maxZ = centroid.z;
+          float xDist = b.max.x - b.min.x;
+          float xLowerCutDist = xDist * xLowerThreshold;
+          float xUpperCutDist = xDist * xUpperThreshold;
+          float yDist = b.max.y - b.min.y;
+          float yLowerCutDist = yDist * yLowerThreshold;
+          float yUpperCutDist = yDist * yUpperThreshold;
           float zDist = b.max.z - b.min.z;
-          float cutDist = zDist * cutPlaneOffset;
+          float zLowerCutDist = zDist * zLowerThreshold;
+          float zUpperCutDist = zDist * zUpperThreshold;
           Vec3f v0 = vertices[t.index[0]];
           Vec3f v1 = vertices[t.index[1]];
           Vec3f v2 = vertices[t.index[2]];
@@ -98,10 +106,16 @@ void QGLTetraMesh::Draw() {
           Vec3f vc1 = (v1 - centroid) * 0.95f;
           Vec3f vc2 = (v2 - centroid) * 0.95f;
           Vec3f vc3 = (v3 - centroid) * 0.95f;
-          /// draw tetra when its centroid is behind the cutplane
-          if (maxZ <= (b.max.z - cutDist)) {
-            /// draw 4 correctly faced tetra triangles based on the triangles in
-            /// relation to the tetrahedron's centroid
+          /// draw tetra when its centroid is between the front and back
+          /// cutplanes
+          if ((centroid.x <= (b.max.x - xLowerCutDist)) &&
+              (centroid.x >= (b.max.x - xUpperCutDist)) &&
+              (centroid.y <= (b.max.y - yLowerCutDist)) &&
+              (centroid.y >= (b.max.y - yUpperCutDist)) &&
+              (centroid.z <= (b.max.z - zLowerCutDist)) &&
+              (centroid.z >= (b.max.z - zUpperCutDist))) {
+            /// draw 4 correctly faced tetra triangles based on the
+            /// triangles in relation to the tetrahedron's centroid
             glBegin(GL_TRIANGLES);
             Vec3f normal = (vc3 - vc0).cross((vc2 - vc0));
             normal.normalize();
@@ -143,47 +157,46 @@ void QGLTetraMesh::Draw() {
           }
         }
       }
-      break;
-    default:
-      break;
     }
     /// draw surface if possible
     switch (surfaceMode) {
-    case 2: // hide
-      break;
-    case 1: // wireframe
-      if (surf != NULL) {
-        glColor3f(surfaceColorWireframe.x, surfaceColorWireframe.y,
-                  surfaceColorWireframe.z); /// yellow wireframe
-        glDisable(GL_LIGHTING);
-        glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(surf->GetVertices()[0]));
-        // draw triangles
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glDrawElements(GL_LINES, surf->GetNumEdges() * 2, GL_UNSIGNED_INT,
-                       &(surf->GetEdges()[0]));
-        glDisableClientState(GL_VERTEX_ARRAY);
-      }
-      break;
-    case 0: // surface with normals
-      if (surf != NULL) {
-        glEnable(GL_LIGHTING);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glColor3f(surfaceColorSolid.x, surfaceColorSolid.y,
-                  surfaceColorSolid.z); /// grey
-        glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(surf->GetVertices()[0]));
-        glNormalPointer(GL_FLOAT, sizeof(Vec3f), &(surf->GetNormals()[0]));
-        // draw triangles
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_NORMAL_ARRAY);
-        glDrawElements(GL_TRIANGLES, surf->GetNumTriangles() * 3,
-                       GL_UNSIGNED_INT, &(surf->GetTriangles()[0]));
-        glDisableClientState(GL_NORMAL_ARRAY);
-        glDisableClientState(GL_VERTEX_ARRAY);
-      }
-      break;
-    default:
-      break;
+      case 2:  // hide
+        break;
+      case 1:  // wireframe
+        if (surf != NULL) {
+          glColor3f(surfaceColorWireframe.x, surfaceColorWireframe.y,
+                    surfaceColorWireframe.z);  /// yellow wireframe
+          glDisable(GL_LIGHTING);
+          glVertexPointer(3, GL_FLOAT, sizeof(Vec3f),
+                          &(surf->GetVertices()[0]));
+          // draw triangles
+          glEnableClientState(GL_VERTEX_ARRAY);
+          glDrawElements(GL_LINES, surf->GetNumEdges() * 2, GL_UNSIGNED_INT,
+                         &(surf->GetEdges()[0]));
+          glDisableClientState(GL_VERTEX_ARRAY);
+        }
+        break;
+      case 0:  // surface with normals
+        if (surf != NULL) {
+          glEnable(GL_LIGHTING);
+          glEnable(GL_DEPTH_TEST);
+          glEnable(GL_CULL_FACE);
+          glColor3f(surfaceColorSolid.x, surfaceColorSolid.y,
+                    surfaceColorSolid.z);  /// grey
+          glVertexPointer(3, GL_FLOAT, sizeof(Vec3f),
+                          &(surf->GetVertices()[0]));
+          glNormalPointer(GL_FLOAT, sizeof(Vec3f), &(surf->GetNormals()[0]));
+          // draw triangles
+          glEnableClientState(GL_VERTEX_ARRAY);
+          glEnableClientState(GL_NORMAL_ARRAY);
+          glDrawElements(GL_TRIANGLES, surf->GetNumTriangles() * 3,
+                         GL_UNSIGNED_INT, &(surf->GetTriangles()[0]));
+          glDisableClientState(GL_NORMAL_ARRAY);
+          glDisableClientState(GL_VERTEX_ARRAY);
+        }
+        break;
+      default:
+        break;
     }
 
     /// draw bounding volume
@@ -204,36 +217,36 @@ void QGLTetraMesh::Draw() {
       }
     }
     switch (bboxMode) {
-    case 0: // hide bounding volume
-      break;
-    case 1: // show bounding box
-      DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
-      break;
-    case 2: // show larger bounding cube
-      bb.min = Vec3f(c.center.x - c.size / 2, c.center.y - c.size / 2,
-                     c.center.z - c.size / 2);
-      bb.max = Vec3f(c.center.x + c.size / 2, c.center.y + c.size / 2,
-                     c.center.z + c.size / 2);
-      DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
-      break;
-    default:
-      break;
+      case 0:  // hide bounding volume
+        break;
+      case 1:  // show bounding box
+        DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
+        break;
+      case 2:  // show larger bounding cube
+        bb.min = Vec3f(c.center.x - c.size / 2, c.center.y - c.size / 2,
+                       c.center.z - c.size / 2);
+        bb.max = Vec3f(c.center.x + c.size / 2, c.center.y + c.size / 2,
+                       c.center.z + c.size / 2);
+        DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
+        break;
+      default:
+        break;
     }
     switch (octreeMode) {
-    case 0: // hide octree
-      break;
-    case 1: // show octree
-      DrawOctree(false);
-      break;
-    case 2: // show octree with smallest leafs only
-      DrawOctree(true);
-      break;
+      case 0:  // hide octree
+        break;
+      case 1:  // show octree
+        DrawOctree(false);
+        break;
+      case 2:  // show octree with smallest leafs only
+        DrawOctree(true);
+        break;
     }
   }
 }
 
 void QGLTetraMesh::DrawBoundingVolume(const BoundingBox &bb, Vec3f color_) {
-  glColor3f(color_.x, color_.y, color_.z); /// green bbox
+  glColor3f(color_.x, color_.y, color_.z);  /// green bbox
   glDisable(GL_LIGHTING);
   glBegin(GL_LINES);
   glVertex3f(bb.min.x, bb.min.y, bb.min.z);
@@ -271,9 +284,9 @@ void QGLTetraMesh::DrawTetraTriangle(const unsigned int triangleIndex,
   // centroid to the triangle's centroid
   glBegin(GL_TRIANGLES);
   glColor3f(color.x, color.y, color.z);
-  Vec3f v0 = (top->GetVertices()[t.index[0]] - tetraCentroid); //*0.95f;
-  Vec3f v1 = (top->GetVertices()[t.index[1]] - tetraCentroid); //*0.95f;
-  Vec3f v2 = (top->GetVertices()[t.index[2]] - tetraCentroid); //*0.95f;
+  Vec3f v0 = (top->GetVertices()[t.index[0]] - tetraCentroid);  //*0.95f;
+  Vec3f v1 = (top->GetVertices()[t.index[1]] - tetraCentroid);  //*0.95f;
+  Vec3f v2 = (top->GetVertices()[t.index[2]] - tetraCentroid);  //*0.95f;
   Vec3f normal = (v0 + v1 + v2);
   normal.normalize();
   glNormal3f(normal.x, normal.y, normal.z);
@@ -363,7 +376,7 @@ void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
     return;
   }
   top = new TetraTools::TetrahedronTopology();
-  top->Init(verts_, tetras_, false);
+  top->Init(verts_, tetras_, true);
   isReady = true;
 }
 
@@ -500,12 +513,13 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
   return success;
 }
 
-bool QGLTetraMesh::SaveSurface(const std::string &fileName_, const std::string extension_) {
+bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
+                               const std::string extension_) {
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;
-  bool success =
-      twriter.writeFile(fileName_, extension_, surf->GetVertices(), surf->GetTriangles());
+  bool success = twriter.writeFile(fileName_, extension_, surf->GetVertices(),
+                                   surf->GetTriangles());
   t.stop();
   std::cout << "Finished saving Surface in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;
@@ -589,9 +603,23 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_) {
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
 }
 
+void QGLTetraMesh::SetXRange(int lower, int upper) {
+  xLowerThreshold = (float)lower / 100.0f;
+  xUpperThreshold = (float)upper / 100.0f;
+}
+
+void QGLTetraMesh::SetYRange(int lower, int upper) {
+  yLowerThreshold = (float)lower / 100.0f;
+  yUpperThreshold = (float)upper / 100.0f;
+}
+
 void QGLTetraMesh::SetZRange(int lower, int upper) {
   zLowerThreshold = (float)lower / 100.0f;
   zUpperThreshold = (float)upper / 100.0f;
-  std::cout << "Z-Range set to " << zLowerThreshold << "/" << zUpperThreshold
-            << std::endl;
+}
+
+void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_) {
+  for (auto &it : surf->GetVertices()) {
+    it += offset_;
+  }
 }

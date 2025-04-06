@@ -5,7 +5,7 @@
  *	from a surface mesh using Jonathan Shewchuk's Isosurface TetraStuffing
  *	algorithm ( http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf ).
  *	Implementation taken from the SOFA framework (
- *http://www.sofa-framework.org/ ).
+ *  http://www.sofa-framework.org/ ).
  *
  *  Created on: Nov 26, 2011
  *      Author: Dennis Luebke

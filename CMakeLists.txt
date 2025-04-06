@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(QTetraMesher VERSION 0.8.3)
+project(QTetraMesher VERSION 0.8.4)
 
 # This line is required to use the PROJECT_VERSION set above
 # in the code.
@@ -7,14 +7,14 @@ configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 # Set this line to where you have installed your Sofa build:
 set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
+# example line for how it should look on Windows
+#set(SOFA_INSTALL_DIR "F:/dev/sofa_git/build/install" CACHE PATH "")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
 find_package(Sofa.Config REQUIRED)
-message(INFO "")
-#find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
 if (QT_MAJOR_VERSION EQUAL 6)
-  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGLWidgets OpenGL)
+  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
   set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
 else ()
   find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
@@ -64,36 +64,35 @@ include_directories(
   ${Qt${QT_MAJOR_VERSION}OpenGL_INCLUDE_DIRS}
 )
 
-set(UI_FILES
-  src/mainwindow.ui
-  src/tetrastuffingdialog.ui
-  src/CGALTetrahedralizeDialog.ui
-  src/quartettetrastuffingdialog.ui
-  src/tetgendialog.ui
-)
-
 add_executable(
   QTetraMesher
-  src/BaseTetraDialog.cpp
+  src/BaseOptionsWidget.hpp
+  src/BaseOptionsWidget.cpp
+  src/SurfaceVisWidget.hpp
+  src/SurfaceVisWidget.cpp
+  src/TetraVisWidget.hpp
+  src/TetraVisWidget.cpp
+  src/OctreeVisWidget.hpp
+  src/OctreeVisWidget.cpp
   src/main.cpp
-  src/QGLTetraMesh.h
-  src/quartettetrahedralizedialog.cpp
-  src/tetrastuffingdialog.h
-  src/BaseTetraDialog.h
+  src/QGLTetraMesh.hpp
+  src/mainwindow.hpp
   src/mainwindow.cpp
   src/qgltetraviewer.cpp
   src/Timer.cpp
-  src/cgaltetrahedralizedialog.cpp
-  src/mainwindow.h
-  src/qgltetraviewer.h
+  src/qgltetraviewer.hpp
   src/Timer.h
-  src/cgaltetrahedralizedialog.h
   src/QGLTetraMesh.cpp
-  src/quartetterahedralizedialog.h
-  src/tetrastuffingdialog.cpp
-  src/tetgendialog.h
-  src/tetgendialog.cpp
-  ${UI_FILES}
+  src/SofaTetraStuffingWidget.hpp
+  src/SofaTetraStuffingWidget.cpp
+  src/CGALTetrahedralizeWidget.hpp
+  src/CGALTetrahedralizeWidget.cpp
+  src/QuartetTetraStuffingWidget.hpp
+  src/QuartetTetraStuffingWidget.cpp
+  src/TetgenWidget.hpp
+  src/TetgenWidget.cpp
+  src/RangeSlider.hpp
+  src/RangeSlider.cpp
 )
 
 target_link_libraries(

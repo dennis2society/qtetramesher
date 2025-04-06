@@ -1,24 +1,35 @@
-# QTetraMesher 0.8.3
+# QTetraMesher 0.8.4
 
-![ScreenShot](https://qtm.dennis2society.de/images/qtm_win_with_octree_small.jpg )
-![ScreenShot](https://qtm.dennis2society.de/images/qtm_with_stuffing_options_small.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Linux_Cutplane_01.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Windows_Cutplane_01.jpg )
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
-and easy-to-use mesh viewer based on QGLViewer and allows basic mesh manipulations 
-(currently only scaling is possible). Two different methods for tetrahedralization 
+and easy-to-use mesh viewer based on QGLViewer. Two different methods for tetrahedralization 
 are possible: Delaunay Triangulation and two variants of Johnathan Shewchuk's Isosurface
 Stuffing algorithm.
 
-As I am using lots of 3rd-party open-source C/C++ libraries, this work is released 
-as GPL software. This includes all self-written code. 3rd-party code remains under 
+This project is using lots of 3rd-party open-source C/C++ libraries, for this reason this work is released 
+under GPL License. This includes all self-written code. 3rd-party code remains under 
 its own license.
 
 History + usage instructions: https://qtm.dennis2society.de
 
-Build instructions: https://qtm.dennis2society.de/#Build
+<b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
 ## Changelog
+### 0.8.4 - 2025-04-06
+* <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
+* Tetrameshing Options are now in the main UI instead of popup windows
+* Qt6 build on Windows and at least some Linuxes
+* Cutplanes in 6 directions to inspect inside mesh quality
+* Windows binary release:
+  - VS 2022, x64
+  - Qt 6.9.0
+  - assimp 5.4
+  - Sofa Framework (git pull 2025-04-05)
+  - boost 1.87.0
+
 ### 0.8.3 - 2023-12-16
  
  <b>Updated Windows binary build (Visual Studio 2019 Community, x64)</b>
@@ -58,16 +69,15 @@ Build instructions: https://qtm.dennis2society.de/#Build
 
 ## Features
  * As of 2024-06-01 this project can now be built with Qt6 (at least on Linux)
- * Runs on Windows and Linux (tested on Win7 (32/64 bit), WinXP (32 bit) and Ubuntu 12.04/12.10/.../22.04, Arch based Manjaro 2024-05, Fedora 40).
+ * Runs on Windows and Linux (tested on Win7/10/11 (64 bit)) and Ubuntu 12.04/12.10/.../24.04, Arch based Manjaro >= 2024-05, Fedora >= 40 (Qt5 only)).
  * Integration of QGLViewer for easy mesh preview.
- * Surface mesh import and export for *.obj, *.ply, *.off, *.stl (using assimp).
+ * Surface mesh import and export for *.obj, *.ply, *.off, *.stl, 3ds (using assimp).
  * Import and export of tetrahedral meshes in (a simplified subset of the) GMSH format *.msh (compatible with the SOFA Framework).
  * Two different methods for tetrahedralization: Delaunay Triangulation (CGAL implementation) and Johnathan Shewchuk's Isosurface Stuffing: Fast Tetrahedral Meshes with Good Dihedral Angles (implementation taken from the SOFA Framework, non-graded variant only).
  * Wireframe and solid/shaded drawing.
- * Cutplane view for tetrahedral meshes.
- * Export the surface of a tetrahedral mesh.
+ * 6-planes cutplane view for tetrahedral meshes.
+ * Surface export of a tetrahedral mesh (GMSH: *.msh).
  * Automatic parameter guessing for tetrahedralization.
- * Reversible scale mechanism for CGAL performance optimization.
 
 ## License
 

@@ -8,9 +8,8 @@
  * TriangleTopology.
  */
 
-#include "TriangleTopology.h"
-
 #include "TetraToolsExports.h"
+#include "TriangleTopology.h"
 
 namespace TetraTools {
 /**
@@ -34,7 +33,7 @@ struct TetrahedronTriangles {
 };
 
 class DLL_EXPORT TetrahedronTopology : public TriangleTopology {
-protected:
+ protected:
   std::vector<Tetrahedron> _tetrahedra;
   std::vector<TetrahedronVertex> _tetraVertices;
   std::vector<PrimitivesPerVertex> _vertexTetrahedraLookup;
@@ -77,7 +76,7 @@ protected:
     }
   }
 
-public:
+ public:
   /// Constructors
   TetrahedronTopology();
 
@@ -96,38 +95,33 @@ public:
   const std::vector<Tetrahedron> &GetTetrahedra() { return _tetrahedra; }
 
   const std::vector<TetrahedronEdges> &GetTetraEdges() {
-    if (_tetraEdges.size() == 0)
-      GenerateTetraEdges();
+    if (_tetraEdges.size() == 0) GenerateTetraEdges();
     return _tetraEdges;
   }
 
   const std::vector<TetrahedronVertex> &GetTetrasPerVertices() {
-    if (_tetraVertices.size() == 0)
-      GenerateTetrahedronMap();
+    if (_tetraVertices.size() == 0) GenerateTetrahedronMap();
     return _tetraVertices;
   }
 
   const std::vector<PrimitivesPerVertex> &GetTetrasPerVertexLookupTable() {
-    if (_vertexTetrahedraLookup.size() == 0)
-      GenerateTetrahedronMap();
+    if (_vertexTetrahedraLookup.size() == 0) GenerateTetrahedronMap();
     return _vertexTetrahedraLookup;
   }
 
   const std::vector<Triangle> &GetSurfaceTriangles() {
-    if (_surfaceTriangles.size() == 0)
-      GenerateSurfaceTriangles();
+    if (_surfaceTriangles.size() == 0) GenerateSurfaceTriangles();
     return _surfaceTriangles;
   }
 
   unsigned int GetNumSurfaceTriangles() { return _surfaceTriangles.size(); }
 
   const std::vector<TetrahedronTriangles> &GetTetraTriangles() {
-    if (_tetraTriangles.size() == 0)
-      GenerateTetraTriangles();
+    if (_tetraTriangles.size() == 0) GenerateTetraTriangles();
     return _tetraTriangles;
   }
 
   unsigned int GetNumTetras() { return _tetrahedra.size(); }
 };
 
-} // namespace TetraTools
+}  // namespace TetraTools

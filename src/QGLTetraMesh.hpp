@@ -28,30 +28,33 @@
 #define QGRID_EXPORT
 #endif
 
-#include "TetraMeshTools/Octree.h"
-#include "TetraMeshTools/TetrahedronTopology.h"
 #include <QtGui/QColor>
 #include <string>
 #include <vector>
 
-class QGLTetraMesh {
+#include "TetraMeshTools/Octree.h"
+#include "TetraMeshTools/TetrahedronTopology.h"
 
-private:
-  TetraTools::TetrahedronTopology *top; /// tetra mesh topology
-  TetraTools::TriangleTopology *surf;   /// triangle mesh for surface
+class QGLTetraMesh {
+ private:
+  TetraTools::TetrahedronTopology *top;  /// tetra mesh topology
+  TetraTools::TriangleTopology *surf;    /// triangle mesh for surface
   bool drawTetraMesh;
   bool drawTriangleMesh;
   bool drawTetraSurface;
   bool drawSolid;
   bool showBoundingBox;
   bool isReady;
-  int bboxMode;    // 0 = hide, 1 = bounding box
-  int tetraMode;   // 0 = solid, 1 = wireframe, 2 = hidden
-  int surfaceMode; // 0 = solid, 1 = wireframe, 2 = hidden
-  int octreeMode;  // 0 = hidden, 1 = visible
+  int bboxMode;  // 0 = hide, 1 = bounding box
+  bool drawTetraSolid;
+  bool drawTetraWireframe;
+  int surfaceMode;  // 0 = solid, 1 = wireframe, 2 = hidden
+  int octreeMode;   // 0 = hidden, 1 = visible
 
-  float cutPlaneOffset;
-
+  float xLowerThreshold;
+  float xUpperThreshold;
+  float yLowerThreshold;
+  float yUpperThreshold;
   float zLowerThreshold;
   float zUpperThreshold;
 
@@ -71,7 +74,7 @@ private:
 
   Octree *oct;
 
-public:
+ public:
   QGLTetraMesh();
   ~QGLTetraMesh();
 
@@ -98,8 +101,6 @@ public:
 
   int GetBoundingMode() { return bboxMode; }
 
-  int GetTetraMode() { return tetraMode; }
-
   int GetSurfaceMode() { return surfaceMode; }
 
   bool GetDrawTetraMesh() { return drawTetraMesh; }
@@ -114,7 +115,10 @@ public:
 
   void ToggleBBox(int i) { bboxMode = i; }
 
-  void ToggleTetraMesh(int i) { tetraMode = i; }
+  void ToggleTetraMesh(bool drawWireframe_, bool drawSolid_) {
+    drawTetraWireframe = drawWireframe_;
+    drawTetraSolid = drawSolid_;
+  }
 
   void ToggleOctreeVis(int i) { octreeMode = i; }
 
@@ -124,11 +128,8 @@ public:
 
   void ToggleTetraSurface() { drawTetraSurface = !drawTetraSurface; }
 
-  void SetCutPlaneOffset(int i) {
-    float f = (float)i / 100.0f;
-    cutPlaneOffset = f;
-  }
-
+  void SetXRange(int lower, int upper);
+  void SetYRange(int lower, int upper);
   void SetZRange(int lower, int upper);
 
   float GetSceneRadius() { return surf->GetRadius(); }
@@ -136,10 +137,8 @@ public:
   bool IsReady() { return isReady; }
 
   BoundingBox GetBoundingBox() {
-    if (surf)
-      return surf->GetBoundingBox();
-    if (top)
-      return top->GetBoundingBox();
+    if (surf) return surf->GetBoundingBox();
+    if (top) return top->GetBoundingBox();
     BoundingBox bb;
     bb.min = Vec3f(0, 0, 0);
     bb.max = Vec3f(0, 0, 0);
@@ -147,10 +146,8 @@ public:
   }
 
   BoundingCube GetBoundingCube() {
-    if (surf)
-      return surf->GetLargeBoundingCube();
-    if (top)
-      return top->GetLargeBoundingCube();
+    if (surf) return surf->GetLargeBoundingCube();
+    if (top) return top->GetLargeBoundingCube();
     BoundingCube bc;
     bc.size = 1.0f;
     bc.center = Vec3f(0, 0, 0);
@@ -214,6 +211,8 @@ public:
   }
 
   void generateOctree(const unsigned int depth_);
+
+  void translateSurfaceMesh(const Vec3f offset_);
 };
 
 #endif /* QGLTETRAMESH_H_ */
