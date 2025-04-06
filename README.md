@@ -18,11 +18,17 @@ History + usage instructions: https://qtm.dennis2society.de
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
 ## Changelog
-### 0.8.4 - 2024-10-20
+### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
 * Tetrameshing Options are now in the main UI instead of popup windows
 * Qt6 build on Windows and at least some Linuxes
 * Cutplanes in 6 directions to inspect inside mesh quality
+* Windows binary release:
+  - VS 2022, x64
+  - Qt 6.9.0
+  - assimp 5.4
+  - Sofa Framework (git pull 2025-04-05)
+  - boost 1.87.0
 
 ### 0.8.3 - 2023-12-16
  
