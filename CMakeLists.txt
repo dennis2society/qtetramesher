@@ -121,7 +121,7 @@ if (${QT_MAJOR_VERSION} EQUAL 6)
 endif ()
 
 # Sofa namespaces require C++17 features
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 # attempt to hide the console window on Windows
 if (WIN32)

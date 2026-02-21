@@ -67,7 +67,7 @@ target_link_libraries(
   ${SofaEngineGenerator}
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
 
 add_custom_command(

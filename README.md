@@ -17,6 +17,14 @@ History + usage instructions: https://qtm.dennis2society.de
 
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
+### Running in Wayland
+libQGLViewer is not behaving well when running in a Wayland session. I only get a dark unresponsive widget at the moment. I am looking for a replacement.
+This is current workaround for this case:
+```
+export QT_QPA_PLATFORM=xcb
+./[PATH_TO]/QTetraMesher
+```
+
 ## Changelog
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
