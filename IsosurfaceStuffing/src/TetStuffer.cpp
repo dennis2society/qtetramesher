@@ -17,7 +17,7 @@
 #include "Warp.h"
 #include "CutPointSnapper.h"
 
-#include <cstdio>
+#include <iostream>
 #include <limits>
 #include <cmath>
 
@@ -33,7 +33,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   outTets.clear();
 
   if (surfVerts.empty() || surfTris.empty()) {
-    std::printf("IsosurfaceStuffing: empty input\n");
+    std::cout << "IsosurfaceStuffing: empty input\n";
     return;
   }
 
@@ -49,35 +49,33 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     if (surfVerts[i].z > bmax.z) bmax.z = surfVerts[i].z;
   }
 
-  std::printf("IsosurfaceStuffing: BBox [%.3f,%.3f,%.3f] - [%.3f,%.3f,%.3f]\n",
-              bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z);
-  std::printf("IsosurfaceStuffing: Grid spacing = %.4f\n", gridSpacing);
+  std::cout << "IsosurfaceStuffing: BBox [" << bmin.x << "," << bmin.y << "," << bmin.z
+            << "] - [" << bmax.x << "," << bmax.y << "," << bmax.z << "]\n";
+  std::cout << "IsosurfaceStuffing: Grid spacing = " << gridSpacing << "\n";
 
   // 2. Build BCC lattice
   BCCLattice lattice(bmin, bmax, gridSpacing);
-  std::printf("IsosurfaceStuffing: Lattice %d x %d x %d (%zu vertices)\n",
-              lattice.ni, lattice.nj, lattice.nk, lattice.vertices.size());
+  std::cout << "IsosurfaceStuffing: Lattice " << lattice.ni << " x " << lattice.nj
+            << " x " << lattice.nk << " (" << lattice.vertices.size() << " vertices)\n";
 
   // 3. Evaluate signed distance field at every lattice vertex
   SignedDistanceField sdf(surfVerts, surfTris);
   for (size_t i = 0; i < lattice.vertices.size(); ++i) {
     lattice.sdfValues[i] = sdf.evaluate(lattice.vertices[i]);
   }
-  std::printf("IsosurfaceStuffing: SDF evaluated at %zu vertices\n",
-              lattice.vertices.size());
+  std::cout << "IsosurfaceStuffing: SDF evaluated at " << lattice.vertices.size() << " vertices\n";
 
   // 4. Build BCC tet decomposition
   lattice.buildTets();
-  std::printf("IsosurfaceStuffing: %zu lattice tetrahedra\n",
-              lattice.tets.size());
+  std::cout << "IsosurfaceStuffing: " << lattice.tets.size() << " lattice tetrahedra\n";
 
   // 5. Apply warping rules
-  Warp warp(lattice, alphaShort, alphaLong);
-  std::printf("IsosurfaceStuffing: %zu vertices warped, %zu remaining cut points\n",
-              warp.warpedVertices.size(), warp.remainingCutPoints.size());
+  Warp warp(lattice, sdf, alphaShort, alphaLong);
+  std::cout << "IsosurfaceStuffing: " << warp.warpedVertices.size() << " vertices warped, "
+            << warp.remainingCutPoints.size() << " remaining cut points\n";
 
   // 6. Extract interior tetrahedra
-  CutPointSnapper::extractInteriorTets(lattice, warp, outVerts, outTets);
-  std::printf("IsosurfaceStuffing: Output: %zu vertices, %zu tetrahedra\n",
-              outVerts.size(), outTets.size());
+  CutPointSnapper::extractInteriorTets(lattice, warp, sdf, outVerts, outTets);
+  std::cout << "IsosurfaceStuffing: Output: " << outVerts.size() << " vertices, "
+            << outTets.size() << " tetrahedra\n";
 }
