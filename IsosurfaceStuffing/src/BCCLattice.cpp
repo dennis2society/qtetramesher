@@ -39,6 +39,7 @@ BCCLattice::BCCLattice(const Vec3f &bboxMin, const Vec3f &bboxMax, float spacing
   // Create corner vertices
   vertices.resize(numCorners_ + numCells);
   sdfValues.resize(numCorners_ + numCells, 0.0f);
+  isBodyCenter.resize(numCorners_ + numCells, false);
 
   for (int k = 0; k < nk; ++k) {
     for (int j = 0; j < nj; ++j) {
@@ -59,6 +60,7 @@ BCCLattice::BCCLattice(const Vec3f &bboxMin, const Vec3f &bboxMax, float spacing
         vertices[idx] = Vec3f(origin_.x + (i + 0.5f) * spacing,
                                origin_.y + (j + 0.5f) * spacing,
                                origin_.z + (k + 0.5f) * spacing);
+        isBodyCenter[idx] = true;
       }
     }
   }

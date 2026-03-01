@@ -14,6 +14,7 @@
 #include "TetStuffer.h"
 #include "BCCLattice.h"
 #include "SignedDistanceField.h"
+#include "GradedBCCLattice.h"
 #include "Warp.h"
 #include "CutPointSnapper.h"
 
@@ -26,6 +27,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
                        float gridSpacing,
                        float alphaShort,
                        float alphaLong,
+                       bool graded,
                        std::vector<Vec3f> &outVerts,
                        std::vector<Tetrahedron> &outTets) {
 
@@ -51,23 +53,32 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
 
   std::cout << "IsosurfaceStuffing: BBox [" << bmin.x << "," << bmin.y << "," << bmin.z
             << "] - [" << bmax.x << "," << bmax.y << "," << bmax.z << "]\n";
-  std::cout << "IsosurfaceStuffing: Grid spacing = " << gridSpacing << "\n";
+  std::cout << "IsosurfaceStuffing: Grid spacing = " << gridSpacing
+            << (graded ? " (graded)" : " (uniform)") << "\n";
 
-  // 2. Build BCC lattice
-  BCCLattice lattice(bmin, bmax, gridSpacing);
-  std::cout << "IsosurfaceStuffing: Lattice " << lattice.ni << " x " << lattice.nj
-            << " x " << lattice.nk << " (" << lattice.vertices.size() << " vertices)\n";
-
-  // 3. Evaluate signed distance field at every lattice vertex
+  // Build SDF (needed for both paths, and for graded lattice construction)
   SignedDistanceField sdf(surfVerts, surfTris);
-  for (size_t i = 0; i < lattice.vertices.size(); ++i) {
-    lattice.sdfValues[i] = sdf.evaluate(lattice.vertices[i]);
-  }
-  std::cout << "IsosurfaceStuffing: SDF evaluated at " << lattice.vertices.size() << " vertices\n";
 
-  // 4. Build BCC tet decomposition
-  lattice.buildTets();
-  std::cout << "IsosurfaceStuffing: " << lattice.tets.size() << " lattice tetrahedra\n";
+  BCCLattice lattice;
+
+  if (graded) {
+    // Graded path: octree-based multi-resolution BCC lattice
+    GradedBCCLattice::build(bmin, bmax, gridSpacing, /*maxDepthDiff=*/2, sdf, lattice);
+    // SDF values and tets are already built inside GradedBCCLattice::build
+  } else {
+    // Uniform path: regular BCC lattice
+    lattice = BCCLattice(bmin, bmax, gridSpacing);
+    std::cout << "IsosurfaceStuffing: Lattice " << lattice.ni << " x " << lattice.nj
+              << " x " << lattice.nk << " (" << lattice.vertices.size() << " vertices)\n";
+
+    for (size_t i = 0; i < lattice.vertices.size(); ++i) {
+      lattice.sdfValues[i] = sdf.evaluate(lattice.vertices[i]);
+    }
+    std::cout << "IsosurfaceStuffing: SDF evaluated at " << lattice.vertices.size() << " vertices\n";
+
+    lattice.buildTets();
+    std::cout << "IsosurfaceStuffing: " << lattice.tets.size() << " lattice tetrahedra\n";
+  }
 
   // 5. Apply warping rules
   Warp warp(lattice, sdf, alphaShort, alphaLong);

@@ -21,6 +21,7 @@ public:
    * @param gridSpacing BCC lattice spacing
    * @param alphaShort  Short-edge warp threshold
    * @param alphaLong   Long-edge warp threshold
+   * @param graded      Enable graded meshing (large tets in deep interior)
    * @param outVerts    [out] Generated tetra mesh vertices
    * @param outTets     [out] Generated tetrahedra
    */
@@ -29,6 +30,7 @@ public:
                     float gridSpacing,
                     float alphaShort,
                     float alphaLong,
+                    bool graded,
                     std::vector<Vec3f> &outVerts,
                     std::vector<Tetrahedron> &outTets);
 };

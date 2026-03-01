@@ -31,6 +31,11 @@ struct BCCEdge {
 class BCCLattice {
 public:
   /**
+   * Default constructor (for graded lattice builder).
+   */
+  BCCLattice() : ni(0), nj(0), nk(0), spacing_(0.0f), numCorners_(0) {}
+
+  /**
    * Build a BCC lattice covering (bboxMin - padding) to (bboxMax + padding).
    * @param bboxMin    Min corner of the surface bounding box
    * @param bboxMax    Max corner of the surface bounding box
@@ -43,6 +48,9 @@ public:
 
   // SDF value at each vertex (filled externally)
   std::vector<float> sdfValues;
+
+  // Whether each vertex is a body center (true) or corner (false)
+  std::vector<bool> isBodyCenter;
 
   // Tetrahedra of the BCC decomposition (indices into vertices)
   // Each BCC cube produces 24 tetrahedra (from 6 pyramids, each split into 4 tets)

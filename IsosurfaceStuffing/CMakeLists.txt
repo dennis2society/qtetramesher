@@ -22,6 +22,8 @@ add_library(
   src/CutPointSnapper.cpp
   src/TetStuffer.h
   src/TetStuffer.cpp
+  src/GradedBCCLattice.h
+  src/GradedBCCLattice.cpp
   src/Warp.h
   src/Warp.cpp
 )

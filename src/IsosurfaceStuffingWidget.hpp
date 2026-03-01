@@ -13,6 +13,7 @@
 
 #include <BaseOptionsWidget.hpp>
 #include <QDoubleSpinBox>
+#include <QCheckBox>
 #include <QPushButton>
 
 class IsosurfaceStuffingWidget : public BaseOptionsWidget {
@@ -32,6 +33,7 @@ class IsosurfaceStuffingWidget : public BaseOptionsWidget {
   QDoubleSpinBox alphaShortSpinBox;
   QLabel alphaLongLabel;
   QDoubleSpinBox alphaLongSpinBox;
+  QCheckBox gradedCheckBox;
   QPushButton generateTetrahedraButton;
 };
 

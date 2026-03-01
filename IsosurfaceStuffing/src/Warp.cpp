@@ -75,8 +75,6 @@ void Warp::collectEdges(const BCCLattice &lattice,
                         float alphaS, float alphaL,
                         std::vector<WarpCandidate> &candidates,
                         std::vector<PendingCutPoint> &pendingCuts) {
-  int numCorners = lattice.ni * lattice.nj * lattice.nk;
-
   for (const auto &tet : lattice.tets) {
     for (int e = 0; e < 4; ++e) {
       for (int f = e + 1; f < 4; ++f) {
@@ -95,8 +93,8 @@ void Warp::collectEdges(const BCCLattice &lattice,
         if (s0 == 0.0f && s1 == 0.0f) continue;
 
         // Determine edge type for alpha threshold
-        bool v0IsCenter = (v0 >= (unsigned int)numCorners);
-        bool v1IsCenter = (v1 >= (unsigned int)numCorners);
+        bool v0IsCenter = lattice.isBodyCenter[v0];
+        bool v1IsCenter = lattice.isBodyCenter[v1];
         float alpha = (v0IsCenter || v1IsCenter) ? alphaS : alphaL;
 
         // Compute cut parameter from original SDF values

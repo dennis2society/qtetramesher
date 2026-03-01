@@ -44,10 +44,13 @@ IsosurfaceStuffingWidget::IsosurfaceStuffingWidget(QWidget *parent)
   alphaLayout.addWidget(&alphaShortSpinBox);
   alphaLayout.addWidget(&alphaLongLabel);
   alphaLayout.addWidget(&alphaLongSpinBox);
+  gradedCheckBox.setText("Graded (large interior tets)");
+  gradedCheckBox.setChecked(false);
   generateTetrahedraButton.setText("Generate Tetrahedra");
   layout.addWidget(&labelTitle);
   layout.addLayout(&cellSizeLayout);
   layout.addLayout(&alphaLayout);
+  layout.addWidget(&gradedCheckBox);
   layout.addWidget(&generateTetrahedraButton);
   layout.addStretch();
 }
@@ -71,7 +74,8 @@ void IsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
     iso.GenerateFromSurface(tris, verts,
                             float(cellSizeSpinBox.value()),
                             float(alphaShortSpinBox.value()),
-                            float(alphaLongSpinBox.value()));
+                            float(alphaLongSpinBox.value()),
+                            gradedCheckBox.isChecked());
     tMesh_->UpdateTetraMesh(iso.GetTetraVertices(), iso.GetTetras());
     tMesh_->Draw();
     viewer_->update();
