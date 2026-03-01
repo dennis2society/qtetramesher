@@ -21,6 +21,7 @@
 #include <QPushButton>
 #include <QWidget>
 #include <QuartetTetraStuffingWidget.hpp>
+#include <IsosurfaceStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetgenWidget.hpp>
@@ -61,6 +62,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();
   void generateQuartetTetraStuffingSlot();
+  void generateIsosurfaceStuffingSlot();
 
  private:
   // QGLViewer variant
@@ -97,6 +99,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
   QuartetTetraStuffingWidget quartetTetraStuffingWidget;
+  IsosurfaceStuffingWidget isosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
 
   void setupUI();

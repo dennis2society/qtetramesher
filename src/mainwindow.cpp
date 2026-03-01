@@ -24,6 +24,7 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       sofaTetraStuffingWidget(this),
       cgalTetrahedralizeWidget(this),
       quartetTetraStuffingWidget(this),
+      isosurfaceStuffingWidget(this),
       tetgenWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
@@ -102,6 +103,7 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("SOFA TetraStuffing");
   tetraMeshMethodComboBox.addItem("CGAL Tetrahedralize");
   tetraMeshMethodComboBox.addItem("Quartet TetraStuffing");
+  tetraMeshMethodComboBox.addItem("Isosurface Stuffing");
   tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
   optionsLayout.addWidget(&surfaceVisWidget);
   QFrame f1;
@@ -119,9 +121,11 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
   optionsLayout.addWidget(&cgalTetrahedralizeWidget);
   optionsLayout.addWidget(&quartetTetraStuffingWidget);
+  optionsLayout.addWidget(&isosurfaceStuffingWidget);
   optionsLayout.addWidget(&tetgenWidget);
   cgalTetrahedralizeWidget.hide();
   quartetTetraStuffingWidget.hide();
+  isosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 160);
@@ -201,6 +205,8 @@ void QTetraMesherMainWindow::connectSlots() {
           this, SLOT(generateCGALTetrahedralizeSlot()));
   connect(&quartetTetraStuffingWidget.generateTetrahedraButton,
           SIGNAL(clicked()), this, SLOT(generateQuartetTetraStuffingSlot()));
+  connect(&isosurfaceStuffingWidget.generateTetrahedraButton,
+          SIGNAL(clicked()), this, SLOT(generateIsosurfaceStuffingSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -315,6 +321,7 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   cgalTetrahedralizeWidget.hide();
   sofaTetraStuffingWidget.hide();
   quartetTetraStuffingWidget.hide();
+  isosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
   // show only selected
   switch (newSelectedMethod) {
@@ -328,6 +335,9 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
       quartetTetraStuffingWidget.show();
       break;
     case 3:
+      isosurfaceStuffingWidget.show();
+      break;
+    case 4:
       tetgenWidget.show();
       break;
     default:
@@ -344,6 +354,7 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
                                                      0.05);
   quartetTetraStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                       0.2);
+  isosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
 }
 
 void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
@@ -359,6 +370,7 @@ void QTetraMesherMainWindow::loadGMSHSlot() {
                                                      0.05);
   quartetTetraStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                       0.2);
+  isosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
   updateCutplaneSliders();
 }
 
@@ -386,6 +398,11 @@ void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
 
 void QTetraMesherMainWindow::generateQuartetTetraStuffingSlot() {
   quartetTetraStuffingWidget.generateTetrahedra(viewer);
+  updateCutplaneSliders();
+}
+
+void QTetraMesherMainWindow::generateIsosurfaceStuffingSlot() {
+  isosurfaceStuffingWidget.generateTetrahedra(viewer);
   updateCutplaneSliders();
 }
 
