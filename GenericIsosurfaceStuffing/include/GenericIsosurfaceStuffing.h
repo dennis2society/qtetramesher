@@ -1,5 +1,5 @@
 /*
- * IsosurfaceStuffing.h
+ * GenericIsosurfaceStuffing.h
  *
  *  A self-contained implementation of Jonathan Shewchuk's Isosurface Stuffing
  *  algorithm (http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf).
@@ -17,16 +17,16 @@
  *  Created 2026
  */
 
-#ifndef ISOSURFACE_STUFFING_H
-#define ISOSURFACE_STUFFING_H
+#ifndef GENERIC_ISOSURFACE_STUFFING_H
+#define GENERIC_ISOSURFACE_STUFFING_H
 
 #include "TetraMeshTools/GeometryTypes.h"
 #include "TetraMeshTools/TetraToolsExports.h"
 #include <vector>
 
-class DLL_EXPORT IsosurfaceStuffing {
+class DLL_EXPORT GenericIsosurfaceStuffing {
 public:
-  IsosurfaceStuffing() {}
+  GenericIsosurfaceStuffing() {}
 
   /**
    * Generate a tetrahedral mesh from a triangle surface.
@@ -53,4 +53,4 @@ private:
   std::vector<Tetrahedron> tetraIndices;
 };
 
-#endif // ISOSURFACE_STUFFING_H
+#endif // GENERIC_ISOSURFACE_STUFFING_H

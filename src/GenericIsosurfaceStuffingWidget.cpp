@@ -1,24 +1,24 @@
 /*
- * IsosurfaceStuffingWidget.cpp
+ * GenericIsosurfaceStuffingWidget.cpp
  *
- * This widget provides the UI options for the Isosurface Stuffing
+ * This widget provides the UI options for the Generic Isosurface Stuffing
  * implementation (Shewchuk's algorithm).
  *
  *  Created 2026
  */
 
-#include "IsosurfaceStuffingWidget.hpp"
+#include "GenericIsosurfaceStuffingWidget.hpp"
 
 #include <QElapsedTimer>
 #include <QFont>
 #include <QMessageBox>
 #include <sstream>
 
-#include "IsosurfaceStuffing.h"
+#include "GenericIsosurfaceStuffing.h"
 
-IsosurfaceStuffingWidget::IsosurfaceStuffingWidget(QWidget *parent)
+GenericIsosurfaceStuffingWidget::GenericIsosurfaceStuffingWidget(QWidget *parent)
     : BaseOptionsWidget(parent) {
-  labelTitle.setText("Isosurface Stuffing");
+  labelTitle.setText("Generic Isosurface Stuffing");
   QFont boldFont;
   boldFont.setBold(true);
   labelTitle.setFont(boldFont);
@@ -55,7 +55,7 @@ IsosurfaceStuffingWidget::IsosurfaceStuffingWidget(QWidget *parent)
   layout.addStretch();
 }
 
-void IsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
+void GenericIsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   QElapsedTimer t;
   t.start();
   QGLTetraMesh *tMesh_ = viewer_->tMesh;
@@ -69,7 +69,7 @@ void IsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   if (tMesh_->GetSurface() == NULL) {
     return;
   }
-  IsosurfaceStuffing iso;
+  GenericIsosurfaceStuffing iso;
   try {
     iso.GenerateFromSurface(tris, verts,
                             float(cellSizeSpinBox.value()),
@@ -86,11 +86,11 @@ void IsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
     std::string stdMSG = ss.str();
     viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
   } catch (std::exception &e) {
-    std::cerr << "Caught exception in IsosurfaceStuffing..." << std::endl;
+    std::cerr << "Caught exception in GenericIsosurfaceStuffing..." << std::endl;
     QMessageBox mb(this);
     mb.setIcon(QMessageBox::Warning);
     mb.setText(
-        "ERROR while generating Isosurface Stuffing tetra mesh.");
+        "ERROR while generating Generic Isosurface Stuffing tetra mesh.");
     mb.setInformativeText(e.what());
     mb.exec();
   }

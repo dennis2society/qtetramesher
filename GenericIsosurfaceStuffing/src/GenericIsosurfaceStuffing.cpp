@@ -1,12 +1,12 @@
 /*
- * IsosurfaceStuffing.cpp
+ * GenericIsosurfaceStuffing.cpp
  *
  * Wrapper that delegates to the TetStuffer pipeline.
  *
  *  Created 2026
  */
 
-#include "IsosurfaceStuffing.h"
+#include "GenericIsosurfaceStuffing.h"
 #include "TetStuffer.h"
 
 #ifdef _WIN32
@@ -16,7 +16,7 @@
 #include <windows.h>
 #endif
 
-void IsosurfaceStuffing::GenerateFromSurface(
+void GenericIsosurfaceStuffing::GenerateFromSurface(
     const std::vector<Triangle> &tris,
     const std::vector<Vec3f> &verts,
     float gridSpacing,
@@ -31,10 +31,10 @@ void IsosurfaceStuffing::GenerateFromSurface(
                     tetraPoints, tetraIndices);
 }
 
-std::vector<Vec3f> &IsosurfaceStuffing::GetTetraVertices() {
+std::vector<Vec3f> &GenericIsosurfaceStuffing::GetTetraVertices() {
   return tetraPoints;
 }
 
-std::vector<Tetrahedron> &IsosurfaceStuffing::GetTetras() {
+std::vector<Tetrahedron> &GenericIsosurfaceStuffing::GetTetras() {
   return tetraIndices;
 }

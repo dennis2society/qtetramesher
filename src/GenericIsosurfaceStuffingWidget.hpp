@@ -1,13 +1,13 @@
 /*
- * IsosurfaceStuffingWidget.hpp
+ * GenericIsosurfaceStuffingWidget.hpp
  *
- * This widget provides options for the Isosurface Stuffing implementation
+ * This widget provides options for the Generic Isosurface Stuffing implementation
  * (Shewchuk's algorithm, self-contained C++ implementation).
  *
  *  Created 2026
  */
-#ifndef ISOSURFACE_STUFFING_WIDGET_HPP
-#define ISOSURFACE_STUFFING_WIDGET_HPP
+#ifndef GENERIC_ISOSURFACE_STUFFING_WIDGET_HPP
+#define GENERIC_ISOSURFACE_STUFFING_WIDGET_HPP
 
 #include <qgltetraviewer.hpp>
 
@@ -16,11 +16,11 @@
 #include <QCheckBox>
 #include <QPushButton>
 
-class IsosurfaceStuffingWidget : public BaseOptionsWidget {
+class GenericIsosurfaceStuffingWidget : public BaseOptionsWidget {
   Q_OBJECT
 
  public:
-  IsosurfaceStuffingWidget(QWidget *parent);
+  GenericIsosurfaceStuffingWidget(QWidget *parent);
   void update();
 
   void generateTetrahedra(QGLTetraViewer *viewer_);
@@ -37,4 +37,4 @@ class IsosurfaceStuffingWidget : public BaseOptionsWidget {
   QPushButton generateTetrahedraButton;
 };
 
-#endif  // ISOSURFACE_STUFFING_WIDGET_HPP
+#endif  // GENERIC_ISOSURFACE_STUFFING_WIDGET_HPP
