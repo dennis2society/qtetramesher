@@ -43,7 +43,6 @@ add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
 add_subdirectory(TetgenWrapper)
-add_subdirectory(quartet_tetrastuffing)
 add_subdirectory(IsosurfaceStuffing)
 
 set(CMAKE_INCLUDE_CURRENT_DIR "YES")
@@ -56,7 +55,6 @@ include_directories(
   TetraMeshTools/include/TetraMeshTools
   SofaTetraStuffing/include
   CGALTetrahedralize/include
-  quartet_tetrastuffing/include
   IsosurfaceStuffing/include
   TetgenWrapper/include
   libQGLViewer
@@ -89,8 +87,6 @@ add_executable(
   src/SofaTetraStuffingWidget.cpp
   src/CGALTetrahedralizeWidget.hpp
   src/CGALTetrahedralizeWidget.cpp
-  src/QuartetTetraStuffingWidget.hpp
-  src/QuartetTetraStuffingWidget.cpp
   src/TetgenWidget.hpp
   src/TetgenWidget.cpp
   src/IsosurfaceStuffingWidget.hpp
@@ -104,7 +100,6 @@ target_link_libraries(
   TetraMeshTools
   SofaTetraStuffing
   CGALTetrahedralize
-  QuartetTetraStuffing
   IsosurfaceStuffing
   TetgenWrapper
   CGAL

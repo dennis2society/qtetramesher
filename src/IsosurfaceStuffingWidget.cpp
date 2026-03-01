@@ -31,10 +31,10 @@ IsosurfaceStuffingWidget::IsosurfaceStuffingWidget(QWidget *parent)
   cellSizeLayout.addWidget(&cellSizeLabel);
   cellSizeLayout.addWidget(&cellSizeSpinBox);
   alphaShortLabel.setText("AlphaShort");
-  alphaShortSpinBox.setValue(0.4);
+  alphaShortSpinBox.setValue(0.45);
   alphaShortSpinBox.setSingleStep(0.01);
   alphaLongLabel.setText("AlphaLong");
-  alphaLongSpinBox.setValue(0.27);
+  alphaLongSpinBox.setValue(0.67);
   alphaLongSpinBox.setSingleStep(0.01);
   alphaShortLabel.setMaximumHeight(20);
   alphaShortSpinBox.setMaximumHeight(20);
