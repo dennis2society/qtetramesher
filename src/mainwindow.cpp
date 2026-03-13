@@ -201,6 +201,8 @@ void QTetraMesherMainWindow::connectSlots() {
           this, SLOT(generateCGALTetrahedralizeSlot()));
   connect(&genericIsosurfaceStuffingWidget.generateTetrahedraButton,
           SIGNAL(clicked()), this, SLOT(generateGenericIsosurfaceStuffingSlot()));
+  connect(&tetgenWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
+          SLOT(generateTetgenSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -384,6 +386,11 @@ void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
 
 void QTetraMesherMainWindow::generateGenericIsosurfaceStuffingSlot() {
   genericIsosurfaceStuffingWidget.generateTetrahedra(viewer);
+  updateCutplaneSliders();
+}
+
+void QTetraMesherMainWindow::generateTetgenSlot() {
+  tetgenWidget.generateTetrahedra(viewer);
   updateCutplaneSliders();
 }
 

@@ -61,6 +61,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();
   void generateGenericIsosurfaceStuffingSlot();
+  void generateTetgenSlot();
 
  private:
   // QGLViewer variant

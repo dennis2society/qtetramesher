@@ -29,7 +29,7 @@ public:
    */
   void GenerateFromSurface(const std::vector<Triangle> &tris,
                            const std::vector<Vec3f> &verts, float qualityBounds,
-                           float volumeConstraint, bool usePLC);
+                           float cellSize, bool usePLC);
 
   /**
    * Returns the generated tetrahedra vertices
@@ -53,7 +53,7 @@ private:
 
   bool m_usePLC;
   float m_qualityBound;
-  float m_volumeConstraint;
+  float m_cellSize;   ///< 0 or negative triggers auto-compute from bounding box
   bool m_noSubDivide;
 
   std::string generateTetgenParamString();

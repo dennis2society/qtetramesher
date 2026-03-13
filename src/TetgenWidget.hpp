@@ -25,7 +25,17 @@ class TetgenWidget : public BaseOptionsWidget {
 
   void generateTetrahedra(QGLTetraViewer *viewer_);
 
-  QLabel notAvailebleLabel;
+  QHBoxLayout qualityBoundsLayout;
+  QLabel qualityBoundsLabel;
+  QDoubleSpinBox qualityBoundsSpinBox;
+
+  QHBoxLayout cellSizeLayout;
+  QLabel cellSizeLabel;
+  QDoubleSpinBox cellSizeSpinBox;
+
+  QCheckBox usePLCCheckBox;
+
+  QPushButton generateTetrahedraButton;
 };
 
 #endif  // TETGEN_WIDGET_HPP

@@ -7,9 +7,11 @@
 
 #include <TetgenWrapper.h>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <tetgen.h>
 #include <cstring>
+#include <cmath>
 
 #ifdef _WIN32
 #include <time.h>
@@ -39,21 +41,16 @@ void generateFacets(const std::vector<Triangle> &tris,
   }
   for (auto i = 0; i < io.numberoffacets; ++i) {
     tetgenio::facet k = io.facetlist[i];
-    for (auto j = 0; j < k.numberofpolygons; ++j) {
-        std::cout << "Polygon #" << j<<": ";
-        std::cout << "F[" << i << "]: " << k.polygonlist[j].vertexlist[0] << "/" << k.polygonlist[j].vertexlist[1]
-                  << "/" << k.polygonlist[j].vertexlist[2] << std::endl;
-    }
   }
 }
 
-TetgenWrapper::TetgenWrapper() : m_noSubDivide(false), m_usePLC(true), m_qualityBound(1.5f), m_volumeConstraint(0.3f)
+TetgenWrapper::TetgenWrapper() : m_noSubDivide(false), m_usePLC(true), m_qualityBound(2.0f), m_cellSize(0.0f)
 {}
 
 void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
                                         const std::vector<Vec3f> &verts,
                                         float qualityBounds,
-                                        float volumeConstraint,
+                                        float cellSize,
                                         bool usePLC)
 {
   tetraIndices.clear();
@@ -61,7 +58,26 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
 
   m_usePLC = usePLC;
   m_qualityBound = qualityBounds;
-  m_volumeConstraint = volumeConstraint;
+  m_cellSize = cellSize;
+
+  // Auto-compute cell size from bounding box diagonal when none given (<=0)
+  if (m_cellSize <= 0.0f && !verts.empty()) {
+    Vec3f bbMin = verts[0], bbMax = verts[0];
+    for (const auto &v : verts) {
+      if (v.x < bbMin.x) bbMin.x = v.x;
+      if (v.y < bbMin.y) bbMin.y = v.y;
+      if (v.z < bbMin.z) bbMin.z = v.z;
+      if (v.x > bbMax.x) bbMax.x = v.x;
+      if (v.y > bbMax.y) bbMax.y = v.y;
+      if (v.z > bbMax.z) bbMax.z = v.z;
+    }
+    const float dx = bbMax.x - bbMin.x;
+    const float dy = bbMax.y - bbMin.y;
+    const float dz = bbMax.z - bbMin.z;
+    const float diag = std::sqrt(dx * dx + dy * dy + dz * dz);
+    m_cellSize = diag / 10.0f;
+    std::cout << "Auto cell size (diag=" << diag << "): " << m_cellSize << std::endl;
+  }
 
   tetgenio input;
   tetgenio output;
@@ -136,13 +152,17 @@ bool TetgenWrapper::saveAsTetgen(const std::string path,
 
 std::string TetgenWrapper::generateTetgenParamString()
 {
+  // Volume of a regular tetrahedron with edge s: V = s^3 * sqrt(2) / 12
+  const double volume = static_cast<double>(m_cellSize) *
+                        static_cast<double>(m_cellSize) *
+                        static_cast<double>(m_cellSize) *
+                        0.11785113019775792;  // sqrt(2)/12
   std::stringstream ss;
   if (m_usePLC)
     ss << "p";
-  ss << "q" << m_qualityBound;
-  ss << "a" << m_volumeConstraint;
-  std::cout << "ParamString: " << ss.str();
+  ss << "q" << std::fixed << std::setprecision(6) << m_qualityBound;
+  ss << "a" << std::fixed << std::setprecision(10) << volume;
+  std::cout << "ParamString: " << ss.str() << std::endl;
   ss << "V";
   return ss.str();
-
 }
