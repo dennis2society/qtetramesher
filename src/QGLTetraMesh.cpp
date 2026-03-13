@@ -13,6 +13,7 @@
 #include "QGLTetraMesh.hpp"
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
+#include "TetraMeshTools/TetgenLoader.h"
 #include "TetraMeshTools/TetgenWriter.h"
 #include "TetraMeshTools/TriMeshLoader.h"
 #include "TetraMeshTools/TriMeshWriter.h"
@@ -470,15 +471,13 @@ void QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   }
   Timer t;
   t.start();
-  TetraTools::GMSHMeshLoader *gloader = new TetraTools::GMSHMeshLoader();
-  if (!gloader->Load(fileName_)) {
-    std::cerr << "Error loading Tetgen file '" << fileName_ << "'."
-              << std::endl;
-    delete gloader;
+  TetraTools::TetgenLoader tloader;
+  if (!tloader.Load(fileName_)) {
+    std::cerr << "Error loading Tetgen file '" << fileName_ << "'." << std::endl;
     return;
   }
   top = new TetraTools::TetrahedronTopology();
-  top->Init(gloader->GetVertices(), gloader->GetTetras(), true);
+  top->Init(tloader.GetVertices(), tloader.GetTetras(), true);
   surf = new TetraTools::TriangleTopology();
   surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
   surf->GenerateNormals();
@@ -486,7 +485,6 @@ void QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   t.stop();
   std::cout << "Finished loading Tetgen TetraMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
-  delete gloader;
 }
 
 bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {

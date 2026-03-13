@@ -37,6 +37,7 @@ add_library(
   src/Octree.cpp
   src/OctreeNode.cpp
   src/SATriangleBoxIntersection.cpp
+  src/TetgenLoader.cpp
   src/TetgenWriter.cpp
   src/TetrahedronTopology.cpp
   src/TriangleTopology.cpp

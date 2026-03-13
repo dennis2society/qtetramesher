@@ -57,6 +57,8 @@ class QTetraMesherMainWindow : public QMainWindow {
   void exportSurfaceSlot();
   void loadGMSHSlot();
   void exportGMSHSlot();
+  void loadTetgenSlot();
+  void exportTetgenSlot();
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();
@@ -81,6 +83,8 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionLoadSurface;
   QAction actionLoadGMSH;
   QAction actionExportGMSH;
+  QAction actionLoadTetgen;
+  QAction actionExportTetgen;
   QAction actionExportSurface;
   QAction actionQuit;
   QAction actionShowAxis;

@@ -290,6 +290,27 @@ void QGLTetraViewer::loadGMSH() {
   emit onLoad();
 }
 
+void QGLTetraViewer::loadTetgen() {
+  QString s = QFileDialog::getOpenFileName(
+      this, "Select Tetgen .node file", "", "Tetgen node file (*.node)");
+  if (s.isEmpty()) return;
+  // Strip the .node extension — TetgenLoader expects the base name
+  QFileInfo fi(s);
+  QString basePath = fi.dir().filePath(fi.completeBaseName());
+  std::cout << "Loading Tetgen Mesh... " << basePath.toStdString() << std::endl;
+  ShowStatusMessage("Loading Tetgen...");
+  tMesh->LoadTetgen(basePath.toStdString());
+  BoundingBox bb = tMesh->GetBoundingBox();
+  _maxBBox = bb.max.x - bb.min.x;
+  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
+  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
+  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneRadius(_maxBBox);
+  this->showEntireScene();
+  this->ShowStatusMessage("Tetgen mesh successfully loaded...", 10000);
+  emit onLoad();
+}
+
 void QGLTetraViewer::saveGMSH() {
   if (tMesh == NULL) {
     ShowStatusMessage(

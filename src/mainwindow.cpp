@@ -42,9 +42,13 @@ void QTetraMesherMainWindow::setupUI() {
   fileMenu.addAction(&actionLoadSurface);
   actionLoadGMSH.setText("Load GMSH");
   fileMenu.addAction(&actionLoadGMSH);
+  actionLoadTetgen.setText("Load Tetgen (.node/.ele)");
+  fileMenu.addAction(&actionLoadTetgen);
   fileMenu.addSeparator();
   actionExportGMSH.setText("Export GMSH");
   fileMenu.addAction(&actionExportGMSH);
+  actionExportTetgen.setText("Export Tetgen (.node/.ele)");
+  fileMenu.addAction(&actionExportTetgen);
   actionExportSurface.setText("Export Surface");
   fileMenu.addAction(&actionExportSurface);
   fileMenu.addSeparator();
@@ -169,6 +173,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(exportSurfaceSlot()));
   connect(&actionLoadGMSH, SIGNAL(triggered()), this, SLOT(loadGMSHSlot()));
   connect(&actionExportGMSH, SIGNAL(triggered()), this, SLOT(exportGMSHSlot()));
+  connect(&actionLoadTetgen, SIGNAL(triggered()), this, SLOT(loadTetgenSlot()));
+  connect(&actionExportTetgen, SIGNAL(triggered()), this, SLOT(exportTetgenSlot()));
   connect(&surfaceVisWidget.surfaceVisComboBox,
           SIGNAL(currentIndexChanged(int)), this, SLOT(surfaceVisChanged()));
   connect(&surfaceVisWidget.surfaceColorButton, SIGNAL(clicked()), this,
@@ -350,6 +356,17 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
 void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
 
 void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
+
+void QTetraMesherMainWindow::loadTetgenSlot() {
+  viewer->loadTetgen();
+  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05f);
+  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
+  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05);
+  genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
+  updateCutplaneSliders();
+}
+
+void QTetraMesherMainWindow::exportTetgenSlot() { viewer->saveTetgen(); }
 
 void QTetraMesherMainWindow::loadGMSHSlot() {
   viewer->loadGMSH();

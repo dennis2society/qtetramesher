@@ -35,6 +35,7 @@ class QGLTetraViewer : public QGLViewer {
   void ShowStatusMessage(const QString &msg_, int duration_ = 2000);
   void loadSurface();
   void loadGMSH();
+  void loadTetgen();
   void saveGMSH();
   void saveTetgen();
   void saveSurface();
