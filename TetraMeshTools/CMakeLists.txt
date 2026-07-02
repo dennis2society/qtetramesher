@@ -22,13 +22,11 @@ add_library(
   include/TetraMeshTools/Vec3f.h
   include/TetraMeshTools/GeometryTypes.h
   include/TetraMeshTools/Octree.h
-  include/TetraMeshTools/TetgenLoader.h
   include/TetraMeshTools/TetraToolsExports.h
   include/TetraMeshTools/TriMeshWriter.h
   include/TetraMeshTools/Vec4f.h
   include/TetraMeshTools/GMSHMeshLoader.h
   include/TetraMeshTools/OctreeNode.h
-  include/TetraMeshTools/TetgenWriter.h
   include/TetraMeshTools/TriangleTopology.h
   include/TetraMeshTools/Vec2f.h
   src/BaseMeshLoader.cpp
@@ -37,8 +35,6 @@ add_library(
   src/Octree.cpp
   src/OctreeNode.cpp
   src/SATriangleBoxIntersection.cpp
-  src/TetgenLoader.cpp
-  src/TetgenWriter.cpp
   src/TetrahedronTopology.cpp
   src/TriangleTopology.cpp
   src/TriMeshLoader.cpp

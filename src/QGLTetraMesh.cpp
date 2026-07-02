@@ -13,10 +13,9 @@
 #include "QGLTetraMesh.hpp"
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
-#include "TetraMeshTools/TetgenLoader.h"
-#include "TetraMeshTools/TetgenWriter.h"
 #include "TetraMeshTools/TriMeshLoader.h"
 #include "TetraMeshTools/TriMeshWriter.h"
+#include "TetgenWrapper.h"
 #include "Timer.h"
 
 QGLTetraMesh::QGLTetraMesh()
@@ -471,13 +470,13 @@ void QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   }
   Timer t;
   t.start();
-  TetraTools::TetgenLoader tloader;
-  if (!tloader.Load(fileName_)) {
+  TetgenWrapper tloader;
+  if (!tloader.loadAsTetgen(std::string(), fileName_)) {
     std::cerr << "Error loading Tetgen file '" << fileName_ << "'." << std::endl;
     return;
   }
   top = new TetraTools::TetrahedronTopology();
-  top->Init(tloader.GetVertices(), tloader.GetTetras(), true);
+  top->Init(tloader.GetTetraVertices(), tloader.GetTetras(), true);
   surf = new TetraTools::TriangleTopology();
   surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
   surf->GenerateNormals();
@@ -502,9 +501,11 @@ bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
 bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
   Timer t;
   t.start();
-  TetraTools::TetgenWriter twriter;
-  bool success =
-      (twriter.SaveToFile(fileName_, top->GetVertices(), top->GetTetrahedra()));
+  TetgenWrapper twriter;
+  // fileName_ is the extension-less prefix; saveAsTetgen() will append the
+  // required ".node"/".ele" extensions using Tetgen's own file writers.
+  bool success = twriter.saveAsTetgen(std::string(), fileName_,
+                                      top->GetTetrahedra(), top->GetVertices());
   t.stop();
   std::cout << "Finished saving Tetgen in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;

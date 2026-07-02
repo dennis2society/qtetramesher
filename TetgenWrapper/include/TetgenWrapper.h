@@ -47,6 +47,11 @@ public:
                     const std::vector<Tetrahedron> &tetras,
                     const std::vector<Vec3f> &verts);
 
+  /// This function will load a Tetgen mesh (consisting of a .node and a .ele
+  /// file). The resulting vertices/tetrahedra are stored internally and
+  /// accessible via GetTetraVertices() / GetTetras().
+  bool loadAsTetgen(const std::string path, const std::string baseName);
+
 private:
   std::vector<Vec3f> tetraPoints;
   std::vector<Tetrahedron> tetraIndices;

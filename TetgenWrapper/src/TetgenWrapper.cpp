@@ -7,6 +7,7 @@
 
 #include <TetgenWrapper.h>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <tetgen.h>
@@ -147,7 +148,112 @@ bool TetgenWrapper::saveAsTetgen(const std::string path,
                                  const std::string baseName,
                                  const std::vector<Tetrahedron> &tetras,
                                  const std::vector<Vec3f> &verts) {
-  return false;
+  if (verts.empty() || tetras.empty()) {
+    std::cerr << "Error! Cannot save an empty Tetgen mesh..." << std::endl;
+    return false;
+  }
+
+  // Build the combined path/basename that Tetgen's own save_nodes()/
+  // save_elements() expect (they append the ".node"/".ele" suffix
+  // themselves).
+  std::string baseFilename = baseName;
+  if (!path.empty()) {
+    baseFilename = path;
+    if (baseFilename.back() != '/' && baseFilename.back() != '\\') {
+      baseFilename += '/';
+    }
+    baseFilename += baseName;
+  }
+
+  // Fill a tetgenio structure and let Tetgen's own I/O routines write the
+  // .node/.ele files, so the produced files are guaranteed to be in a
+  // format Tetgen itself understands.
+  tetgenio out;
+  out.firstnumber = 0;
+  out.mesh_dim = 3;
+
+  out.numberofpoints = static_cast<int>(verts.size());
+  out.pointlist = new double[verts.size() * 3];
+  for (size_t i = 0; i < verts.size(); ++i) {
+    out.pointlist[i * 3] = verts[i].x;
+    out.pointlist[i * 3 + 1] = verts[i].y;
+    out.pointlist[i * 3 + 2] = verts[i].z;
+  }
+
+  out.numberofcorners = 4;
+  out.numberoftetrahedronattributes = 0;
+  out.numberoftetrahedra = static_cast<int>(tetras.size());
+  out.tetrahedronlist = new int[tetras.size() * 4];
+  for (size_t i = 0; i < tetras.size(); ++i) {
+    out.tetrahedronlist[i * 4] = tetras[i].index[0];
+    out.tetrahedronlist[i * 4 + 1] = tetras[i].index[1];
+    out.tetrahedronlist[i * 4 + 2] = tetras[i].index[2];
+    out.tetrahedronlist[i * 4 + 3] = tetras[i].index[3];
+  }
+
+  out.save_nodes(baseFilename.c_str());
+  out.save_elements(baseFilename.c_str());
+
+  std::ifstream nodeFile(baseFilename + ".node");
+  std::ifstream eleFile(baseFilename + ".ele");
+  return nodeFile.good() && eleFile.good();
+}
+
+bool TetgenWrapper::loadAsTetgen(const std::string path,
+                                 const std::string baseName) {
+  tetraPoints.clear();
+  tetraIndices.clear();
+
+  // Build the combined path/basename that Tetgen's own load_node()/
+  // load_tet() expect (they append the ".node"/".ele" suffix themselves).
+  std::string baseFilename = baseName;
+  if (!path.empty()) {
+    baseFilename = path;
+    if (baseFilename.back() != '/' && baseFilename.back() != '\\') {
+      baseFilename += '/';
+    }
+    baseFilename += baseName;
+  }
+
+  // tetgenio's load_*() functions take a non-const char*.
+  std::vector<char> filebasename(baseFilename.begin(), baseFilename.end());
+  filebasename.push_back('\0');
+
+  tetgenio in;
+  // object = NODES (0) makes load_tetmesh() read the plain .node/.ele files
+  // (as opposed to .mesh/.neu formats).
+  bool success =
+      in.load_tetmesh(filebasename.data(), (int)tetgenbehavior::NODES);
+  if (!success) {
+    std::cerr << "Error! Could not load Tetgen mesh from '" << baseFilename
+              << ".node/.ele'." << std::endl;
+    return false;
+  }
+
+  // load_node() auto-detects whether indices in the file are 0- or
+  // 1-based and stores the result in 'firstnumber'; the raw values in
+  // 'tetrahedronlist' use that same base, so we must subtract it here to
+  // get valid 0-based array indices.
+  const int firstNumber = in.firstnumber;
+
+  tetraPoints.reserve(in.numberofpoints);
+  for (int i = 0; i < in.numberofpoints; ++i) {
+    tetraPoints.push_back(Vec3f(static_cast<float>(in.pointlist[i * 3]),
+                                static_cast<float>(in.pointlist[i * 3 + 1]),
+                                static_cast<float>(in.pointlist[i * 3 + 2])));
+  }
+
+  tetraIndices.reserve(in.numberoftetrahedra);
+  for (int i = 0; i < in.numberoftetrahedra; ++i) {
+    Tetrahedron t;
+    t.index[0] = in.tetrahedronlist[i * in.numberofcorners] - firstNumber;
+    t.index[1] = in.tetrahedronlist[i * in.numberofcorners + 1] - firstNumber;
+    t.index[2] = in.tetrahedronlist[i * in.numberofcorners + 2] - firstNumber;
+    t.index[3] = in.tetrahedronlist[i * in.numberofcorners + 3] - firstNumber;
+    tetraIndices.push_back(t);
+  }
+
+  return !tetraPoints.empty() && !tetraIndices.empty();
 }
 
 std::string TetgenWrapper::generateTetgenParamString()
@@ -164,5 +270,11 @@ std::string TetgenWrapper::generateTetgenParamString()
   ss << "a" << std::fixed << std::setprecision(10) << volume;
   std::cout << "ParamString: " << ss.str() << std::endl;
   ss << "V";
+  // '-F': suppress Tetgen's own (undesired) automatic file output. Without
+  // this switch, Tetgen will silently write "*_skipped.node"/"*_skipped.face"
+  // diagnostic files to disk whenever it encounters problematic PLC facets
+  // during tetrahedralization - i.e. on every "Generate Tetrahedra" call,
+  // not only when the user explicitly chooses "Export Tetgen".
+  ss << "F";
   return ss.str();
 }

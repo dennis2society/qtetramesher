@@ -294,7 +294,7 @@ void QGLTetraViewer::loadTetgen() {
   QString s = QFileDialog::getOpenFileName(
       this, "Select Tetgen .node file", "", "Tetgen node file (*.node)");
   if (s.isEmpty()) return;
-  // Strip the .node extension — TetgenLoader expects the base name
+  // Strip the .node extension — TetgenWrapper::loadAsTetgen expects the base name
   QFileInfo fi(s);
   QString basePath = fi.dir().filePath(fi.completeBaseName());
   std::cout << "Loading Tetgen Mesh... " << basePath.toStdString() << std::endl;
@@ -347,23 +347,27 @@ void QGLTetraViewer::saveTetgen() {
     return;
   }
   if (tMesh->GetTetraMesh() != NULL) {
+    const QString filter = "Tetgen node file (*.node)";
     QFileDialog *qfd =
-        new QFileDialog(this, "Select Tetgen Output File prefix", "", "");
-    QString s =
-        qfd->getSaveFileName(this, "Select Tetgen Output File prefix", "", "");
+        new QFileDialog(this, "Select Tetgen Output File prefix", "", filter);
+    qfd->setDefaultSuffix("node");
+    QString s = qfd->getSaveFileName(this, "Select Tetgen Output File prefix",
+                                     "", filter);
     if (s.toStdString().empty()) {
       delete qfd;
       return;
     }
-    // auto remove file extension if present
-    QFileInfo f(s);
-    if (!f.suffix().isEmpty()) {
-      s = f.baseName();
-    }
     delete qfd;
-    std::string outfileNames = s.toStdString() + ".node/.ele";
+    // Strip the .node extension (if present) while keeping the directory —
+    // TetgenWrapper::saveAsTetgen() expects a path/basename prefix without
+    // any extension and will append ".node"/".ele" itself.
+    QFileInfo fi(s);
+    QString basePath = fi.dir().filePath(fi.completeBaseName());
+    std::string outfileNames = basePath.toStdString() + ".node/.ele";
     std::cout << "Saving Tetgen to file: " << outfileNames << std::endl;
-    tMesh->SaveTetgen(s.toStdString());
+    if (!tMesh->SaveTetgen(basePath.toStdString())) {
+      ShowStatusMessage("Saving Tetgen failed...", 10000);
+    }
   } else {
     ShowStatusMessage("Saving Tetgen failed! No tetrahedral mesh present...",
                       10000);
