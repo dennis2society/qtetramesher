@@ -13,13 +13,8 @@ set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
 find_package(Sofa.Config REQUIRED)
-if (QT_MAJOR_VERSION EQUAL 6)
-  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
-  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
-else ()
-  find_package(Qt${QT_MAJOR_VERSION} REQUIRED COMPONENTS Core Widgets Xml OpenGL)
-  set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL)
-endif ()
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
+set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(CGAL REQUIRED)
@@ -58,10 +53,10 @@ include_directories(
   GenericIsosurfaceStuffing/include
   TetgenWrapper/include
   libQGLViewer
-  ${Qt${QT_MAJOR_VERSION}Core_INCLUDE_DIRS}
-  ${Qt${QT_MAJOR_VERSION}Widgets_INCLUDE_DIRS}
-  ${Qt${QT_MAJOR_VERSION}Xml_INCLUDE_DIRS}
-  ${Qt${QT_MAJOR_VERSION}OpenGL_INCLUDE_DIRS}
+  ${Qt6Core_INCLUDE_DIRS}
+  ${Qt6Widgets_INCLUDE_DIRS}
+  ${Qt6Xml_INCLUDE_DIRS}
+  ${Qt6OpenGL_INCLUDE_DIRS}
 )
 
 add_executable(
@@ -105,20 +100,15 @@ target_link_libraries(
   CGAL
   ${SofaCore}
   ${SofaComponentEngineGenerator}
-  Qt${QT_MAJOR_VERSION}::Core
-  Qt${QT_MAJOR_VERSION}::Widgets
-  Qt${QT_MAJOR_VERSION}::OpenGL
-  Qt${QT_MAJOR_VERSION}::Xml
+  Qt6::Core
+  Qt6::Widgets
+  Qt6::OpenGL
+  Qt6::Xml
   ${GLUT_LIBRARY}
   OpenGL::GL
   QGLViewer
+  Qt6::OpenGLWidgets
 )
-if (${QT_MAJOR_VERSION} EQUAL 6)
-  target_link_libraries(
-    QTetraMesher
-    Qt::OpenGLWidgets
-  )
-endif ()
 
 # Sofa namespaces require C++17 features
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
