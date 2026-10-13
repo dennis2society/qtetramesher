@@ -31,10 +31,16 @@ GenericIsosurfaceStuffingWidget::GenericIsosurfaceStuffingWidget(QWidget *parent
   cellSizeLayout.addWidget(&cellSizeLabel);
   cellSizeLayout.addWidget(&cellSizeSpinBox);
   alphaShortLabel.setText("AlphaShort");
-  alphaShortSpinBox.setValue(0.45);
+  // Labelle & Shewchuk's proven thresholds; larger values warp lattice points
+  // so far that the stencils degenerate into slivers.
+  alphaShortSpinBox.setDecimals(4);
+  alphaShortSpinBox.setRange(0.0, 0.49);
+  alphaShortSpinBox.setValue(0.3548);
   alphaShortSpinBox.setSingleStep(0.01);
   alphaLongLabel.setText("AlphaLong");
-  alphaLongSpinBox.setValue(0.67);
+  alphaLongSpinBox.setDecimals(4);
+  alphaLongSpinBox.setRange(0.0, 0.49);
+  alphaLongSpinBox.setValue(0.2151);
   alphaLongSpinBox.setSingleStep(0.01);
   alphaShortLabel.setMaximumHeight(20);
   alphaShortSpinBox.setMaximumHeight(20);

@@ -1,85 +1,52 @@
 /*
  * BCCLattice.h
  *
- * Generates a Body-Centered Cubic (BCC) lattice that covers a given bounding
- * box with specified grid spacing. The BCC lattice has vertices at grid corners
- * and at body centers (half-step offset). Each cube cell is subdivided into
- * tetrahedra using the standard BCC decomposition.
+ * Background mesh for isosurface stuffing.
  *
- * Shewchuk's Isosurface Stuffing uses a BCC lattice because:
- * - All resulting tetrahedra have bounded dihedral angles ~71°–109°
- * - The lattice is well-suited for warping operations
+ * The domain is covered by axis-aligned cells (one uniform grid, or a 2:1
+ * balanced octree when grading is requested). Each cell contributes a lattice
+ * point at its centre, each cell corner is a lattice point too, and the
+ * tetrahedra are the pyramids from the two cell centres sharing a face to the
+ * four edges of that face. For a uniform grid this is exactly the BCC lattice
+ * tetrahedralization used by Labelle & Shewchuk; for the octree the same
+ * construction stays conforming across level transitions.
  */
 
 #ifndef BCC_LATTICE_H
 #define BCC_LATTICE_H
 
-#include "TetraMeshTools/GeometryTypes.h"
-#include <vector>
-#include <unordered_map>
-#include <cmath>
-#include <array>
+#include <TetraMeshTools/Vec3d.h>
 
-struct BCCEdge {
-  unsigned int v0, v1;
+#include <vector>
+
+class SignedDistanceField;
+
+struct BccTet {
+  int v[4];
 };
 
-/**
- * Stores the BCC lattice: corner and body-center vertices, their SDF values,
- * and the canonical tet decomposition of each cell.
- */
 class BCCLattice {
 public:
   /**
-   * Default constructor (for graded lattice builder).
+   * @param bbMin,bbMax  Bounding box of the surface to cover.
+   * @param h            Finest cell size.
+   * @param graded       Coarsen cells away from the surface.
+   * @param sdf          Used to locate the surface when grading.
    */
-  BCCLattice() : ni(0), nj(0), nk(0), spacing_(0.0f), numCorners_(0) {}
+  void build(const Vec3d &bbMin, const Vec3d &bbMax, double h, bool graded,
+             const SignedDistanceField &sdf);
 
-  /**
-   * Build a BCC lattice covering (bboxMin - padding) to (bboxMax + padding).
-   * @param bboxMin    Min corner of the surface bounding box
-   * @param bboxMax    Max corner of the surface bounding box
-   * @param spacing    Grid spacing (edge length of cubes)
-   */
-  BCCLattice(const Vec3f &bboxMin, const Vec3f &bboxMax, float spacing);
-
-  // All lattice vertices (corners first, then body centers)
-  std::vector<Vec3f> vertices;
-
-  // SDF value at each vertex (filled externally)
-  std::vector<float> sdfValues;
-
-  // Whether each vertex is a body center (true) or corner (false)
-  std::vector<bool> isBodyCenter;
-
-  // Tetrahedra of the BCC decomposition (indices into vertices)
-  // Each BCC cube produces 24 tetrahedra (from 6 pyramids, each split into 4 tets)
-  // Actually, each cube produces exactly 24 tets through center subdivision
-  std::vector<std::array<unsigned int, 4>> tets;
-
-  // Grid dimensions
-  int ni, nj, nk; // number of corner vertices along each axis
-  float spacing_;
-  Vec3f origin_;
-
-  /**
-   * Get corner vertex index for grid position (i, j, k)
-   */
-  unsigned int cornerIndex(int i, int j, int k) const;
-
-  /**
-   * Get body center vertex index for cell (i, j, k)
-   * Cell (i,j,k) spans from corner (i,j,k) to corner (i+1,j+1,k+1)
-   */
-  unsigned int bodyCenterIndex(int i, int j, int k) const;
-
-  /**
-   * Build the BCC tet decomposition after vertices are placed.
-   */
-  void buildTets();
+  const std::vector<Vec3d> &positions() const { return positions_; }
+  const std::vector<BccTet> &tets() const { return tets_; }
+  /// True for cell-centre lattice points, false for cell corners.
+  bool isCenter(int v) const { return isCenter_[v] != 0; }
+  std::size_t cellCount() const { return cellCount_; }
 
 private:
-  int numCorners_;
+  std::vector<Vec3d> positions_;
+  std::vector<unsigned char> isCenter_;
+  std::vector<BccTet> tets_;
+  std::size_t cellCount_ = 0;
 };
 
-#endif // BCC_LATTICE_H
+#endif  // BCC_LATTICE_H

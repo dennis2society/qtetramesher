@@ -1,162 +1,300 @@
 /*
  * BCCLattice.cpp
- *
- * Constructs a Body-Centered Cubic lattice and its canonical tet decomposition.
- *
- * A BCC lattice places vertices at:
- *   - Corner positions: origin + (i, j, k) * spacing
- *   - Body center positions: origin + (i+0.5, j+0.5, k+0.5) * spacing
- *
- * Each cube cell (i,j,k) has 8 corner vertices and 1 body center.
- * The cell is decomposed into 12 tetrahedra: for each of the 6 faces of the
- * cube, we form 2 triangles, each of which joins the body center to make a tet.
- *
- * Actually, the standard BCC decomposition creates 24 tets per cube:
- * each face is split into 4 triangles (by the face diagonals), and each joins
- * the body center. But the canonical approach for isosurface stuffing is:
- *
- * Each cube is split into 12 tets by connecting each face's 2 triangles
- * to the body center. The face diagonal direction alternates with parity.
  */
 
 #include "BCCLattice.h"
-#include <cstdio>
 
-BCCLattice::BCCLattice(const Vec3f &bboxMin, const Vec3f &bboxMax, float spacing)
-    : spacing_(spacing) {
-  // Add padding of 2 cells around the bounding box
-  float pad = 2.0f * spacing;
-  origin_ = bboxMin - Vec3f(pad, pad, pad);
-  Vec3f extent = (bboxMax + Vec3f(pad, pad, pad)) - origin_;
+#include "SignedDistanceField.h"
 
-  ni = (int)std::ceil(extent.x / spacing) + 1;
-  nj = (int)std::ceil(extent.y / spacing) + 1;
-  nk = (int)std::ceil(extent.z / spacing) + 1;
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
 
-  numCorners_ = ni * nj * nk;
-  int numCells = (ni - 1) * (nj - 1) * (nk - 1);
+namespace {
 
-  // Create corner vertices
-  vertices.resize(numCorners_ + numCells);
-  sdfValues.resize(numCorners_ + numCells, 0.0f);
-  isBodyCenter.resize(numCorners_ + numCells, false);
+/// An axis-aligned cell: minimum corner and edge length, both in units of the
+/// finest cell size.
+struct Leaf {
+  int x, y, z, s;
+};
 
-  for (int k = 0; k < nk; ++k) {
-    for (int j = 0; j < nj; ++j) {
-      for (int i = 0; i < ni; ++i) {
-        unsigned int idx = cornerIndex(i, j, k);
-        vertices[idx] = Vec3f(origin_.x + i * spacing,
-                               origin_.y + j * spacing,
-                               origin_.z + k * spacing);
+int ilog2(int s) {
+  int r = 0;
+  while ((1 << r) < s) ++r;
+  return r;
+}
+
+std::uint64_t cellKey(int x, int y, int z, int lvl) {
+  return (static_cast<std::uint64_t>(static_cast<std::uint32_t>(x)) & 0x1FFFFFull) |
+         ((static_cast<std::uint64_t>(static_cast<std::uint32_t>(y)) & 0x1FFFFFull) << 21) |
+         ((static_cast<std::uint64_t>(static_cast<std::uint32_t>(z)) & 0x1FFFFFull) << 42) |
+         (static_cast<std::uint64_t>(static_cast<std::uint32_t>(lvl)) << 58);
+}
+
+std::uint64_t vertexKey(int x, int y, int z) {
+  return (static_cast<std::uint64_t>(static_cast<std::uint32_t>(x)) & 0x1FFFFFull) |
+         ((static_cast<std::uint64_t>(static_cast<std::uint32_t>(y)) & 0x1FFFFFull) << 21) |
+         ((static_cast<std::uint64_t>(static_cast<std::uint32_t>(z)) & 0x1FFFFFull) << 42);
+}
+
+/// Coarsest cell edge, in units of the finest cell size.
+const int kMaxCoarseCell = 8;
+
+}  // namespace
+
+void BCCLattice::build(const Vec3d &bbMin, const Vec3d &bbMax, double h,
+                       bool graded, const SignedDistanceField &sdf) {
+  positions_.clear();
+  isCenter_.clear();
+  tets_.clear();
+  cellCount_ = 0;
+  if (h <= 0.0) return;
+
+  // Pad so that the outermost cells are safely outside the surface; the
+  // pyramids over domain-boundary faces are not generated.
+  const double pad = 2.0 * h;
+  const Vec3d lo = bbMin - Vec3d{pad, pad, pad};
+  const Vec3d size = (bbMax - bbMin) + Vec3d{2.0 * pad, 2.0 * pad, 2.0 * pad};
+
+  int nx = std::max(3, static_cast<int>(std::ceil(size.x / h)) + 1);
+  int ny = std::max(3, static_cast<int>(std::ceil(size.y / h)) + 1);
+  int nz = std::max(3, static_cast<int>(std::ceil(size.z / h)) + 1);
+
+  Vec3d origin = lo;
+  int extent[3] = {nx, ny, nz};
+  int maxCell = 1;
+
+  std::vector<Leaf> leaves;
+  std::vector<unsigned char> alive;
+  std::unordered_map<std::uint64_t, int> cellMap;
+
+  auto addLeaf = [&](int x, int y, int z, int s) {
+    const int idx = static_cast<int>(leaves.size());
+    leaves.push_back(Leaf{x, y, z, s});
+    alive.push_back(1);
+    cellMap[cellKey(x, y, z, ilog2(s))] = idx;
+  };
+
+  if (!graded) {
+    leaves.reserve(static_cast<std::size_t>(nx) * ny * nz);
+    for (int k = 0; k < nz; ++k)
+      for (int j = 0; j < ny; ++j)
+        for (int i = 0; i < nx; ++i) addLeaf(i, j, k, 1);
+  } else {
+    int root = 1;
+    while (root < std::max(nx, std::max(ny, nz))) root <<= 1;
+    extent[0] = extent[1] = extent[2] = root;
+    maxCell = root;
+    // Centre the padded box inside the cube.
+    origin = {lo.x - (root * h - size.x) * 0.5, lo.y - (root * h - size.y) * 0.5,
+              lo.z - (root * h - size.z) * 0.5};
+
+    struct Pending {
+      int x, y, z, s;
+    };
+    std::vector<Pending> stack{Pending{0, 0, 0, root}};
+    while (!stack.empty()) {
+      const Pending c = stack.back();
+      stack.pop_back();
+      bool refine = c.s > 1;
+      if (refine && c.s <= kMaxCoarseCell) {
+        const Vec3d centre = origin + Vec3d{(c.x + c.s * 0.5) * h, (c.y + c.s * 0.5) * h,
+                                            (c.z + c.s * 0.5) * h};
+        // A cell meeting the surface is within one cell width of it.
+        refine = std::fabs(sdf.signedDistance(centre)) < c.s * h;
+      }
+      if (!refine) {
+        addLeaf(c.x, c.y, c.z, c.s);
+        continue;
+      }
+      const int hs = c.s / 2;
+      for (int o = 0; o < 8; ++o) {
+        stack.push_back(Pending{c.x + ((o & 1) ? hs : 0), c.y + ((o & 2) ? hs : 0),
+                                c.z + ((o & 4) ? hs : 0), hs});
       }
     }
   }
 
-  // Create body center vertices
-  for (int k = 0; k < nk - 1; ++k) {
-    for (int j = 0; j < nj - 1; ++j) {
-      for (int i = 0; i < ni - 1; ++i) {
-        unsigned int idx = bodyCenterIndex(i, j, k);
-        vertices[idx] = Vec3f(origin_.x + (i + 0.5f) * spacing,
-                               origin_.y + (j + 0.5f) * spacing,
-                               origin_.z + (k + 0.5f) * spacing);
-        isBodyCenter[idx] = true;
+  auto leafAt = [&](int x, int y, int z) -> int {
+    if (x < 0 || y < 0 || z < 0 || x >= extent[0] || y >= extent[1] || z >= extent[2])
+      return -1;
+    for (int s = 1; s <= maxCell; s <<= 1) {
+      const int m = ~(s - 1);
+      const auto it = cellMap.find(cellKey(x & m, y & m, z & m, ilog2(s)));
+      if (it != cellMap.end()) return it->second;
+    }
+    return -1;
+  };
+
+  auto probe = [](const Leaf &L, int dir, int &px, int &py, int &pz) {
+    px = L.x;
+    py = L.y;
+    pz = L.z;
+    switch (dir) {
+      case 0: px = L.x + L.s; break;
+      case 1: px = L.x - 1; break;
+      case 2: py = L.y + L.s; break;
+      case 3: py = L.y - 1; break;
+      case 4: pz = L.z + L.s; break;
+      default: pz = L.z - 1; break;
+    }
+  };
+
+  auto splitLeaf = [&](int idx) {
+    const Leaf N = leaves[idx];
+    alive[idx] = 0;
+    cellMap.erase(cellKey(N.x, N.y, N.z, ilog2(N.s)));
+    const int hs = N.s / 2;
+    for (int o = 0; o < 8; ++o) {
+      addLeaf(N.x + ((o & 1) ? hs : 0), N.y + ((o & 2) ? hs : 0),
+              N.z + ((o & 4) ? hs : 0), hs);
+    }
+  };
+
+  if (graded) {
+    // Strong 2:1 balance: cells meeting at a face, an edge or a corner differ
+    // by at most one level. That bounds a cell edge to a single split point,
+    // which is what keeps the face patches below conforming.
+    bool changed = true;
+    while (changed) {
+      changed = false;
+      for (std::size_t li = 0; li < leaves.size(); ++li) {
+        if (!alive[li]) continue;
+        const Leaf F = leaves[li];
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              if (!dx && !dy && !dz) continue;
+              const int px = F.x + (dx < 0 ? -1 : (dx > 0 ? F.s : 0));
+              const int py = F.y + (dy < 0 ? -1 : (dy > 0 ? F.s : 0));
+              const int pz = F.z + (dz < 0 ? -1 : (dz > 0 ? F.s : 0));
+              const int ni = leafAt(px, py, pz);
+              if (ni < 0 || !alive[ni]) continue;
+              if (leaves[ni].s <= 2 * F.s) continue;
+              splitLeaf(ni);
+              changed = true;
+            }
+          }
+        }
       }
     }
   }
-}
 
-unsigned int BCCLattice::cornerIndex(int i, int j, int k) const {
-  return (unsigned int)(k * ni * nj + j * ni + i);
-}
+  // Every corner of every cell, in half-cell coordinates. A cell edge is split
+  // exactly when its midpoint is a corner of some other cell.
+  std::unordered_set<std::uint64_t> cornerSet;
+  for (std::size_t li = 0; li < leaves.size(); ++li) {
+    if (!alive[li]) continue;
+    const Leaf L = leaves[li];
+    for (int o = 0; o < 8; ++o) {
+      cornerSet.insert(vertexKey(2 * (L.x + ((o & 1) ? L.s : 0)),
+                                 2 * (L.y + ((o & 2) ? L.s : 0)),
+                                 2 * (L.z + ((o & 4) ? L.s : 0))));
+    }
+  }
 
-unsigned int BCCLattice::bodyCenterIndex(int i, int j, int k) const {
-  return (unsigned int)(numCorners_ + k * (ni - 1) * (nj - 1) + j * (ni - 1) + i);
-}
+  // Lattice points live on a grid of half-cells, so corners have even and
+  // centres odd coordinates within a cell of size 1.
+  std::unordered_map<std::uint64_t, int> vertexMap;
+  auto vertexAt = [&](int X, int Y, int Z, bool centre) {
+    const std::uint64_t k = vertexKey(X, Y, Z);
+    const auto it = vertexMap.find(k);
+    if (it != vertexMap.end()) return it->second;
+    const int idx = static_cast<int>(positions_.size());
+    positions_.push_back(origin + Vec3d{X * 0.5 * h, Y * 0.5 * h, Z * 0.5 * h});
+    isCenter_.push_back(centre ? 1 : 0);
+    vertexMap.emplace(k, idx);
+    return idx;
+  };
 
-void BCCLattice::buildTets() {
-  tets.clear();
-  // Reserve approximate space: 12 tets per cell
-  int numCells = (ni - 1) * (nj - 1) * (nk - 1);
-  tets.reserve(numCells * 12);
+  for (std::size_t li = 0; li < leaves.size(); ++li) {
+    if (!alive[li]) continue;
+    ++cellCount_;
+    const Leaf L = leaves[li];
+    for (int d = 0; d < 6; ++d) {
+      int px, py, pz;
+      probe(L, d, px, py, pz);
+      const int ni = leafAt(px, py, pz);
+      if (ni < 0) continue;  // domain boundary: nothing to fill
+      const Leaf N = leaves[ni];
+      if (N.s < L.s) continue;              // the finer side emits this face
+      if (N.s == L.s && (d & 1)) continue;  // emit equal-size faces once
 
-  for (int k = 0; k < nk - 1; ++k) {
-    for (int j = 0; j < nj - 1; ++j) {
-      for (int i = 0; i < ni - 1; ++i) {
-        // The 8 corners of the cube cell (i,j,k)
-        unsigned int c000 = cornerIndex(i, j, k);
-        unsigned int c100 = cornerIndex(i + 1, j, k);
-        unsigned int c010 = cornerIndex(i, j + 1, k);
-        unsigned int c110 = cornerIndex(i + 1, j + 1, k);
-        unsigned int c001 = cornerIndex(i, j, k + 1);
-        unsigned int c101 = cornerIndex(i + 1, j, k + 1);
-        unsigned int c011 = cornerIndex(i, j + 1, k + 1);
-        unsigned int c111 = cornerIndex(i + 1, j + 1, k + 1);
+      const int s = L.s;
+      const int x0 = L.x, x1 = L.x + s;
+      const int y0 = L.y, y1 = L.y + s;
+      const int z0 = L.z, z1 = L.z + s;
+      int c[4][3];
+      switch (d) {
+        case 0:
+        case 1: {
+          const int X = (d == 0) ? x1 : x0;
+          c[0][0] = X; c[0][1] = y0; c[0][2] = z0;
+          c[1][0] = X; c[1][1] = y1; c[1][2] = z0;
+          c[2][0] = X; c[2][1] = y1; c[2][2] = z1;
+          c[3][0] = X; c[3][1] = y0; c[3][2] = z1;
+          break;
+        }
+        case 2:
+        case 3: {
+          const int Y = (d == 2) ? y1 : y0;
+          c[0][0] = x0; c[0][1] = Y; c[0][2] = z0;
+          c[1][0] = x1; c[1][1] = Y; c[1][2] = z0;
+          c[2][0] = x1; c[2][1] = Y; c[2][2] = z1;
+          c[3][0] = x0; c[3][1] = Y; c[3][2] = z1;
+          break;
+        }
+        default: {
+          const int Z = (d == 4) ? z1 : z0;
+          c[0][0] = x0; c[0][1] = y0; c[0][2] = Z;
+          c[1][0] = x1; c[1][1] = y0; c[1][2] = Z;
+          c[2][0] = x1; c[2][1] = y1; c[2][2] = Z;
+          c[3][0] = x0; c[3][1] = y1; c[3][2] = Z;
+          break;
+        }
+      }
 
-        // Body center
-        unsigned int bc = bodyCenterIndex(i, j, k);
+      const int cl = vertexAt(2 * L.x + L.s, 2 * L.y + L.s, 2 * L.z + L.s, true);
+      const int cn = vertexAt(2 * N.x + N.s, 2 * N.y + N.s, 2 * N.z + N.s, true);
 
-        // Decompose each face into 2 triangles, each connecting to the body
-        // center. The diagonal direction on each face follows the "parity"
-        // convention to ensure consistent orientation.
-        // Parity determines the diagonal direction on each face.
-        int parity = (i + j + k) % 2;
+      // Walk the face boundary, inserting the midpoint of every split edge so
+      // that neighbouring patches agree along their shared edge.
+      int poly[8][3];
+      int np = 0;
+      for (int i = 0; i < 4; ++i) {
+        const int j = (i + 1) % 4;
+        poly[np][0] = 2 * c[i][0];
+        poly[np][1] = 2 * c[i][1];
+        poly[np][2] = 2 * c[i][2];
+        ++np;
+        const int m0 = c[i][0] + c[j][0];
+        const int m1 = c[i][1] + c[j][1];
+        const int m2 = c[i][2] + c[j][2];
+        if (cornerSet.count(vertexKey(m0, m1, m2)) != 0) {
+          poly[np][0] = m0;
+          poly[np][1] = m1;
+          poly[np][2] = m2;
+          ++np;
+        }
+      }
 
-        if (parity == 0) {
-          // Bottom face (z=k): c000, c100, c010, c110
-          // Diagonal: c000-c110
-          tets.push_back({c000, c100, c110, bc});
-          tets.push_back({c000, c110, c010, bc});
+      int pid[8];
+      for (int i = 0; i < np; ++i)
+        pid[i] = vertexAt(poly[i][0], poly[i][1], poly[i][2], false);
 
-          // Top face (z=k+1): c001, c101, c011, c111
-          // Diagonal: c001-c111
-          tets.push_back({c001, c101, c111, bc});
-          tets.push_back({c001, c111, c011, bc});
-
-          // Front face (y=j): c000, c100, c001, c101
-          // Diagonal: c000-c101
-          tets.push_back({c000, c100, c101, bc});
-          tets.push_back({c000, c101, c001, bc});
-
-          // Back face (y=j+1): c010, c110, c011, c111
-          // Diagonal: c010-c111
-          tets.push_back({c010, c110, c111, bc});
-          tets.push_back({c010, c111, c011, bc});
-
-          // Left face (x=i): c000, c010, c001, c011
-          // Diagonal: c000-c011
-          tets.push_back({c000, c010, c011, bc});
-          tets.push_back({c000, c011, c001, bc});
-
-          // Right face (x=i+1): c100, c110, c101, c111
-          // Diagonal: c100-c111
-          tets.push_back({c100, c110, c111, bc});
-          tets.push_back({c100, c111, c101, bc});
-        } else {
-          // Opposite diagonal direction for odd parity cells
-          // Bottom face: diagonal c100-c010
-          tets.push_back({c000, c100, c010, bc});
-          tets.push_back({c100, c110, c010, bc});
-
-          // Top face: diagonal c101-c011
-          tets.push_back({c001, c101, c011, bc});
-          tets.push_back({c101, c111, c011, bc});
-
-          // Front face: diagonal c100-c001
-          tets.push_back({c000, c100, c001, bc});
-          tets.push_back({c100, c101, c001, bc});
-
-          // Back face: diagonal c110-c011
-          tets.push_back({c010, c110, c011, bc});
-          tets.push_back({c110, c111, c011, bc});
-
-          // Left face: diagonal c010-c001
-          tets.push_back({c000, c010, c001, bc});
-          tets.push_back({c010, c011, c001, bc});
-
-          // Right face: diagonal c110-c101
-          tets.push_back({c100, c110, c101, bc});
-          tets.push_back({c110, c111, c101, bc});
+      if (np == 4) {
+        // Plain square face: the BCC bipyramid around the cl-cn axis.
+        for (int i = 0; i < 4; ++i)
+          tets_.push_back(BccTet{{cl, cn, pid[i], pid[(i + 1) % 4]}});
+      } else {
+        const int fc = vertexAt(c[0][0] + c[2][0], c[0][1] + c[2][1],
+                                c[0][2] + c[2][2], false);
+        for (int i = 0; i < np; ++i) {
+          const int a = pid[i], b = pid[(i + 1) % np];
+          tets_.push_back(BccTet{{cl, fc, a, b}});
+          tets_.push_back(BccTet{{cn, fc, a, b}});
         }
       }
     }

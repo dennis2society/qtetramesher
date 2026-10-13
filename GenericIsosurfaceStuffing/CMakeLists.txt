@@ -18,18 +18,17 @@ add_library(
   src/BCCLattice.cpp
   src/SignedDistanceField.h
   src/SignedDistanceField.cpp
-  src/CutPointSnapper.h
-  src/CutPointSnapper.cpp
   src/TetStuffer.h
   src/TetStuffer.cpp
-  src/GradedBCCLattice.h
-  src/GradedBCCLattice.cpp
-  src/Warp.h
-  src/Warp.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-add_compile_options(-O3 -Wall -Wextra -Wpedantic)
+target_compile_options(${PROJECT_NAME} PRIVATE -O3 -Wall -Wextra -Wpedantic)
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
+endif()
 
 add_custom_command(
   TARGET GenericIsosurfaceStuffing
