@@ -34,6 +34,8 @@ TetgenWidget::TetgenWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   cellSizeLabel.setText("Cell Size (0=auto)");
   cellSizeLabel.setFont(boldFont);
   cellSizeSpinBox.setValue(0.0);
+  cellSizeSpinBox.setDecimals(4);
+  cellSizeSpinBox.setMaximum(1000000.0);
   cellSizeSpinBox.setSingleStep(0.01);
   cellSizeSpinBox.setMinimum(0.0);
   cellSizeLabel.setMaximumHeight(20);

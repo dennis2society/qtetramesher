@@ -11,10 +11,13 @@
 // #include "ui_mainwindow.h"
 #include <QGLViewer/manipulatedFrame.h>
 
+#include <QApplication>
 #include <QFrame>
 #include <QMessageBox>
 #include <QUrl>
+#include <TetraMeshTools/SurfaceChecker.h>
 #include <iostream>
+#include <sstream>
 
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -24,7 +27,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       sofaTetraStuffingWidget(this),
       cgalTetrahedralizeWidget(this),
       genericIsosurfaceStuffingWidget(this),
-      tetgenWidget(this) {
+      tetgenWidget(this),
+      gmshWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
@@ -107,6 +111,7 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("CGAL Tetrahedralize");
   tetraMeshMethodComboBox.addItem("Generic Isosurface Stuffing");
   tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
+  tetraMeshMethodComboBox.addItem("GMSH Tetrahedralize");
   optionsLayout.addWidget(&surfaceVisWidget);
   QFrame f1;
   f1.setFrameShape(QFrame::HLine);
@@ -124,11 +129,13 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&cgalTetrahedralizeWidget);
   optionsLayout.addWidget(&genericIsosurfaceStuffingWidget);
   optionsLayout.addWidget(&tetgenWidget);
+  optionsLayout.addWidget(&gmshWidget);
   cgalTetrahedralizeWidget.hide();
   genericIsosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
+  gmshWidget.hide();
   optionsLayout.addStretch();
-  surfaceVisWidget.setMinimumSize(230, 160);
+  surfaceVisWidget.setMinimumSize(230, 190);
 
   centralWidget.setLayout(&mainLayout);
   mainLayout.addLayout(&viewerLayout);
@@ -181,6 +188,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(surfaceColorButtonSlot()));
   connect(&surfaceVisWidget.surfaceWireframeColorButton, SIGNAL(clicked()),
           this, SLOT(surfaceWireframeColorButtonSlot()));
+  connect(&surfaceVisWidget.checkSurfaceButton, SIGNAL(clicked()), this,
+          SLOT(checkSurfaceSlot()));
   connect(&tetraVisWidget.drawWireframeCheckbox, SIGNAL(toggled(bool)), this,
           SLOT(tetraVisChangedSlot()));
   connect(&tetraVisWidget.drawSolidCheckbox, SIGNAL(toggled(bool)), this,
@@ -209,6 +218,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SIGNAL(clicked()), this, SLOT(generateGenericIsosurfaceStuffingSlot()));
   connect(&tetgenWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
           SLOT(generateTetgenSlot()));
+  connect(&gmshWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
+          SLOT(generateGMSHSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -261,6 +272,51 @@ void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
       QString::number(wireframeeColor.red()) + "," +
       QString::number(wireframeeColor.green()) + "," +
       QString::number(wireframeeColor.blue()) + ");}\n");
+}
+
+void QTetraMesherMainWindow::checkSurfaceSlot() {
+  if (viewer->tMesh == NULL || viewer->tMesh->GetSurface() == NULL) {
+    QMessageBox::information(this, "Check Surface Mesh",
+                             "No surface mesh loaded.");
+    return;
+  }
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  const SurfaceCheckResult r =
+      CheckSurfaceMesh(viewer->tMesh->GetSurface()->GetVertices(),
+                       viewer->tMesh->GetSurface()->GetTriangles());
+  QApplication::restoreOverrideCursor();
+
+  std::stringstream ss;
+  ss << "Triangles: " << r.numTriangles << "\n"
+     << "Intersecting triangle pairs: " << r.numIntersectingPairs << " ("
+     << r.numIntersectingTriangles << " triangles)\n"
+     << "Degenerate triangles: " << r.numDegenerateTriangles << "\n"
+     << "Open (boundary) edges: " << r.numBoundaryEdges << "\n"
+     << "Non-manifold edges: " << r.numNonManifoldEdges << "\n"
+     << "Inconsistently oriented edges: " << r.numInconsistentEdges << "\n"
+     << "Unused vertices: " << r.numUnusedVertices << "\n"
+     << "Connected components: " << r.numComponents << "\n";
+  if (r.genus >= 0) ss << "Genus: " << r.genus << "\n";
+  ss << "\n";
+  if (r.IsSuitable()) {
+    ss << "The surface is closed, manifold and free of self-intersections.";
+    if (r.genus > 0 || r.numComponents > 1) {
+      ss << "\n\nNote: GMSH's surface parametrization can fail on surfaces "
+            "with holes (genus > 0) or several components.";
+    }
+  } else {
+    ss << "The surface is NOT suitable for Tetgen/GMSH volume meshing.";
+    for (const auto &p : r.examplePairs) {
+      std::cout << "Intersecting triangles: " << p.first << " / " << p.second
+                << std::endl;
+    }
+  }
+  const QString text = QString::fromStdString(ss.str());
+  if (r.IsSuitable()) {
+    QMessageBox::information(this, "Check Surface Mesh", text);
+  } else {
+    QMessageBox::warning(this, "Check Surface Mesh", text);
+  }
 }
 
 void QTetraMesherMainWindow::tetraVisChangedSlot() {
@@ -319,11 +375,12 @@ void QTetraMesherMainWindow::toggleFullScreen(bool value) {
 // menu + method slots
 void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   int newSelectedMethod = tetraMeshMethodComboBox.currentIndex();
-  // hide allexport
+  // hide all
   cgalTetrahedralizeWidget.hide();
   sofaTetraStuffingWidget.hide();
   genericIsosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
+  gmshWidget.hide();
   // show only selected
   switch (newSelectedMethod) {
     case 0:
@@ -338,6 +395,9 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
     case 3:
       tetgenWidget.show();
       break;
+    case 4:
+      gmshWidget.show();
+      break;
     default:
       break;
   }
@@ -351,6 +411,7 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
   cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                      0.05);
   genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
+  gmshWidget.meshSizeMaxSpinBox.setValue(viewer->getMaxBBox() * 0.1);
 }
 
 void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
@@ -408,6 +469,11 @@ void QTetraMesherMainWindow::generateGenericIsosurfaceStuffingSlot() {
 
 void QTetraMesherMainWindow::generateTetgenSlot() {
   tetgenWidget.generateTetrahedra(viewer);
+  updateCutplaneSliders();
+}
+
+void QTetraMesherMainWindow::generateGMSHSlot() {
+  gmshWidget.generateTetrahedra(viewer);
   updateCutplaneSliders();
 }
 

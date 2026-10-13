@@ -38,6 +38,7 @@ add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
 add_subdirectory(TetgenWrapper)
+add_subdirectory(GMSHWrapper)
 add_subdirectory(GenericIsosurfaceStuffing)
 
 set(CMAKE_INCLUDE_CURRENT_DIR "YES")
@@ -52,6 +53,7 @@ include_directories(
   CGALTetrahedralize/include
   GenericIsosurfaceStuffing/include
   TetgenWrapper/include
+  GMSHWrapper/include
   libQGLViewer
   ${Qt6Core_INCLUDE_DIRS}
   ${Qt6Widgets_INCLUDE_DIRS}
@@ -84,6 +86,8 @@ add_executable(
   src/CGALTetrahedralizeWidget.cpp
   src/TetgenWidget.hpp
   src/TetgenWidget.cpp
+  src/GMSHWidget.hpp
+  src/GMSHWidget.cpp
   src/GenericIsosurfaceStuffingWidget.hpp
   src/GenericIsosurfaceStuffingWidget.cpp
   src/RangeSlider.hpp
@@ -97,6 +101,7 @@ target_link_libraries(
   CGALTetrahedralize
   GenericIsosurfaceStuffing
   TetgenWrapper
+  GMSHWrapper
   CGAL
   ${SofaCore}
   ${SofaComponentEngineGenerator}

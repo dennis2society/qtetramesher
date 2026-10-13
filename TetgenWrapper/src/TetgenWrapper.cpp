@@ -93,10 +93,6 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     input.pointlist[i * 3 + 1] = verts.at(i).y;
     input.pointlist[i * 3 + 2] = verts.at(i).z;
   }
-  for (auto i = 0; i < input.numberofpoints; ++i) {
-    std::cout << "P[" << i << "]: " << input.pointlist[i * 3] << "/" << input.pointlist[i * 3 + 1]
-              << "/" << input.pointlist[i * 3 + 2] << std::endl;
-  }
   input.pointattributelist = NULL;
   input.numberoftrifaces = 0;
   input.trifacemarkerlist = NULL;

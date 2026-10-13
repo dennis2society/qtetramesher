@@ -9,6 +9,7 @@
 #define MAINWINDOW_H
 
 #include <CGALTetrahedralizeWidget.hpp>
+#include <GMSHWidget.hpp>
 #include <OctreeVisWidget.hpp>
 #include <QAction>
 #include <QCloseEvent>
@@ -47,6 +48,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void surfaceVisChanged();
   void surfaceColorButtonSlot();
   void surfaceWireframeColorButtonSlot();
+  void checkSurfaceSlot();
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
   void tetraWirefraceColorButtonSlot();
@@ -64,6 +66,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateCGALTetrahedralizeSlot();
   void generateGenericIsosurfaceStuffingSlot();
   void generateTetgenSlot();
+  void generateGMSHSlot();
 
  private:
   // QGLViewer variant
@@ -103,6 +106,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
   GenericIsosurfaceStuffingWidget genericIsosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
+  GMSHWidget gmshWidget;
 
   void setupUI();
   void connectSlots();

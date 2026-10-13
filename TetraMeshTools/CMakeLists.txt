@@ -17,9 +17,11 @@ add_library(
   include/TetraMeshTools/BaseMeshLoader.h
   include/TetraMeshTools/GMSHMeshWriter.h
   include/TetraMeshTools/SATriangleBoxIntersection.h
+  include/TetraMeshTools/SurfaceChecker.h
   include/TetraMeshTools/TetrahedronTopology.h
   include/TetraMeshTools/TriMeshLoader.h
   include/TetraMeshTools/Vec3f.h
+  include/TetraMeshTools/Vec3d.h
   include/TetraMeshTools/GeometryTypes.h
   include/TetraMeshTools/Octree.h
   include/TetraMeshTools/TetraToolsExports.h
@@ -35,6 +37,7 @@ add_library(
   src/Octree.cpp
   src/OctreeNode.cpp
   src/SATriangleBoxIntersection.cpp
+  src/SurfaceChecker.cpp
   src/TetrahedronTopology.cpp
   src/TriangleTopology.cpp
   src/TriMeshLoader.cpp
