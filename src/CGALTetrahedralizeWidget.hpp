@@ -9,21 +9,25 @@
 #ifndef CGAL_TETRAHEDRALIZE_WIDGET_HPP
 #define CGAL_TETRAHEDRALIZE_WIDGET_HPP
 
-#include <qgltetraviewer.hpp>
-
-#include <BaseOptionsWidget.hpp>
+#include <TetraMethodWidget.hpp>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 
-class CGALTetrahedralizeWidget : public BaseOptionsWidget {
+class CGALTetrahedralizeWidget : public TetraMethodWidget {
   Q_OBJECT
 
  public:
   CGALTetrahedralizeWidget(QWidget *parent);
   void update();
 
-  void generateTetrahedra(QGLTetraViewer *viewer_);
+  QString methodId() const override { return "cgal"; }
+  QString methodName() const override { return "CGAL Delaunay Triangulation"; }
+  QVariantMap parameters() const override;
+  QString errorHint() const override {
+    return "ERROR while generating CGAL tetra mesh...<br />Probably the surface mesh is violating a CGAL precondition.";
+  }
+  QPushButton &generateButton() override { return generateTetrahedraButton; }
 
   QHBoxLayout cellSizeLayout;
   QLabel cellSizeLabel;

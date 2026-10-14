@@ -13,7 +13,7 @@ set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
 find_package(Sofa.Config REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL Concurrent)
 set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
 find_package(CGAL REQUIRED)
 
@@ -90,6 +90,9 @@ add_executable(
   src/GenericIsosurfaceStuffingWidget.cpp
   src/RangeSlider.hpp
   src/RangeSlider.cpp
+  src/TetraJob.hpp
+  src/TetraJob.cpp
+  src/TetraMethodWidget.hpp
   resources/qtetramesher.qrc
 )
 
@@ -113,6 +116,7 @@ target_link_libraries(
   Qt6::Widgets
   Qt6::OpenGL
   Qt6::Xml
+  Qt6::Concurrent
   QtmGLViewer
   Qt6::OpenGLWidgets
 )

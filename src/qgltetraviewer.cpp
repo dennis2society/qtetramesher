@@ -18,6 +18,8 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QPainter>
+#include <algorithm>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QtmGLViewer/MeshData.hpp>
@@ -27,6 +29,9 @@
 // Constructor must call the base class constructor.
 QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QtmGLViewer(parent) {
   tMesh = new QGLTetraMesh();
+  taskAnimationTimer.setInterval(100);
+  connect(&taskAnimationTimer, &QTimer::timeout, this,
+          [this]() { update(); });
 }
 
 QGLTetraViewer::~QGLTetraViewer() {
@@ -120,6 +125,87 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
   }
 }
 
+void QGLTetraViewer::beginTask(const QString &id, const QString &text,
+                               const QString &hint) {
+  RunningTask &task = runningTasks[id];
+  task.text = text;
+  task.hint = hint;
+  task.timer.start();
+  taskAnimationTimer.start();
+  update();
+}
+
+void QGLTetraViewer::endTask(const QString &id) {
+  runningTasks.erase(id);
+  if (runningTasks.empty()) taskAnimationTimer.stop();
+  update();
+}
+
+void QGLTetraViewer::drawOverlay(QPainter &painter) {
+  if (runningTasks.empty()) return;
+  painter.save();
+  painter.setRenderHint(QPainter::Antialiasing);
+  QFont textFont = painter.font();
+  QFont hintFont = textFont;
+  hintFont.setPointSizeF(textFont.pointSizeF() * 0.85);
+  const QFontMetrics textMetrics(textFont);
+  const QFontMetrics hintMetrics(hintFont);
+  const int spinner = textMetrics.height();
+  const int padding = 8;
+  const int gap = 6;
+
+  // layout: one row per task, an optional hint line below its text
+  struct Row {
+    const RunningTask *task;
+    QString text;
+  };
+  std::vector<Row> rows;
+  int width = 0;
+  int height = padding;
+  for (const auto &entry : runningTasks) {
+    const RunningTask &task = entry.second;
+    const qint64 seconds = task.timer.elapsed() / 1000;
+    const QString text = QString("%1  %2:%3")
+                             .arg(task.text)
+                             .arg(seconds / 60)
+                             .arg(seconds % 60, 2, 10, QChar('0'));
+    rows.push_back({&task, text});
+    width = std::max(width, textMetrics.horizontalAdvance(text));
+    if (!task.hint.isEmpty())
+      width = std::max(width, hintMetrics.horizontalAdvance(task.hint));
+    height += textMetrics.height() +
+              (task.hint.isEmpty() ? 0 : hintMetrics.height()) + padding;
+  }
+  width += spinner + gap + 2 * padding;
+  const QRect box(this->width() - width - 10, 10, width, height);
+  painter.setPen(Qt::NoPen);
+  painter.setBrush(QColor(0, 0, 0, 170));
+  painter.drawRoundedRect(box, 6, 6);
+
+  int y = box.top() + padding;
+  for (const Row &row : rows) {
+    // rotating arc, one turn per second
+    const QRect arc(box.left() + padding, y, spinner, spinner);
+    const int startAngle = -int((row.task->timer.elapsed() % 1000) * 360 / 1000);
+    painter.setPen(QPen(QColor(240, 180, 60), 2.5, Qt::SolidLine, Qt::RoundCap));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawArc(arc.adjusted(2, 2, -2, -2), startAngle * 16, 270 * 16);
+    const int x = arc.right() + gap;
+    painter.setPen(QColor(235, 235, 235));
+    painter.setFont(textFont);
+    painter.drawText(x, y + textMetrics.ascent(), row.text);
+    y += textMetrics.height();
+    if (!row.task->hint.isEmpty()) {
+      painter.setPen(QColor(170, 170, 170));
+      painter.setFont(hintFont);
+      painter.drawText(x, y + hintMetrics.ascent(), row.task->hint);
+      y += hintMetrics.height();
+    }
+    y += padding;
+  }
+  painter.restore();
+}
+
 void QGLTetraViewer::showAbout() {
   QMessageBox::about(this, tr("About QTetraMesher"), helpString());
 }
@@ -148,8 +234,11 @@ QString QGLTetraViewer::helpHtml() const {
       "tetrahedral mesh (File &gt; Load GMSH / Load Tetgen).</li>"
       "<li>Select a tetra mesh method in the options panel and adjust its "
       "parameters.</li>"
-      "<li>Press <i>Generate Tetrahedra</i>. The result is shown in the viewer "
-      "and the status line reports the vertex and tetra counts.</li>"
+      "<li>Press <i>Generate Tetrahedra</i>. The generation runs in the "
+      "background (shown in the upper right corner of the viewer), the "
+      "program stays usable. The button turns into <i>Cancel Generation</i> "
+      "and stops a method that takes too long. The result is shown in the "
+      "viewer and the status line reports the vertex and tetra counts.</li>"
       "<li>Export the result with File &gt; Export GMSH or Export Tetgen.</li>"
       "</ol>"
       "<h3>Loading and exporting</h3>"

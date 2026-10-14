@@ -9,21 +9,25 @@
 #ifndef GMSH_WIDGET_HPP
 #define GMSH_WIDGET_HPP
 
-#include <qgltetraviewer.hpp>
-
-#include <BaseOptionsWidget.hpp>
+#include <TetraMethodWidget.hpp>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 
-class GMSHWidget : public BaseOptionsWidget {
+class GMSHWidget : public TetraMethodWidget {
   Q_OBJECT
 
  public:
   GMSHWidget(QWidget *parent);
   void update();
 
-  void generateTetrahedra(QGLTetraViewer *viewer_);
+  QString methodId() const override { return "gmsh"; }
+  QString methodName() const override { return "GMSH"; }
+  QVariantMap parameters() const override;
+  QString errorHint() const override {
+    return "ERROR while generating GMSH tetra mesh.<br />Check the surface mesh and parameters.";
+  }
+  QPushButton &generateButton() override { return generateTetrahedraButton; }
 
   QHBoxLayout meshSizeMinLayout;
   QLabel meshSizeMinLabel;

@@ -12,6 +12,7 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QtConcurrent/QtConcurrent>
 #include <QFrame>
 #include <QMessageBox>
 #include <QUrl>
@@ -34,6 +35,11 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   connectSlots();
   // after connectSlots() so that restored options are applied to the viewer
   loadSettings();
+}
+
+QTetraMesherMainWindow::~QTetraMesherMainWindow() {
+  // the background threads read the mesh owned by the viewer
+  stopBackgroundTasks();
 }
 
 void QTetraMesherMainWindow::setupUI() {
@@ -156,8 +162,6 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(setChecked(bool)));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
           SLOT(loadSurfaceSlot()));
-  connect(&actionLoadSurface, SIGNAL(triggered()), this,
-          SLOT(clearTetraOptions()));
   connect(&actionExportSurface, SIGNAL(triggered()), this,
           SLOT(exportSurfaceSlot()));
   connect(&actionLoadGMSH, SIGNAL(triggered()), this, SLOT(loadGMSHSlot()));
@@ -212,6 +216,14 @@ void QTetraMesherMainWindow::connectSlots() {
           this, SLOT(octreeVisChangedSlot()));
   connect(&tetraMeshMethodComboBox, SIGNAL(currentIndexChanged(int)), this,
           SLOT(tetraMethodComboBoxSlot()));
+  // background tasks
+  connect(&tetraJob, &TetraJob::finished, this,
+          &QTetraMesherMainWindow::tetraJobFinished);
+  connect(&octreeWatcher, &QFutureWatcher<Octree *>::finished, this,
+          &QTetraMesherMainWindow::octreeFinished);
+  connect(&surfaceCheckWatcher,
+          &QFutureWatcher<std::shared_ptr<SurfaceCheckResult>>::finished, this,
+          &QTetraMesherMainWindow::surfaceCheckFinished);
 }
 
 // visualization slots
@@ -247,17 +259,45 @@ void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
 }
 
 void QTetraMesherMainWindow::checkSurfaceSlot() {
+  if (surfaceCheckWatcher.isRunning()) return;
   if (viewer->tMesh == NULL || viewer->tMesh->GetSurface() == NULL) {
     QMessageBox::information(this, "Check Surface Mesh",
                              "No surface mesh loaded.");
     return;
   }
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  const SurfaceCheckResult r =
-      CheckSurfaceMesh(viewer->tMesh->GetSurface()->GetVertices(),
-                       viewer->tMesh->GetSurface()->GetTriangles());
-  QApplication::restoreOverrideCursor();
+  // loading is disabled while the check runs, so the data stays valid
+  const std::vector<Vec3f> *verts = &viewer->tMesh->GetSurface()->GetVertices();
+  const std::vector<Triangle> *tris =
+      &viewer->tMesh->GetSurface()->GetTriangles();
+  const std::atomic<bool> *stop = &stopThreads;
+  viewer->beginTask("check", "Checking the surface mesh");
+  surfaceCheckWatcher.setFuture(QtConcurrent::run([verts, tris, stop]() {
+    try {
+      return std::make_shared<SurfaceCheckResult>(
+          CheckSurfaceMesh(*verts, *tris, stop));
+    } catch (const std::exception &e) {
+      std::cerr << "Surface check failed: " << e.what() << std::endl;
+      return std::shared_ptr<SurfaceCheckResult>();
+    }
+  }));
+  updateBusyState();
+}
 
+void QTetraMesherMainWindow::surfaceCheckFinished() {
+  viewer->endTask("check");
+  updateBusyState();
+  std::shared_ptr<SurfaceCheckResult> r = surfaceCheckWatcher.result();
+  if (r && r->canceled) return;
+  if (!r) {
+    QMessageBox::warning(this, "Check Surface Mesh",
+                         "The surface check failed (out of memory?).");
+    return;
+  }
+  showSurfaceCheckResult(*r);
+}
+
+void QTetraMesherMainWindow::showSurfaceCheckResult(
+    const SurfaceCheckResult &r) {
   std::stringstream ss;
   ss << "Triangles: " << r.numTriangles << "\n"
      << "Intersecting triangle pairs: " << r.numIntersectingPairs << " ("
@@ -413,33 +453,80 @@ void QTetraMesherMainWindow::updateCutplaneSliders() {
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
-  sofaTetraStuffingWidget.generateTetrahedra(viewer);
-  updateCutplaneSliders();
+  startOrCancelTetraJob(sofaTetraStuffingWidget);
 }
 
 void QTetraMesherMainWindow::generateCGALTetrahedralizeSlot() {
-  cgalTetrahedralizeWidget.generateTetrahedra(viewer);
-  updateCutplaneSliders();
+  startOrCancelTetraJob(cgalTetrahedralizeWidget);
 }
 
 void QTetraMesherMainWindow::generateGenericIsosurfaceStuffingSlot() {
-  genericIsosurfaceStuffingWidget.generateTetrahedra(viewer);
-  updateCutplaneSliders();
+  startOrCancelTetraJob(genericIsosurfaceStuffingWidget);
 }
 
 void QTetraMesherMainWindow::generateTetgenSlot() {
-  tetgenWidget.generateTetrahedra(viewer);
-  updateCutplaneSliders();
+  startOrCancelTetraJob(tetgenWidget);
 }
 
 void QTetraMesherMainWindow::generateGMSHSlot() {
-  gmshWidget.generateTetrahedra(viewer);
-  updateCutplaneSliders();
+  startOrCancelTetraJob(gmshWidget);
 }
 
 void QTetraMesherMainWindow::generateOctreeSlot() {
-  viewer->generateOctree(octreeVisWidget.octreeDepthSpinBox.value());
+  if (octreeWatcher.isRunning()) return;
+  TetraTools::TriangleTopology *surf = viewer->tMesh->GetSurface();
+  if (surf == NULL) {
+    QMessageBox::information(this, "Generate Octree",
+                             "No surface mesh loaded.");
+    return;
+  }
+  const unsigned int depth =
+      (unsigned int)octreeVisWidget.octreeDepthSpinBox.value();
+  // loading is disabled while the octree is built, so the data stays valid
+  std::vector<Vec3f> *verts = &surf->GetVertices();
+  std::vector<Triangle> *tris = &surf->GetTriangles();
+  octreeSurface = surf;
+  octreePending = true;
+  const std::atomic<bool> *stop = &stopThreads;
+  viewer->beginTask("octree",
+                    QString("Generating octree (depth %1)").arg(depth));
+  octreeWatcher.setFuture(
+      QtConcurrent::run([verts, tris, depth, stop]() -> Octree * {
+        try {
+          Octree *octree = new Octree(depth, verts, tris, stop);
+          if (stop->load()) {  // incomplete
+            delete octree;
+            return nullptr;
+          }
+          return octree;
+        } catch (const std::exception &e) {
+          std::cerr << "Octree generation failed: " << e.what() << std::endl;
+          return nullptr;
+        }
+      }));
+  updateBusyState();
+}
+
+void QTetraMesherMainWindow::octreeFinished() {
+  viewer->endTask("octree");
+  octreePending = false;
+  Octree *octree = octreeWatcher.result();
+  // the surface cannot change while the octree is built, but be safe
+  if (octree != nullptr && viewer->tMesh->GetSurface() != octreeSurface) {
+    delete octree;
+    octree = nullptr;
+  }
+  octreeSurface = nullptr;
+  updateBusyState();
+  if (octree == nullptr) {
+    viewer->displayMessage("Octree generation failed...", 5000);
+    return;
+  }
+  viewer->tMesh->SetOctree(octree);
   viewer->update();
+  viewer->displayMessage(QString("Octree with depth %1 generated.")
+                             .arg(octree->getDepth()),
+                         5000);
 }
 
 void QTetraMesherMainWindow::octreeVisChangedSlot() {
@@ -457,7 +544,111 @@ void QTetraMesherMainWindow::notifyDone(QString msg_, unsigned int time_) {
 
 void QTetraMesherMainWindow::closeEvent(QCloseEvent *event) {
   saveSettings();
+  stopBackgroundTasks();
   QMainWindow::closeEvent(event);
+}
+
+std::vector<TetraMethodWidget *> QTetraMesherMainWindow::tetraMethodWidgets() {
+  return {&sofaTetraStuffingWidget, &cgalTetrahedralizeWidget,
+          &genericIsosurfaceStuffingWidget, &tetgenWidget, &gmshWidget};
+}
+
+void QTetraMesherMainWindow::startOrCancelTetraJob(TetraMethodWidget &widget) {
+  // while a job runs, the generate button is a cancel button
+  if (tetraJob.isRunning()) {
+    tetraJob.cancel();
+    return;
+  }
+  if (viewer->tMesh == NULL || viewer->tMesh->GetSurface() == NULL) {
+    QMessageBox::information(this, widget.methodName(),
+                             "Please load a surface mesh first.");
+    return;
+  }
+  TetraTools::TriangleTopology *surf = viewer->tMesh->GetSurface();
+  QString error;
+  if (!tetraJob.start(widget.methodId(), widget.methodName(),
+                      widget.parameters(), surf->GetVertices(),
+                      surf->GetTriangles(), &error)) {
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(widget.errorHint());
+    mb.setInformativeText(error);
+    mb.exec();
+    return;
+  }
+  runningTetraWidget = &widget;
+  viewer->beginTask("tetra",
+                    QString("Generating tetrahedra (%1)").arg(widget.methodName()),
+                    "Press 'Cancel Generation' to stop");
+  updateBusyState();
+}
+
+void QTetraMesherMainWindow::tetraJobFinished() {
+  viewer->endTask("tetra");
+  TetraMethodWidget *widget = runningTetraWidget;
+  runningTetraWidget = nullptr;
+  updateBusyState();
+  std::unique_ptr<TetraJob::Result> r = tetraJob.takeResult();
+  if (!r) return;
+  if (r->canceled) {
+    viewer->displayMessage("Tetrahedralization canceled.", 5000);
+    return;
+  }
+  if (!r->ok) {
+    std::cerr << "Tetrahedralization failed: " << r->error.toStdString()
+              << std::endl;
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(widget ? widget->errorHint()
+                      : QString("ERROR while generating the tetra mesh."));
+    mb.setInformativeText(r->error);
+    mb.exec();
+    return;
+  }
+  const size_t numTetras = r->topology->GetTetrahedra().size();
+  const size_t numVertices = r->topology->GetVertices().size();
+  viewer->tMesh->SetTetraTopology(std::move(r->topology));
+  updateCutplaneSliders();
+  viewer->update();
+  viewer->displayMessage(
+      QString("Generated tetrahedral mesh (%1) in %2 ms. Tetras: %3; "
+              "Vertices: %4")
+          .arg(widget ? widget->methodName() : QString())
+          .arg(r->elapsedMs)
+          .arg(numTetras)
+          .arg(numVertices),
+      10000);
+}
+
+void QTetraMesherMainWindow::updateBusyState() {
+  const bool tetraRunning = tetraJob.isRunning();
+  const bool octreeRunning = octreeWatcher.isRunning();
+  const bool checkRunning = surfaceCheckWatcher.isRunning();
+  const bool busy = tetraRunning || octreeRunning || checkRunning;
+  // loading would replace the surface mesh used by the background tasks
+  actionLoadSurface.setEnabled(!busy);
+  actionLoadGMSH.setEnabled(!busy);
+  actionLoadTetgen.setEnabled(!busy);
+  // keep the widget with the cancel button visible while a job runs
+  tetraMeshMethodComboBox.setEnabled(!tetraRunning);
+  for (TetraMethodWidget *w : tetraMethodWidgets()) w->setRunning(tetraRunning);
+  octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning);
+  surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning);
+}
+
+void QTetraMesherMainWindow::stopBackgroundTasks() {
+  // kills the worker process; its result is discarded
+  tetraJob.cancel();
+  // the octree and the surface check stop at the next check of the flag
+  stopThreads = true;
+  octreeWatcher.waitForFinished();
+  surfaceCheckWatcher.waitForFinished();
+  if (octreePending) {
+    // finished, but the result was never handed over to the mesh
+    octreePending = false;
+    disconnect(&octreeWatcher, nullptr, this, nullptr);
+    delete octreeWatcher.result();
+  }
 }
 
 void QTetraMesherMainWindow::on_viewer_onLoad() {}

@@ -89,7 +89,8 @@ bool coplanarOverlap(const Tri &a, const Tri &b, const Vec3d &normal, int shared
 }  // namespace
 
 SurfaceCheckResult CheckSurfaceMesh(const std::vector<Vec3f> &verts,
-                                    const std::vector<Triangle> &tris) {
+                                    const std::vector<Triangle> &tris,
+                                    const std::atomic<bool> *cancel) {
   SurfaceCheckResult res;
   res.numTriangles = tris.size();
   if (verts.empty() || tris.empty()) return res;
@@ -327,6 +328,11 @@ SurfaceCheckResult CheckSurfaceMesh(const std::vector<Vec3f> &verts,
 
   std::vector<char> inPair(n, 0);
   for (std::size_t c = 0; c < numCells; ++c) {
+    // the pair tests are the expensive part
+    if (cancel && cancel->load(std::memory_order_relaxed)) {
+      res.canceled = true;
+      return res;
+    }
     const std::uint32_t begin = cellStart[c], end = cellStart[c + 1];
     if (end - begin < 2) continue;
     const std::size_t cx = c % dim[0];

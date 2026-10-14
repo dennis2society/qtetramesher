@@ -377,25 +377,44 @@ void QGLTetraMesh::Draw(const qtm::RenderContext &context_) {
   context_.drawLines(octreeBuffer, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
 }
 
-bool QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
-                                   std::vector<Tetrahedron> &tetras_) {
-  isReady = false;
-  delete top;
-  top = NULL;
-  MarkGeometryDirty();
-  // keep showing the surface if there is no usable tetra mesh
-  const bool valid = !verts_.empty() && !tetras_.empty() &&
-                     TetraIndicesValid(verts_, tetras_);
-  if (!valid) {
+std::unique_ptr<TetraTools::TetrahedronTopology>
+QGLTetraMesh::BuildTetraTopology(const std::vector<Vec3f> &verts_,
+                                 const std::vector<Tetrahedron> &tetras_) {
+  if (verts_.empty() || tetras_.empty() ||
+      !TetraIndicesValid(verts_, tetras_)) {
     std::cerr << "Error! The tetrahedral mesh is empty or invalid."
               << std::endl;
-    isReady = (surf != NULL);
-    return false;
+    return nullptr;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(verts_, tetras_, true);
-  isReady = true;
-  return true;
+  std::unique_ptr<TetraTools::TetrahedronTopology> t(
+      new TetraTools::TetrahedronTopology());
+  t->Init(verts_, tetras_, true);
+  return t;
+}
+
+void QGLTetraMesh::SetTetraTopology(
+    std::unique_ptr<TetraTools::TetrahedronTopology> top_) {
+  isReady = false;
+  delete top;
+  top = top_.release();
+  MarkGeometryDirty();
+  isReady = (top != NULL || surf != NULL);
+}
+
+bool QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
+                                   std::vector<Tetrahedron> &tetras_) {
+  // keeps showing the surface if there is no usable tetra mesh
+  std::unique_ptr<TetraTools::TetrahedronTopology> t =
+      BuildTetraTopology(verts_, tetras_);
+  const bool valid = (t != nullptr);
+  SetTetraTopology(std::move(t));
+  return valid;
+}
+
+void QGLTetraMesh::SetOctree(Octree *oct_) {
+  delete oct;
+  oct = oct_;
+  octreeDirty = true;
 }
 
 void QGLTetraMesh::ClearSurface() {

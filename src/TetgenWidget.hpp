@@ -9,21 +9,25 @@
 #ifndef TETGEN_WIDGET_HPP
 #define TETGEN_WIDGET_HPP
 
-#include <qgltetraviewer.hpp>
-
-#include <BaseOptionsWidget.hpp>
+#include <TetraMethodWidget.hpp>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 
-class TetgenWidget : public BaseOptionsWidget {
+class TetgenWidget : public TetraMethodWidget {
   Q_OBJECT
 
  public:
   TetgenWidget(QWidget *parent);
   void update();
 
-  void generateTetrahedra(QGLTetraViewer *viewer_);
+  QString methodId() const override { return "tetgen"; }
+  QString methodName() const override { return "Tetgen"; }
+  QVariantMap parameters() const override;
+  QString errorHint() const override {
+    return "ERROR while generating Tetgen tetra mesh...<br />Check the surface mesh and parameters.";
+  }
+  QPushButton &generateButton() override { return generateTetrahedraButton; }
 
   QHBoxLayout qualityBoundsLayout;
   QLabel qualityBoundsLabel;

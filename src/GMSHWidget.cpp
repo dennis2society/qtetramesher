@@ -7,16 +7,11 @@
  *      Author: Dennis Luebke
  */
 
-#include <stdexcept>
-#include <QElapsedTimer>
 #include <QFont>
-#include <QMessageBox>
 #include <GMSHWidget.hpp>
-#include <sstream>
 
-#include "GMSHWrapper.h"
 
-GMSHWidget::GMSHWidget(QWidget *parent) : BaseOptionsWidget(parent) {
+GMSHWidget::GMSHWidget(QWidget *parent) : TetraMethodWidget(parent) {
   labelTitle.setText("GMSH Tetrahedralize");
   QFont boldFont;
   boldFont.setBold(true);
@@ -64,61 +59,14 @@ GMSHWidget::GMSHWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   layout.addStretch();
 }
 
-void GMSHWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
-  QElapsedTimer t;
-  t.start();
-  if (viewer_ == NULL || viewer_->tMesh == NULL) {
-    return;
-  }
-  QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  // check this first, the topology getters below dereference the surface
-  if (tMesh_->GetSurface() == NULL) {
-    QMessageBox::information(this, "GMSH Tetrahedralize",
-                             "Please load a surface mesh first.");
-    return;
-  }
-  const std::vector<Triangle> &tris =
-      tMesh_->GetTriangleTopology()->GetTriangles();
-  const std::vector<Vec3f> &verts =
-      tMesh_->GetTriangleTopology()->GetVertices();
+QVariantMap GMSHWidget::parameters() const {
   // Map combo-box index to GMSH algorithm number
   static const int algorithmMap[] = {1, 4, 10};
   const int algoIdx = algorithmComboBox.currentIndex();
-  const int algorithm3D =
+  QVariantMap p;
+  p["meshSizeMin"] = meshSizeMinSpinBox.value();
+  p["meshSizeMax"] = meshSizeMaxSpinBox.value();
+  p["algorithm3D"] =
       (algoIdx >= 0 && algoIdx < 3) ? algorithmMap[algoIdx] : algorithmMap[0];
-
-  try {
-    GMSHWrapper w;
-    w.GenerateFromSurface(tris, verts, meshSizeMinSpinBox.value(),
-                          meshSizeMaxSpinBox.value(), algorithm3D);
-    if (!tMesh_->UpdateTetraMesh(w.GetTetraVertices(),
-                                 w.GetTetras())) {
-      throw std::runtime_error(
-          "The method did not generate a valid tetrahedral mesh.");
-    }
-    viewer_->update();
-    std::stringstream ss;
-    ss << "Generated GMSH tetrahedral mesh in " << t.elapsed()
-       << "ms. Tetras: " << w.GetTetras().size()
-       << "; Vertices: " << w.GetTetraVertices().size();
-    viewer_->displayMessage(QString::fromStdString(ss.str()), 10000);
-  } catch (const std::exception &e) {
-    std::cerr << "Caught exception in GMSHWrapper: " << e.what() << std::endl;
-    viewer_->update();
-    QMessageBox mb(this);
-    mb.setIcon(QMessageBox::Warning);
-    mb.setText(
-        "ERROR while generating GMSH tetra mesh.<br />Check the surface mesh and parameters.");
-    mb.setInformativeText(e.what());
-    mb.exec();
-  } catch (...) {
-    std::cerr << "Caught unknown exception in GMSHWrapper..." << std::endl;
-    viewer_->update();
-    QMessageBox mb(this);
-    mb.setIcon(QMessageBox::Warning);
-    mb.setText(
-        "ERROR while generating GMSH tetra mesh.<br />Check the surface mesh and parameters.");
-    mb.setInformativeText("Unknown error.");
-    mb.exec();
-  }
+  return p;
 }

@@ -9,21 +9,25 @@
 #ifndef GENERIC_ISOSURFACE_STUFFING_WIDGET_HPP
 #define GENERIC_ISOSURFACE_STUFFING_WIDGET_HPP
 
-#include <qgltetraviewer.hpp>
-
-#include <BaseOptionsWidget.hpp>
+#include <TetraMethodWidget.hpp>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QPushButton>
 
-class GenericIsosurfaceStuffingWidget : public BaseOptionsWidget {
+class GenericIsosurfaceStuffingWidget : public TetraMethodWidget {
   Q_OBJECT
 
  public:
   GenericIsosurfaceStuffingWidget(QWidget *parent);
   void update();
 
-  void generateTetrahedra(QGLTetraViewer *viewer_);
+  QString methodId() const override { return "generic"; }
+  QString methodName() const override { return "Generic Isosurface Stuffing"; }
+  QVariantMap parameters() const override;
+  QString errorHint() const override {
+    return "ERROR while generating Generic Isosurface Stuffing tetra mesh.";
+  }
+  QPushButton &generateButton() override { return generateTetrahedraButton; }
 
   QHBoxLayout cellSizeLayout;
   QLabel cellSizeLabel;

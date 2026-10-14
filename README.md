@@ -17,9 +17,6 @@ History + usage instructions: https://qtm.dennis2society.de
 
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
-### Running in Wayland
-The viewer is now based on the custom QtmGLViewer widget (OpenGL 3.3 core profile) and works in
-native Wayland sessions. The former `export QT_QPA_PLATFORM=xcb` workaround is no longer needed.
 
 ## Changelog
 ### 0.8.5
@@ -37,6 +34,7 @@ native Wayland sessions. The former `export QT_QPA_PLATFORM=xcb` workaround is n
 * Robustness: failed or corrupt mesh files (surface, GMSH, Tetgen) are rejected with a message and keep the current mesh instead of crashing; Generate without a loaded surface no longer crashes; failed tetrahedralization keeps the surface visible
 * Fixed memory leaks (octree, file stream in the GMSH loader, Tetgen parameters)
 * GMSH files must be ASCII MSH version 2 (version 4 files are now detected and reported)
+* Tetrahedralization no longer blocks the UI: each method runs in a separate worker process and can be canceled (also when a method hangs); a crash in a method no longer takes down the program. Octree generation and the surface check run in background threads. A progress indicator is shown in the viewer
 
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...

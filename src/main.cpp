@@ -5,12 +5,17 @@
  *      Author: Dennis Luebke
  */
 
+#include "TetraJob.hpp"
 #include "mainwindow.hpp"
 #include <QApplication>
 #include <QIcon>
 #include <QtmGLViewer/QtmGLViewer.hpp>
 
 int main(int argc, char *argv[]) {
+  // QTetraMesher started by itself to run a tetrahedralization method
+  if (TetraWorker::isWorkerInvocation(argc, argv))
+    return TetraWorker::run(argc, argv);
+
   // OpenGL 3.3 core profile, must be set before creating the QApplication
   QtmGLViewer::setDefaultSurfaceFormat();
   QApplication a(argc, argv);

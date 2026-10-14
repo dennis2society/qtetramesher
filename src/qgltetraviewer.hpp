@@ -8,7 +8,10 @@
 #ifndef Q_TETRA_VIEWER_H_
 #define Q_TETRA_VIEWER_H_
 
+#include <QElapsedTimer>
+#include <QTimer>
 #include <QtmGLViewer/QtmGLViewer.hpp>
+#include <map>
 
 #include "QGLTetraMesh.hpp"
 
@@ -22,6 +25,13 @@ class QGLTetraViewer : public QtmGLViewer {
   QGLTetraMesh *tMesh;
 
   void generateOctree(int d);
+
+  /// Shows a "work in progress" indicator with the given text (and an
+  /// optional smaller hint line) in the upper right corner until endTask()
+  /// is called with the same id.
+  void beginTask(const QString &id, const QString &text,
+                 const QString &hint = QString());
+  void endTask(const QString &id);
   float getMaxBBox() const;
 
  public slots:
@@ -52,10 +62,19 @@ class QGLTetraViewer : public QtmGLViewer {
   void initializeScene() override;
   void cleanupScene() override;
   void draw(const qtm::RenderContext &context) override;
+  void drawOverlay(QPainter &painter) override;
   QString helpString() const;
   QString helpHtml() const;
 
   qtm::MeshBuffer spiral;  // shown while no mesh is loaded
+
+  struct RunningTask {
+    QString text;
+    QString hint;
+    QElapsedTimer timer;
+  };
+  std::map<QString, RunningTask> runningTasks;
+  QTimer taskAnimationTimer;  // repaints the indicator while tasks run
 
   void updateSceneFromMesh();  // sets _maxBBox, scene center and radius
 

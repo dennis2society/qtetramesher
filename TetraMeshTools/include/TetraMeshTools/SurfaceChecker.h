@@ -12,6 +12,7 @@
 #include <TetraMeshTools/GeometryTypes.h>
 #include <TetraMeshTools/TetraToolsExports.h>
 
+#include <atomic>
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -31,6 +32,8 @@ struct SurfaceCheckResult {
   int genus = -1;
   /// First few intersecting triangle index pairs, for diagnostics.
   std::vector<std::pair<unsigned int, unsigned int>> examplePairs;
+  /// true if the check was stopped via the cancel flag (results incomplete)
+  bool canceled = false;
 
   bool IsSuitable() const {
     return numIntersectingPairs == 0 && numDegenerateTriangles == 0 &&
@@ -39,7 +42,10 @@ struct SurfaceCheckResult {
   }
 };
 
+/// The optional cancel flag may be set from another thread to stop the check
+/// early (the result then has canceled = true).
 DLL_EXPORT SurfaceCheckResult CheckSurfaceMesh(
-    const std::vector<Vec3f> &verts, const std::vector<Triangle> &tris);
+    const std::vector<Vec3f> &verts, const std::vector<Triangle> &tris,
+    const std::atomic<bool> *cancel = nullptr);
 
 #endif  // SURFACE_CHECKER_H

@@ -14,6 +14,8 @@
 #include <QAction>
 #include <QCloseEvent>
 #include <QFrame>
+#include <QFutureWatcher>
+#include <atomic>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLayout>
@@ -27,6 +29,8 @@
 #include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
 
+#include "TetraJob.hpp"
+#include "TetraMeshTools/SurfaceChecker.h"
 #include "qgltetraviewer.hpp"
 
 class QTetraMesherMainWindow : public QMainWindow {
@@ -34,7 +38,7 @@ class QTetraMesherMainWindow : public QMainWindow {
 
  public:
   explicit QTetraMesherMainWindow(QWidget *parent = 0);
-  //~QTetraMesherMainWindow();
+  ~QTetraMesherMainWindow() override;
 
  public slots:
   void toggleFullScreen(bool value);
@@ -112,6 +116,25 @@ class QTetraMesherMainWindow : public QMainWindow {
   void connectSlots();
 
   void updateCutplaneSliders();
+
+  // Background tasks: tetrahedralization (worker process, can be
+  // canceled), octree generation and surface check (threads). While any of
+  // them runs, loading another mesh is disabled because the tasks read the
+  // current surface mesh.
+  void startOrCancelTetraJob(TetraMethodWidget &widget);
+  void updateBusyState();
+  void stopBackgroundTasks();
+  void showSurfaceCheckResult(const SurfaceCheckResult &r);
+  std::vector<TetraMethodWidget *> tetraMethodWidgets();
+
+  TetraJob tetraJob;
+  TetraMethodWidget *runningTetraWidget = nullptr;
+  QFutureWatcher<Octree *> octreeWatcher;
+  const void *octreeSurface = nullptr;  // surface the octree is built from
+  bool octreePending = false;
+  QFutureWatcher<std::shared_ptr<SurfaceCheckResult>> surfaceCheckWatcher;
+  // set when the window closes, stops the octree and surface check threads
+  std::atomic<bool> stopThreads{false};
   void updateColorButtons();
   void loadSettings();
   void saveSettings();
@@ -123,6 +146,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   void resizeEvent(QResizeEvent *event);
 
  private slots:
+  void tetraJobFinished();
+  void octreeFinished();
+  void surfaceCheckFinished();
   void on_viewer_onLoad();
 };
 

@@ -125,6 +125,20 @@ class QGLTetraMesh {
   bool UpdateTetraMesh(std::vector<Vec3f> &verts_,
                        std::vector<Tetrahedron> &tetras_);
 
+  /// Builds the topology for a tetra mesh. Returns null if the data is empty
+  /// or invalid. Does not use any QGLTetraMesh state, so it may run in a
+  /// background thread.
+  static std::unique_ptr<TetraTools::TetrahedronTopology> BuildTetraTopology(
+      const std::vector<Vec3f> &verts_,
+      const std::vector<Tetrahedron> &tetras_);
+
+  /// Replaces the tetra mesh (null removes it) and takes ownership.
+  void SetTetraTopology(std::unique_ptr<TetraTools::TetrahedronTopology> top_);
+
+  /// Replaces the octree (null removes it) and takes ownership. The octree
+  /// must have been built from the current surface mesh.
+  void SetOctree(Octree *oct_);
+
   void ClearSurface();
 
   int GetBoundingMode() { return bboxMode; }
