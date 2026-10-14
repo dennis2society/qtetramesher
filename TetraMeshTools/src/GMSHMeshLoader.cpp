@@ -16,7 +16,7 @@ TetraTools::GMSHMeshLoader::GMSHMeshLoader() {}
 TetraTools::GMSHMeshLoader::GMSHMeshLoader(const std::string &fileName_) {
   Clear();
   std::cout << "Loading GMSH file \"" << fileName_ << "\"." << std::endl;
-  Load(_fileName);
+  Load(fileName_);
 }
 
 void TetraTools::GMSHMeshLoader::Clear() {
@@ -37,7 +37,21 @@ bool TetraTools::GMSHMeshLoader::ParseFile(std::ifstream &file_) {
   if (version == "$MeshFormat")  // Reading gmsh 2.0 file
   {
     gmshFormat = 2;
-    std::getline(file_, line);  // we don't care about this line (2 0 8)
+    std::getline(file_, line);  // format line, e.g. "2.2 0 8"
+    // Only the legacy ASCII format (version 2.x) is supported. Version 4 has
+    // a different layout and would be misread.
+    std::istringstream formatReader(line);
+    float fileVersion = 0.0f;
+    int fileType = 0;
+    formatReader >> fileVersion >> fileType;
+    if (formatReader.fail() || fileVersion >= 3.0f || fileType != 0) {
+      std::cerr << "Error: MeshGmshLoader: unsupported MSH format \"" << line
+                << "\". Only ASCII MSH version 2 is supported (in GMSH use "
+                   "Mesh.MshFileVersion = 2.2 when saving)."
+                << std::endl;
+      file_.close();
+      return false;
+    }
     std::getline(file_, cmd);   // end Version
     std::istringstream endMeshReader(cmd);
     std::string endMesh;
@@ -67,6 +81,11 @@ bool TetraTools::GMSHMeshLoader::ParseFile(std::ifstream &file_) {
     ParseGMSH(file_, gmshFormat);
   }
   if (file_.is_open()) file_.close();
+  if (_vertices.empty() || _tetraIndices.empty()) {
+    std::cerr << "Error: MeshGmshLoader: no tetrahedral mesh found in file."
+              << std::endl;
+    return false;
+  }
   std::sort(_tetraIndices.begin(), _tetraIndices.end());
   return true;
 }
@@ -81,13 +100,32 @@ void TetraTools::GMSHMeshLoader::ParseGMSH(std::ifstream &file,
 
   // --- Loading Verti ces ---
   file >> npoints;  // nb points
+  if (file.fail()) {
+    std::cerr << "Error: MeshGmshLoader: could not read the node count."
+              << std::endl;
+    return;
+  }
 
   std::vector<unsigned int>
       pmap;  // map for reordering vertices possibly not well sorted
   for (unsigned int i = 0; i < npoints; ++i) {
     unsigned int index = i;
-    float x, y, z;
+    float x = 0.0f, y = 0.0f, z = 0.0f;
     file >> index >> x >> y >> z;
+    if (file.fail()) {
+      // truncated or malformed file: do not keep half-read data
+      std::cerr << "Error: MeshGmshLoader: could not read node " << i
+                << std::endl;
+      _vertices.clear();
+      return;
+    }
+    // node tags are used as array indices, refuse absurd values
+    if (index > 100u * npoints + 1000000u) {
+      std::cerr << "Error: MeshGmshLoader: invalid node tag " << index
+                << std::endl;
+      _vertices.clear();
+      return;
+    }
     _vertices.push_back(Vec3f(x, y, z));
     if (pmap.size() <= index) pmap.resize(index + 1);
 
@@ -116,7 +154,8 @@ void TetraTools::GMSHMeshLoader::ParseGMSH(std::ifstream &file,
 
   for (unsigned int i = 0; i < nelems; ++i)  // for each elem
   {
-    int index, etype, rphys, relem, nnodes, ntags, tag;
+    int index = 0, etype = 0, rphys = 0, relem = 0, nnodes = 0, ntags = 0,
+        tag = 0;
     if (gmshFormat_ == 1) {
       // version 1.0 format is
       // elm-number elm-type reg-phys reg-elem number-of-nodes <node-number-list
@@ -156,6 +195,12 @@ void TetraTools::GMSHMeshLoader::ParseGMSH(std::ifstream &file,
           break;
       }
     }
+    if (file.fail() || nnodes < 0 || nnodes > 64 || ntags < 0 || ntags > 64) {
+      std::cerr << "Error: MeshGmshLoader: malformed element " << i
+                << std::endl;
+      _tetraIndices.clear();
+      return;
+    }
     // store real index of node and not line index
     std::vector<unsigned int> nodes;
     nodes.resize(nnodes);
@@ -186,6 +231,7 @@ void TetraTools::GMSHMeshLoader::ParseGMSH(std::ifstream &file,
         // addTetrahedron(&my_tetrahedra, helper::fixed_array <unsigned
         // int,4>(nodes[0], nodes[1], nodes[2], nodes[3]));
         //++ntetrahedra;
+        if (nodes.size() < 4) break;
         Tetrahedron t;
         t.index[0] = nodes[0];
         t.index[1] = nodes[1];
@@ -220,7 +266,9 @@ void TetraTools::GMSHMeshLoader::ParseGMSH(std::ifstream &file,
 bool TetraTools::GMSHMeshLoader::Load(const std::string &fileName_) {
   Clear();
   _fileName = fileName_;
-  return ParseFile(ReadFile(_fileName));
+  std::ifstream file;
+  if (!OpenFile(_fileName, file)) return false;
+  return ParseFile(file);
 }
 
 const std::vector<Vec3f> &TetraTools::GMSHMeshLoader::GetVertices() const {

@@ -32,6 +32,12 @@ bool TetraTools::TriMeshLoader::loadFile(const std::string &path_and_filename) {
     return false;
   }
   std::cout << "Assimp: Num Meshes: " << tm->mNumMeshes << std::endl;
+  if (tm->mNumMeshes == 0 || tm->mMeshes == nullptr ||
+      tm->mMeshes[0] == nullptr) {
+    std::cerr << "Error loading surface mesh! The file contains no mesh."
+              << std::endl;
+    return false;
+  }
   const aiMesh *mesh = tm->mMeshes[0];
   if (mesh->mNumVertices == 0 || mesh->mNumFaces == 0) {
     std::cerr << "Error loading surface mesh! Vertices or faces are empty..."
@@ -52,6 +58,8 @@ bool TetraTools::TriMeshLoader::loadFile(const std::string &path_and_filename) {
       std::cerr << "Error in TriMeshLoading! Loaded shape has more than three "
                    "indices!"
                 << std::endl;
+      _vertices.clear();
+      _triangles.clear();
       return false;
     }
     Triangle t;

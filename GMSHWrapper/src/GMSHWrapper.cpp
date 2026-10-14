@@ -31,8 +31,15 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   tetraIndices.clear();
 
   if (verts.empty() || tris.empty()) {
-    std::cerr << "GMSHWrapper: empty input – aborting." << std::endl;
-    return;
+    throw std::runtime_error("GMSH: the surface mesh is empty.");
+  }
+  for (const Triangle &t : tris) {
+    for (int k = 0; k < 3; ++k) {
+      if (t.index[k] >= verts.size()) {
+        throw std::runtime_error(
+            "GMSH: the surface mesh has invalid vertex indices.");
+      }
+    }
   }
 
   // Auto-compute mesh size from bounding-box diagonal when not specified.
@@ -187,6 +194,9 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
       }
     }
 
+    if (tetraPoints.empty() || tetraIndices.empty()) {
+      throw std::runtime_error("GMSH did not generate any tetrahedra.");
+    }
     std::cout << "GMSHWrapper: " << tetraPoints.size() << " vertices, "
               << tetraIndices.size() << " tetrahedra." << std::endl;
 
@@ -206,6 +216,12 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
       lastError = e.what();
       std::cerr << "GMSHWrapper: attempt with classify angle " << angle
                 << " failed – " << lastError << std::endl;
+      if (gmsh::isInitialized())
+        gmsh::finalize();
+    } catch (...) {
+      lastError = "GMSH failed with an unknown error.";
+      std::cerr << "GMSHWrapper: attempt with classify angle " << angle
+                << " failed - unknown error" << std::endl;
       if (gmsh::isInitialized())
         gmsh::finalize();
     }

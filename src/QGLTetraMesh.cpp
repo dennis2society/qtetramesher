@@ -92,6 +92,19 @@ QVector3D toQVector(const Vec3f &v) { return QVector3D(v.x, v.y, v.z); }
 
 const float *toFloats(const std::vector<Vec3f> &v) { return &v[0].x; }
 
+/// true if all tetrahedron indices refer to existing vertices. Invalid
+/// indices (e.g. from a corrupt file) would crash the topology generation
+/// and the GPU upload.
+bool TetraIndicesValid(const std::vector<Vec3f> &verts,
+                       const std::vector<Tetrahedron> &tetras) {
+  for (const Tetrahedron &t : tetras) {
+    for (int k = 0; k < 4; ++k) {
+      if (t.index[k] >= verts.size()) return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 QGLTetraMesh::QGLTetraMesh()
@@ -129,12 +142,18 @@ QGLTetraMesh::QGLTetraMesh()
 
 QGLTetraMesh::~QGLTetraMesh() {
   isReady = false;
-  if (top != NULL) {
-    delete top;
-  }
-  if (surf != NULL) {
-    delete surf;
-  }
+  ClearAll();
+}
+
+void QGLTetraMesh::ClearAll() {
+  // the octree references the surface mesh, so it has to go first
+  delete oct;
+  oct = NULL;
+  delete top;
+  top = NULL;
+  delete surf;
+  surf = NULL;
+  MarkGeometryDirty();
 }
 
 void QGLTetraMesh::InitGL() {
@@ -358,135 +377,126 @@ void QGLTetraMesh::Draw(const qtm::RenderContext &context_) {
   context_.drawLines(octreeBuffer, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
 }
 
-void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
+bool QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
                                    std::vector<Tetrahedron> &tetras_) {
   isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (verts_.size() == 0 || tetras_.size() == 0) {
-    isReady = false;
-    return;
+  delete top;
+  top = NULL;
+  MarkGeometryDirty();
+  // keep showing the surface if there is no usable tetra mesh
+  const bool valid = !verts_.empty() && !tetras_.empty() &&
+                     TetraIndicesValid(verts_, tetras_);
+  if (!valid) {
+    std::cerr << "Error! The tetrahedral mesh is empty or invalid."
+              << std::endl;
+    isReady = (surf != NULL);
+    return false;
   }
   top = new TetraTools::TetrahedronTopology();
   top->Init(verts_, tetras_, true);
-  MarkGeometryDirty();
   isReady = true;
+  return true;
 }
 
 void QGLTetraMesh::ClearSurface() {
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+  isReady = false;
+  delete oct;
+  oct = NULL;
+  delete surf;
+  surf = NULL;
   MarkGeometryDirty();
+  isReady = (top != NULL);
 }
 
-void QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
-  isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+// The Load*() functions first load into temporary objects and replace the
+// current mesh only on success, so a failed load keeps the current mesh.
+
+bool QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
   Timer t;
   t.start();
-  TetraTools::GMSHMeshLoader *gloader = new TetraTools::GMSHMeshLoader();
-  if (!gloader->Load(fileName_)) {
+  TetraTools::GMSHMeshLoader gloader;
+  if (!gloader.Load(fileName_)) {
     std::cerr << "Error loading GMSH file '" << fileName_ << "'." << std::endl;
-    delete gloader;
-    return;
+    return false;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(gloader->GetVertices(), gloader->GetTetras(), true);
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
-  surf->GenerateNormals();
-  MarkGeometryDirty();
+  if (!TetraIndicesValid(gloader.GetVertices(), gloader.GetTetras())) {
+    std::cerr << "Error! The GMSH file contains invalid vertex indices."
+              << std::endl;
+    return false;
+  }
+  std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
+      new TetraTools::TetrahedronTopology());
+  newTop->Init(gloader.GetVertices(), gloader.GetTetras(), true);
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
+  newSurf->GenerateNormals();
+  isReady = false;
+  ClearAll();
+  top = newTop.release();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading GMSH TetraMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
-  delete gloader;
+  return true;
 }
 
-void QGLTetraMesh::LoadSurface(const std::string &fileName_) {
-  isReady = false;
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+bool QGLTetraMesh::LoadSurface(const std::string &fileName_) {
   Timer t;
   t.start();
   TetraTools::TriMeshLoader gloader;
   if (!gloader.loadFile(fileName_)) {
     std::cerr << "Error loading file '" << fileName_ << "'." << std::endl;
-    return;
+    return false;
   }
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(gloader.GetVertices(), gloader.GetTriangles(), true);
-  surf->GenerateNormals();
-  MarkGeometryDirty();
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(gloader.GetVertices(), gloader.GetTriangles(), true);
+  newSurf->GenerateNormals();
+  isReady = false;
+  ClearAll();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading SurfaceMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
+  return true;
 }
 
-void QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
-  isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+bool QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   Timer t;
   t.start();
   TetgenWrapper tloader;
   if (!tloader.loadAsTetgen(std::string(), fileName_)) {
     std::cerr << "Error loading Tetgen file '" << fileName_ << "'." << std::endl;
-    return;
+    return false;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(tloader.GetTetraVertices(), tloader.GetTetras(), true);
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
-  surf->GenerateNormals();
-  MarkGeometryDirty();
+  if (!TetraIndicesValid(tloader.GetTetraVertices(), tloader.GetTetras())) {
+    std::cerr << "Error! The Tetgen files contain invalid vertex indices."
+              << std::endl;
+    return false;
+  }
+  std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
+      new TetraTools::TetrahedronTopology());
+  newTop->Init(tloader.GetTetraVertices(), tloader.GetTetras(), true);
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
+  newSurf->GenerateNormals();
+  isReady = false;
+  ClearAll();
+  top = newTop.release();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading Tetgen TetraMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
+  return true;
 }
 
 bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
+  if (top == NULL) return false;
   Timer t;
   t.start();
   TetraTools::GMSHMeshWriter gwriter;
@@ -499,6 +509,7 @@ bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
 }
 
 bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
+  if (top == NULL) return false;
   Timer t;
   t.start();
   TetgenWrapper twriter;
@@ -514,6 +525,7 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
 
 bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
                                const std::string extension_) {
+  if (surf == NULL) return false;
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;
@@ -525,30 +537,24 @@ bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
   return success;
 }
 
-void QGLTetraMesh::scalex10() {
-  isReady = false;
+void QGLTetraMesh::ScaleMesh(const float factor_) {
   if (surf == NULL) {
     std::cerr << "Error on scale! Surface mesh is empty..." << std::endl;
     return;
-  } else {
-    for (unsigned int i = 0; i < surf->GetVertices().size(); ++i) {
-      Vec3f &v = surf->GetVertices()[i];
-      v *= 10.0f;
-    }
-    surf->GenerateBoundingBox();
   }
-  if (top == NULL) {
-    std::cerr << "Error on scale! Tetra mesh is empty..." << std::endl;
-  } else {
-    std::vector<Vec3f> tv;
-    std::vector<Tetrahedron> tt;
-    for (unsigned int i = 0; i < top->GetVertices().size(); ++i) {
-      Vec3f v = top->GetVertices()[i];
-      v *= 10.0f;
-      tv.push_back(v);
-    }
-    for (unsigned int i = 0; i < top->GetTetrahedra().size(); ++i) {
-      tt.push_back(top->GetTetrahedra()[i]);
+  isReady = false;
+  for (Vec3f &v : surf->GetVertices()) {
+    v *= factor_;
+  }
+  surf->GenerateBoundingBox();
+  // the octree was built from the unscaled surface
+  delete oct;
+  oct = NULL;
+  if (top != NULL) {
+    std::vector<Vec3f> tv = top->GetVertices();
+    std::vector<Tetrahedron> tt = top->GetTetrahedra();
+    for (Vec3f &v : tv) {
+      v *= factor_;
     }
     UpdateTetraMesh(tv, tt);
   }
@@ -556,36 +562,9 @@ void QGLTetraMesh::scalex10() {
   isReady = true;
 }
 
-void QGLTetraMesh::scalex01() {
-  isReady = false;
-  if (surf == NULL) {
-    std::cerr << "Error on scale! Surface mesh is empty..." << std::endl;
-    return;
-  } else {
-    for (unsigned int i = 0; i < surf->GetVertices().size(); ++i) {
-      Vec3f &v = surf->GetVertices()[i];
-      v *= 0.1f;
-    }
-    surf->GenerateBoundingBox();
-  }
-  if (top == NULL) {
-    std::cerr << "Error on scale! Tetra mesh is empty..." << std::endl;
-  } else {
-    std::vector<Vec3f> tv;
-    std::vector<Tetrahedron> tt;
-    for (unsigned int i = 0; i < top->GetVertices().size(); ++i) {
-      Vec3f v = top->GetVertices()[i];
-      v *= 0.1f;
-      tv.push_back(v);
-    }
-    for (unsigned int i = 0; i < top->GetTetrahedra().size(); ++i) {
-      tt.push_back(top->GetTetrahedra()[i]);
-    }
-    UpdateTetraMesh(tv, tt);
-  }
-  MarkGeometryDirty();
-  isReady = true;
-}
+void QGLTetraMesh::scalex10() { ScaleMesh(10.0f); }
+
+void QGLTetraMesh::scalex01() { ScaleMesh(0.1f); }
 
 void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   if (oct != NULL) {
@@ -621,6 +600,7 @@ void QGLTetraMesh::SetZRange(int lower, int upper) {
 }
 
 void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_) {
+  if (surf == NULL) return;
   for (auto &it : surf->GetVertices()) {
     it += offset_;
   }

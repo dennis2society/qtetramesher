@@ -112,15 +112,16 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
   tetraMeshMethodComboBox.addItem("GMSH Tetrahedralize");
   optionsLayout.addWidget(&surfaceVisWidget);
-  QFrame f1;
-  f1.setFrameShape(QFrame::HLine);
-  f1.setFrameShadow(QFrame::Sunken);
-  optionsLayout.addWidget(&f1);
+  // owned by this window (a local QFrame would be destroyed on return)
+  QFrame *f1 = new QFrame(this);
+  f1->setFrameShape(QFrame::HLine);
+  f1->setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(f1);
   optionsLayout.addWidget(&tetraVisWidget);
-  QFrame f2;
-  f2.setFrameShape(QFrame::HLine);
-  f2.setFrameShadow(QFrame::Sunken);
-  optionsLayout.addWidget(&f2);
+  QFrame *f2 = new QFrame(this);
+  f2->setFrameShape(QFrame::HLine);
+  f2->setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(f2);
   optionsLayout.addWidget(&octreeVisWidget);
   optionsLayout.addWidget(&tetraMeshMethodLabel);
   optionsLayout.addWidget(&tetraMeshMethodComboBox);
@@ -363,7 +364,7 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
 }
 
 void QTetraMesherMainWindow::loadSurfaceSlot() {
-  viewer->loadSurface();
+  if (!viewer->loadSurface()) return;
   sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                     0.05f);
   cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
@@ -378,7 +379,7 @@ void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
 void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
 
 void QTetraMesherMainWindow::loadTetgenSlot() {
-  viewer->loadTetgen();
+  if (!viewer->loadTetgen()) return;
   sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05f);
   cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
   cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05);
@@ -389,7 +390,7 @@ void QTetraMesherMainWindow::loadTetgenSlot() {
 void QTetraMesherMainWindow::exportTetgenSlot() { viewer->saveTetgen(); }
 
 void QTetraMesherMainWindow::loadGMSHSlot() {
-  viewer->loadGMSH();
+  if (!viewer->loadGMSH()) return;
   sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
                                                     0.05f);
   cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);

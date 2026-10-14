@@ -7,6 +7,7 @@
  *  Created 2026
  */
 
+#include <stdexcept>
 #include "GenericIsosurfaceStuffingWidget.hpp"
 
 #include <QElapsedTimer>
@@ -64,39 +65,54 @@ GenericIsosurfaceStuffingWidget::GenericIsosurfaceStuffingWidget(QWidget *parent
 void GenericIsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   QElapsedTimer t;
   t.start();
+  if (viewer_ == NULL || viewer_->tMesh == NULL) {
+    return;
+  }
   QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  if (tMesh_ == NULL) {
+  // check this first, the topology getters below dereference the surface
+  if (tMesh_->GetSurface() == NULL) {
+    QMessageBox::information(this, "Generic Isosurface Stuffing",
+                             "Please load a surface mesh first.");
     return;
   }
   const std::vector<Triangle> &tris =
       tMesh_->GetTriangleTopology()->GetTriangles();
   const std::vector<Vec3f> &verts =
       tMesh_->GetTriangleTopology()->GetVertices();
-  if (tMesh_->GetSurface() == NULL) {
-    return;
-  }
-  GenericIsosurfaceStuffing iso;
   try {
-    iso.GenerateFromSurface(tris, verts,
-                            float(cellSizeSpinBox.value()),
-                            float(alphaShortSpinBox.value()),
-                            float(alphaLongSpinBox.value()),
-                            gradedCheckBox.isChecked());
-    tMesh_->UpdateTetraMesh(iso.GetTetraVertices(), iso.GetTetras());
+    GenericIsosurfaceStuffing w;
+    w.GenerateFromSurface(tris, verts, float(cellSizeSpinBox.value()),
+                          float(alphaShortSpinBox.value()),
+                          float(alphaLongSpinBox.value()),
+                          gradedCheckBox.isChecked());
+    if (!tMesh_->UpdateTetraMesh(w.GetTetraVertices(),
+                                 w.GetTetras())) {
+      throw std::runtime_error(
+          "The method did not generate a valid tetrahedral mesh.");
+    }
     viewer_->update();
     std::stringstream ss;
     ss << "Generated tetrahedral mesh in " << t.elapsed()
-       << "ms. Tetras: " << iso.GetTetras().size()
-       << "; Vertices: " << iso.GetTetraVertices().size();
-    std::string stdMSG = ss.str();
-    viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
-  } catch (std::exception &e) {
-    std::cerr << "Caught exception in GenericIsosurfaceStuffing..." << std::endl;
+       << "ms. Tetras: " << w.GetTetras().size()
+       << "; Vertices: " << w.GetTetraVertices().size();
+    viewer_->displayMessage(QString::fromStdString(ss.str()), 10000);
+  } catch (const std::exception &e) {
+    std::cerr << "Caught exception in GenericIsosurfaceStuffing: " << e.what() << std::endl;
+    viewer_->update();
     QMessageBox mb(this);
     mb.setIcon(QMessageBox::Warning);
     mb.setText(
         "ERROR while generating Generic Isosurface Stuffing tetra mesh.");
     mb.setInformativeText(e.what());
+    mb.exec();
+  } catch (...) {
+    std::cerr << "Caught unknown exception in GenericIsosurfaceStuffing..." << std::endl;
+    viewer_->update();
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(
+        "ERROR while generating Generic Isosurface Stuffing tetra mesh.");
+    mb.setInformativeText("Unknown error.");
     mb.exec();
   }
 }

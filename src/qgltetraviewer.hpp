@@ -30,9 +30,9 @@ class QGLTetraViewer : public QtmGLViewer {
   void ToggleOctreeVis(int i);
   void ToggleBBox(int i);
   void ShowStatusMessage(const QString &msg_, int duration_ = 2000);
-  void loadSurface();
-  void loadGMSH();
-  void loadTetgen();
+  bool loadSurface();
+  bool loadGMSH();
+  bool loadTetgen();
   void saveGMSH();
   void saveTetgen();
   void saveSurface();
@@ -57,7 +57,9 @@ class QGLTetraViewer : public QtmGLViewer {
 
   qtm::MeshBuffer spiral;  // shown while no mesh is loaded
 
-  float _maxBBox;  // maximum value in BBox lengths to determine suggested tetra
+  void updateSceneFromMesh();  // sets _maxBBox, scene center and radius
+
+  float _maxBBox = 1.0f;  // maximum value in BBox lengths to determine suggested tetra
                    // size
 };
 

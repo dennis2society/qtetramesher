@@ -7,6 +7,7 @@
  *      Author: Dennis Luebke
  */
 
+#include <stdexcept>
 #include <QElapsedTimer>
 #include <QFont>
 #include <QMessageBox>
@@ -59,44 +60,54 @@ TetgenWidget::TetgenWidget(QWidget *parent) : BaseOptionsWidget(parent) {
 void TetgenWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   QElapsedTimer t;
   t.start();
+  if (viewer_ == NULL || viewer_->tMesh == NULL) {
+    return;
+  }
   QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  if (tMesh_ == NULL) {
+  // check this first, the topology getters below dereference the surface
+  if (tMesh_->GetSurface() == NULL) {
+    QMessageBox::information(this, "Tetgen",
+                             "Please load a surface mesh first.");
     return;
   }
   const std::vector<Triangle> &tris =
       tMesh_->GetTriangleTopology()->GetTriangles();
   const std::vector<Vec3f> &verts =
       tMesh_->GetTriangleTopology()->GetVertices();
-  if (tMesh_->GetSurface() == NULL) {
-    return;
-  }
-  TetgenWrapper *tw = new TetgenWrapper();
   try {
-    tw->GenerateFromSurface(tris, verts,
-                            static_cast<float>(qualityBoundsSpinBox.value()),
-                            static_cast<float>(cellSizeSpinBox.value()),
-                            usePLCCheckBox.isChecked());
-    tMesh_->UpdateTetraMesh(tw->GetTetraVertices(), tw->GetTetras());
+    TetgenWrapper w;
+    w.GenerateFromSurface(tris, verts,
+                          static_cast<float>(qualityBoundsSpinBox.value()),
+                          static_cast<float>(cellSizeSpinBox.value()),
+                          usePLCCheckBox.isChecked());
+    if (!tMesh_->UpdateTetraMesh(w.GetTetraVertices(),
+                                 w.GetTetras())) {
+      throw std::runtime_error(
+          "The method did not generate a valid tetrahedral mesh.");
+    }
     viewer_->update();
     std::stringstream ss;
     ss << "Generated tetrahedral mesh in " << t.elapsed()
-       << "ms. Tetras: " << tw->GetTetras().size()
-       << "; Vertices: " << tw->GetTetraVertices().size();
-    std::string stdMSG = ss.str();
-    viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
-    delete tw;
-    tw = NULL;
-  } catch (std::exception &e) {
-    std::cerr << "Caught exception in TetgenWrapper..." << std::endl;
-    if (tw != NULL) {
-      delete tw;
-    }
+       << "ms. Tetras: " << w.GetTetras().size()
+       << "; Vertices: " << w.GetTetraVertices().size();
+    viewer_->displayMessage(QString::fromStdString(ss.str()), 10000);
+  } catch (const std::exception &e) {
+    std::cerr << "Caught exception in TetgenWrapper: " << e.what() << std::endl;
+    viewer_->update();
     QMessageBox mb(this);
     mb.setIcon(QMessageBox::Warning);
     mb.setText(
-        "ERROR while generating Tetgen tetra mesh...<br />Check the surface "
-        "mesh and parameters.");
+        "ERROR while generating Tetgen tetra mesh...<br />Check the surface mesh and parameters.");
     mb.setInformativeText(e.what());
+    mb.exec();
+  } catch (...) {
+    std::cerr << "Caught unknown exception in TetgenWrapper..." << std::endl;
+    viewer_->update();
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(
+        "ERROR while generating Tetgen tetra mesh...<br />Check the surface mesh and parameters.");
+    mb.setInformativeText("Unknown error.");
     mb.exec();
   }
 }

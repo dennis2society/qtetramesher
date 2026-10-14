@@ -62,6 +62,8 @@ class QGLTetraMesh {
   float zUpperThreshold;
 
   /// uploads all geometry marked as dirty to the GPU
+  void ClearAll();  // deletes octree, tetra mesh and surface
+  void ScaleMesh(const float factor_);
   void UpdateBuffers();
   void UpdateSurfaceBuffers();
   void UpdateTetraBuffers();
@@ -107,9 +109,10 @@ class QGLTetraMesh {
   /// Forces a re-upload of all geometry on the next Draw(). Call this after
   /// modifying the surface or tetra mesh directly.
   void MarkGeometryDirty();
-  void LoadGMSH(const std::string &fileName_);
-  void LoadTetgen(const std::string &fileName_);
-  void LoadSurface(const std::string &fileName_);
+  /// Loading functions return false and keep the current mesh on failure.
+  bool LoadGMSH(const std::string &fileName_);
+  bool LoadTetgen(const std::string &fileName_);
+  bool LoadSurface(const std::string &fileName_);
   bool SaveGMSH(const std::string &fileName_);
   bool SaveSurface(const std::string &fileName_, const std::string extension_);
   bool SaveTetgen(const std::string &fileName_);
@@ -118,7 +121,8 @@ class QGLTetraMesh {
 
   void scalex01();
 
-  void UpdateTetraMesh(std::vector<Vec3f> &verts_,
+  /// Returns false (and drops the tetra mesh) if the data is empty or invalid.
+  bool UpdateTetraMesh(std::vector<Vec3f> &verts_,
                        std::vector<Tetrahedron> &tetras_);
 
   void ClearSurface();

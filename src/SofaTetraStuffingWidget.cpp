@@ -8,6 +8,8 @@
  *      Author: Dennis Luebke
  */
 
+#include <QMessageBox>
+#include <stdexcept>
 #include "SofaTetraStuffingWidget.hpp"
 
 #include <QElapsedTimer>
@@ -62,29 +64,54 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
 void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
   QElapsedTimer t;
   t.start();
+  if (viewer_ == NULL || viewer_->tMesh == NULL) {
+    return;
+  }
   QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  if (tMesh_ == NULL) {
+  // check this first, the topology getters below dereference the surface
+  if (tMesh_->GetSurface() == NULL) {
+    QMessageBox::information(this, "SOFA TetraStuffing",
+                             "Please load a surface mesh first.");
     return;
   }
   const std::vector<Triangle> &tris =
       tMesh_->GetTriangleTopology()->GetTriangles();
   const std::vector<Vec3f> &verts =
       tMesh_->GetTriangleTopology()->GetVertices();
-  if (tMesh_->GetSurface() == NULL) {
-    return;
-  }
-  SofaTetraStuffing sts;
-  sts.GenerateFromSurface(tris, verts, tetraSizeSpinBox.value(),
+  try {
+    SofaTetraStuffing w;
+    w.GenerateFromSurface(tris, verts, tetraSizeSpinBox.value(),
                           alphaShortSpinBox.value(), alphaLongSpinBox.value(),
                           snapToPointsCheckBox.isChecked(),
                           splitTetrasCheckBox.isChecked());
-  tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
-  viewer_->update();
-  viewer_->displayMessage(QString("Updating visual mesh..."), 2000);
-  std::stringstream ss;
-  ss << "Generated tetrahedral mesh in " << t.elapsed()
-     << "ms. Tetras: " << sts.GetTetras().size()
-     << "; Vertices: " << sts.GetTetraVertices().size();
-  std::string stdMSG = ss.str();
-  viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
+    if (!tMesh_->UpdateTetraMesh(w.GetTetraVertices(),
+                                 w.GetTetras())) {
+      throw std::runtime_error(
+          "The method did not generate a valid tetrahedral mesh.");
+    }
+    viewer_->update();
+    std::stringstream ss;
+    ss << "Generated tetrahedral mesh in " << t.elapsed()
+       << "ms. Tetras: " << w.GetTetras().size()
+       << "; Vertices: " << w.GetTetraVertices().size();
+    viewer_->displayMessage(QString::fromStdString(ss.str()), 10000);
+  } catch (const std::exception &e) {
+    std::cerr << "Caught exception in SofaTetraStuffing: " << e.what() << std::endl;
+    viewer_->update();
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(
+        "ERROR while generating SOFA tetra mesh.");
+    mb.setInformativeText(e.what());
+    mb.exec();
+  } catch (...) {
+    std::cerr << "Caught unknown exception in SofaTetraStuffing..." << std::endl;
+    viewer_->update();
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setText(
+        "ERROR while generating SOFA tetra mesh.");
+    mb.setInformativeText("Unknown error.");
+    mb.exec();
+  }
 }

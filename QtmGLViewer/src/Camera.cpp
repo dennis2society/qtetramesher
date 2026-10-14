@@ -33,12 +33,16 @@ Camera::Camera()
 }
 
 void Camera::setSceneCenter(const QVector3D &center) {
+  // NaN or infinite values would poison all matrices
+  if (!std::isfinite(center.x()) || !std::isfinite(center.y()) ||
+      !std::isfinite(center.z()))
+    return;
   sceneCenter_ = center;
   pivot_ = center;
 }
 
 void Camera::setSceneRadius(float radius) {
-  if (radius <= 0.0f) return;
+  if (!std::isfinite(radius) || radius <= 0.0f) return;
   sceneRadius_ = radius;
 }
 

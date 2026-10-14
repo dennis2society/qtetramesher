@@ -323,21 +323,23 @@ void QGLTetraViewer::ShowStatusMessage(const QString &msg_, int duration_) {
   displayMessage(msg_, duration_);
 }
 
-void QGLTetraViewer::scale10() {
-  if (tMesh == NULL) {
-    std::cerr << "Error! No mesh available..." << std::endl;
-    return;
-  }
-  tMesh->scalex10();
+void QGLTetraViewer::updateSceneFromMesh() {
   BoundingBox bb = tMesh->GetBoundingBox();
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
   this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
+}
+
+void QGLTetraViewer::scale10() {
+  if (tMesh == NULL) {
+    std::cerr << "Error! No mesh available..." << std::endl;
+    return;
+  }
+  tMesh->scalex10();
+  updateSceneFromMesh();
   update();
-  // this->camera()->showEntireScene();
-  // this->ShowStatusMessage("Mesh successfully scale by 10", 3000);
 }
 
 void QGLTetraViewer::scale01() {
@@ -346,16 +348,8 @@ void QGLTetraViewer::scale01() {
     return;
   }
   tMesh->scalex01();
-  BoundingBox bb = tMesh->GetBoundingBox();
-  _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(QVector3D(0, 0, 0));
-  this->setSceneRadius(_maxBBox);
-  // updateGL();
+  updateSceneFromMesh();
   update();
-  // this->camera()->showEntireScene();
-  // this->ShowStatusMessage("Mesh successfully scale by 0.1", 3000);
 }
 
 void QGLTetraViewer::generateOctree(int d) {
@@ -363,79 +357,79 @@ void QGLTetraViewer::generateOctree(int d) {
   tMesh->generateOctree((unsigned int)d);
 }
 
-void QGLTetraViewer::loadSurface() {
-  QString s;
-  QFileDialog *qfd =
-      new QFileDialog(this, "Select mesh File", "",
-                      tr("OBJ (*.obj);; STL (*.stl);; DAE/Collada (*.dae);; "
-                         "3DS (*.3ds);; PLY (*.ply);; AC3D (*.ac)"));
-  s = qfd->getOpenFileName(
+bool QGLTetraViewer::loadSurface() {
+  const QString s = QFileDialog::getOpenFileName(
       this, "Select mesh File", "",
       tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
          "*.3ds *.ply *.ac)"));
-  delete qfd;
-
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
-  if (s.toStdString().empty()) return;
+  if (s.isEmpty()) return false;
   ShowStatusMessage("Loading Surface...");
-  tMesh->LoadSurface(s.toStdString());
-  if (!tMesh) {
-    std::cerr << "ERROR! Surface Mesh is empty..." << std::endl;
-    return;
+  if (!tMesh->LoadSurface(s.toStdString())) {
+    ShowStatusMessage("Loading the surface mesh failed...", 10000);
+    QMessageBox::warning(this, tr("Load Surface Mesh"),
+                         tr("Could not load the surface mesh from\n%1\n\n"
+                            "The file may be missing, damaged, empty or in an "
+                            "unsupported format.")
+                             .arg(s));
+    return false;
   }
   BoundingBox bb = tMesh->GetBoundingBox();
   Vec3f bboxCenter = bb.min + ((bb.max - bb.min) / 2.0f);
   tMesh->translateSurfaceMesh(bboxCenter * -1.0);
-  bb = tMesh->GetBoundingBox();
-  _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(QVector3D(0, 0, 0));
-  this->setSceneRadius(_maxBBox);
+  updateSceneFromMesh();
   this->showEntireScene();
   this->ShowStatusMessage("Surface mesh successfully loaded...", 10000);
   emit onLoad();
+  return true;
 }
 
-void QGLTetraViewer::loadGMSH() {
-  QString s;
-  QFileDialog *qfd = new QFileDialog(this, "Select GMSH File", "", "*.msh");
-  s = qfd->getOpenFileName(this, "Select GMSH File", "", "*.msh");
-  delete qfd;
+bool QGLTetraViewer::loadGMSH() {
+  const QString s = QFileDialog::getOpenFileName(this, "Select GMSH File", "",
+                                                 "GMSH mesh file (*.msh)");
   std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
-  if (s.toStdString().empty()) return;
+  if (s.isEmpty()) return false;
   ShowStatusMessage("Loading GMSH...");
-  tMesh->LoadGMSH(s.toStdString());
-  BoundingBox bb = tMesh->GetBoundingBox();
-  _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(QVector3D(0, 0, 0));
-  this->setSceneRadius(_maxBBox);
+  if (!tMesh->LoadGMSH(s.toStdString())) {
+    ShowStatusMessage("Loading the GMSH mesh failed...", 10000);
+    QMessageBox::warning(
+        this, tr("Load GMSH"),
+        tr("Could not load a tetrahedral mesh from\n%1\n\n"
+           "Only ASCII MSH files of version 2 with tetrahedra are supported "
+           "(in GMSH set Mesh.MshFileVersion to 2.2 when saving).")
+            .arg(s));
+    return false;
+  }
+  updateSceneFromMesh();
   this->showEntireScene();
   this->ShowStatusMessage("GMSH successfully loaded...", 10000);
   emit onLoad();
+  return true;
 }
 
-void QGLTetraViewer::loadTetgen() {
+bool QGLTetraViewer::loadTetgen() {
   QString s = QFileDialog::getOpenFileName(
       this, "Select Tetgen .node file", "", "Tetgen node file (*.node)");
-  if (s.isEmpty()) return;
-  // Strip the .node extension — TetgenWrapper::loadAsTetgen expects the base name
+  if (s.isEmpty()) return false;
+  // Strip the .node extension - TetgenWrapper::loadAsTetgen expects the base name
   QFileInfo fi(s);
   QString basePath = fi.dir().filePath(fi.completeBaseName());
   std::cout << "Loading Tetgen Mesh... " << basePath.toStdString() << std::endl;
   ShowStatusMessage("Loading Tetgen...");
-  tMesh->LoadTetgen(basePath.toStdString());
-  BoundingBox bb = tMesh->GetBoundingBox();
-  _maxBBox = bb.max.x - bb.min.x;
-  if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
-  if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(QVector3D(0, 0, 0));
-  this->setSceneRadius(_maxBBox);
+  if (!tMesh->LoadTetgen(basePath.toStdString())) {
+    ShowStatusMessage("Loading the Tetgen mesh failed...", 10000);
+    QMessageBox::warning(
+        this, tr("Load Tetgen"),
+        tr("Could not load a tetrahedral mesh from\n%1\n\n"
+           "The matching .ele file must be in the same folder.")
+            .arg(s));
+    return false;
+  }
+  updateSceneFromMesh();
   this->showEntireScene();
   this->ShowStatusMessage("Tetgen mesh successfully loaded...", 10000);
   emit onLoad();
+  return true;
 }
 
 void QGLTetraViewer::saveGMSH() {
@@ -460,7 +454,9 @@ void QGLTetraViewer::saveGMSH() {
     }
     delete qfd;
     std::cout << "Saving GMSH to file: " << s.toStdString() << std::endl;
-    tMesh->SaveGMSH(s.toStdString());
+    if (!tMesh->SaveGMSH(s.toStdString())) {
+      ShowStatusMessage("Saving GMSH failed...", 10000);
+    }
   } else {
     ShowStatusMessage("Saving GMSH failed! No tetrahedral mesh present...",
                       10000);
