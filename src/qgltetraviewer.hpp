@@ -53,6 +53,7 @@ class QGLTetraViewer : public QtmGLViewer {
   void cleanupScene() override;
   void draw(const qtm::RenderContext &context) override;
   QString helpString() const;
+  QString helpHtml() const;
 
   qtm::MeshBuffer spiral;  // shown while no mesh is loaded
 

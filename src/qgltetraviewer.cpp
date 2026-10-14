@@ -15,7 +15,11 @@
 #include <QColorDialog>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QTextBrowser>
+#include <QVBoxLayout>
 #include <QtmGLViewer/MeshData.hpp>
 #include <sstream>
 #include <string>
@@ -121,24 +125,106 @@ void QGLTetraViewer::showAbout() {
 }
 
 void QGLTetraViewer::showHelp() {
-  QMessageBox::information(
-      this, tr("QTetraMesher Help"),
-      tr("<h3>Mouse</h3>"
-         "<table>"
-         "<tr><td>Left drag</td><td>Rotate around the scene center</td></tr>"
-         "<tr><td>Right drag</td><td>Translate</td></tr>"
-         "<tr><td>Middle drag / wheel&nbsp;&nbsp;</td><td>Zoom</td></tr>"
-         "<tr><td>Left double click</td><td>Align view with axes</td></tr>"
-         "<tr><td>Right double click</td><td>Center scene</td></tr>"
-         "<tr><td>Middle double click</td><td>Show entire scene</td></tr>"
-         "</table>"
-         "<h3>Keyboard</h3>"
-         "<table>"
-         "<tr><td>A</td><td>Toggle axis</td></tr>"
-         "<tr><td>G</td><td>Toggle grid</td></tr>"
-         "<tr><td>F</td><td>Toggle FPS display</td></tr>"
-         "<tr><td>O</td><td>Toggle orthographic/perspective</td></tr>"
-         "</table>"));
+  QDialog dialog(this);
+  dialog.setWindowTitle(tr("QTetraMesher Help"));
+  dialog.resize(680, 620);
+  QVBoxLayout *layout = new QVBoxLayout(&dialog);
+  QTextBrowser *browser = new QTextBrowser(&dialog);
+  browser->setOpenExternalLinks(true);
+  browser->setHtml(helpHtml());
+  layout->addWidget(browser);
+  QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
+  connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+  layout->addWidget(buttons);
+  dialog.exec();
+}
+
+QString QGLTetraViewer::helpHtml() const {
+  return tr(
+      "<h2>QTetraMesher Help</h2>"
+      "<h3>Quick start</h3>"
+      "<ol>"
+      "<li>Load a surface mesh (File &gt; Load Surface Mesh) or an existing "
+      "tetrahedral mesh (File &gt; Load GMSH / Load Tetgen).</li>"
+      "<li>Select a tetra mesh method in the options panel and adjust its "
+      "parameters.</li>"
+      "<li>Press <i>Generate Tetrahedra</i>. The result is shown in the viewer "
+      "and the status line reports the vertex and tetra counts.</li>"
+      "<li>Export the result with File &gt; Export GMSH or Export Tetgen.</li>"
+      "</ol>"
+      "<h3>Loading and exporting</h3>"
+      "<table cellspacing=\"4\">"
+      "<tr><td><b>Load Surface Mesh</b></td><td>OBJ, STL, Collada (DAE), 3DS, "
+      "PLY and AC3D files. Only the surface is loaded; the mesh is moved so "
+      "that its bounding box is centered at the origin.</td></tr>"
+      "<tr><td><b>Load GMSH</b></td><td>A *.msh file containing a tetrahedral "
+      "mesh. The surface of the volume mesh is shown as the surface "
+      "mesh.</td></tr>"
+      "<tr><td><b>Load Tetgen</b></td><td>Select the *.node file. The matching "
+      "*.ele file must be in the same folder and have the same base "
+      "name.</td></tr>"
+      "<tr><td><b>Export Surface</b></td><td>Saves the surface mesh as OBJ, "
+      "STL, Collada, 3DS or PLY, depending on the extension you choose.</td></tr>"
+      "<tr><td><b>Export GMSH</b></td><td>Saves the tetrahedral mesh as a "
+      "*.msh file.</td></tr>"
+      "<tr><td><b>Export Tetgen</b></td><td>Saves the tetrahedral mesh as a "
+      "*.node and *.ele pair. Choose the base name; both files are written "
+      "next to each other.</td></tr>"
+      "</table>"
+      "<h3>Tetra mesh methods</h3>"
+      "<table cellspacing=\"4\">"
+      "<tr><td><b>SOFA TetraStuffing</b></td><td>Isosurface stuffing from the "
+      "SOFA framework (Shewchuk's algorithm). Parameters: TetraSize, AlphaShort "
+      "and AlphaLong, Split Tetras and Snap To Points.</td></tr>"
+      "<tr><td><b>CGAL Delaunay Triangulation</b></td><td>Delaunay refinement "
+      "of the surface with CGAL. Parameters: CellSize, Facet Angle, Facet Size, "
+      "Facet Distance and Cell2Edge Ratio.</td></tr>"
+      "<tr><td><b>Generic Isosurface Stuffing</b></td><td>Isosurface stuffing "
+      "implemented for this program, with an optional graded mode that uses "
+      "larger tetrahedra in the interior. Parameters: CellSize, AlphaShort, "
+      "AlphaLong.</td></tr>"
+      "<tr><td><b>Tetgen</b></td><td>Constrained Delaunay tetrahedralization. "
+      "Parameters: Quality Bound, Cell Size (0 = automatic) and Use PLC.</td>"
+      "</tr>"
+      "<tr><td><b>GMSH Tetrahedralize</b></td><td>Meshing with GMSH. Parameters: "
+      "Mesh Size Min and Max (0 = automatic) and the 2D/3D algorithm (Delaunay, "
+      "Frontal or HXT).</td></tr>"
+      "</table>"
+      "<p>Tetgen and GMSH need a closed surface without self-intersections. Use "
+      "<i>Check Surface Mesh</i> in the surface options to find open edges, "
+      "intersecting triangles and other defects before meshing.</p>"
+      "<h3>Visualization</h3>"
+      "<ul>"
+      "<li><b>Surface</b>: solid, wireframe or hidden. Surface and wireframe "
+      "colors can be changed with the color buttons.</li>"
+      "<li><b>TetraMesh</b>: draw the wireframe and/or the solid tetrahedra, "
+      "with their own colors.</li>"
+      "<li><b>Cutplanes X, Y, Z</b>: drag the handles to show only the "
+      "tetrahedra whose centroid lies between the two planes. This is the way "
+      "to look inside a mesh.</li>"
+      "<li><b>Octree</b>: generate an octree from the surface with the given "
+      "depth and show all cells or only the leaves.</li>"
+      "<li><b>View menu</b>: show or hide the axes, the grid and the bounding "
+      "box.</li>"
+      "</ul>"
+      "<h3>Viewer controls</h3>"
+      "<table cellspacing=\"4\">"
+      "<tr><td>Left drag</td><td>Rotate around the scene center</td></tr>"
+      "<tr><td>Right drag</td><td>Move the view</td></tr>"
+      "<tr><td>Middle drag or mouse wheel</td><td>Zoom</td></tr>"
+      "<tr><td>Left double click</td><td>Align the view with the axes</td></tr>"
+      "<tr><td>Right double click</td><td>Center the scene</td></tr>"
+      "<tr><td>Middle double click</td><td>Show the entire scene</td></tr>"
+      "<tr><td>A / G / F / O</td><td>Toggle axes / grid / FPS display / "
+      "orthographic projection</td></tr>"
+      "</table>"
+      "<h3>Settings</h3>"
+      "<p>Colors, the visualization checkboxes and the view options are saved "
+      "when the program closes and restored at the next start.</p>"
+      "<p>Usage and build instructions: <a "
+      "href=\"https://qtm.dennis2society.de\">qtm.dennis2society.de</a><br>"
+      "Source code: <a href=\"https://github.com/dennis2society/qtetramesher\">"
+      "github.com/dennis2society/qtetramesher</a></p>");
 }
 
 QString QGLTetraViewer::helpString() const {
@@ -155,39 +241,35 @@ QString QGLTetraViewer::helpString() const {
   text += "<br>";
   text +=
       "This is a Qt-based program for Windows and Linux to generate "
-      "tetrahedral meshes for "
-      "finite element simulation from various surface mesh formats. It "
-      "also offers a fast "
-      "and easy-to-use mesh viewer and allows basic "
-      "mesh manipulation.<br />"
+      "tetrahedral meshes for finite element simulation from various surface "
+      "mesh formats. It also offers a fast and easy-to-use mesh viewer and "
+      "allows basic mesh manipulation.<br />"
       "<a href=\"https://github.com/dennis2society/qtetramesher\">"
       "https://github.com/dennis2society/qtetramesher</a><br /><br />"
-      "Several methods for tetrahedralization are available:<br />"
-      "Delaunay Triangulation (CGAL implementation)<br /> "
-      "<a href=\"https://www.cgal.org\">https://www.cgal.org</a><br />"
-      "and<br />"
-      "Johnathan Shewchuk's Isosurface Stuffing algorithm<br />"
+      "Tetrahedralization methods:<br />"
+      "Delaunay Triangulation (CGAL)<br />"
+      "Isosurface Stuffing (Johnathan Shewchuk's algorithm, "
       "<a href=\"https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf\">"
-      "https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf</a><br>"
-      "(Implementation from Sofa Framework)<br />"
-      "<a href=\"https://github.com/sofa-framework/sofa\">"
-      "https://github.com/sofa-framework/sofa</a><br><br>";
-  text +=
-      "Generic Isosurface Stuffing: a self-contained implementation of "
-      "Shewchuk's Isosurface Stuffing with optional graded tetrahedra, "
-      "written for this program.<br><br>"
-      "Tetgen by Hang Si (Constrained Delaunay tetrahedralization)<br />"
-      "<a href=\"https://wias-berlin.de/software/tetgen/\">"
-      "https://wias-berlin.de/software/tetgen/</a><br><br>"
-      "GMSH by Christophe Geuzaine and Jean-Francois Remacle "
-      "(3D finite element mesh generator)<br />"
-      "<a href=\"https://gmsh.info\">https://gmsh.info</a><br><br>";
-  text +=
-      "A second (unfortunately rather unstable) implementation of Shewchuk's "
-      "Isosurface Stuffing (Quartet Tetrahedralize) made by "
-      "Crawford Doran and Robert Bridson is available.<br />"
-      "<a href=\"https://github.com/crawforddoran/quartet\">https://"
-      "github.com/crawforddoran/quartet</a><br />";
+      "paper</a>) in SOFA Framework and in a generic implementation written for "
+      "this program (with optional graded tetrahedra)<br />"
+      "Tetgen and GMSH<br /><br />"
+      "<b>Third-party libraries</b><br />"
+      "<ul>"
+      "<li><a href=\"https://www.qt.io\">Qt 6</a>: user interface, OpenGL "
+      "context</li>"
+      "<li><a href=\"https://www.assimp.org\">Assimp</a>: loading and saving "
+      "surface meshes (OBJ, STL, Collada, 3DS, PLY, AC3D)</li>"
+      "<li><a href=\"https://www.cgal.org\">CGAL</a>: Delaunay "
+      "tetrahedralization</li>"
+      "<li><a href=\"https://github.com/sofa-framework/sofa\">SOFA "
+      "Framework</a>: isosurface stuffing (MeshTetraStuffing)</li>"
+      "<li><a href=\"https://wias-berlin.de/software/tetgen/\">TetGen</a> "
+      "by Hang Si: constrained Delaunay tetrahedralization</li>"
+      "<li><a href=\"https://gmsh.info\">GMSH</a> by Christophe Geuzaine and "
+      "Jean-Francois Remacle: 3D mesh generation</li>"
+      "</ul>"
+      "Generic Isosurface Stuffing is part of this program and was written for "
+      "it.<br />";
   text += "<br />";
   text +=
       "Usage/build instructions available at <a "
