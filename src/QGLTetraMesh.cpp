@@ -388,7 +388,9 @@ QGLTetraMesh::BuildTetraTopology(const std::vector<Vec3f> &verts_,
   }
   std::unique_ptr<TetraTools::TetrahedronTopology> t(
       new TetraTools::TetrahedronTopology());
-  t->Init(verts_, tetras_, true);
+  // complete = false: the per-vertex maps, tetra edges etc. are not used by
+  // the viewer; they are generated on first access if ever needed
+  t->Init(verts_, tetras_, false);
   return t;
 }
 
@@ -445,7 +447,7 @@ bool QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
   }
   std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
       new TetraTools::TetrahedronTopology());
-  newTop->Init(gloader.GetVertices(), gloader.GetTetras(), true);
+  newTop->Init(gloader.GetVertices(), gloader.GetTetras(), false);
   std::unique_ptr<TetraTools::TriangleTopology> newSurf(
       new TetraTools::TriangleTopology());
   newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
@@ -498,7 +500,7 @@ bool QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   }
   std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
       new TetraTools::TetrahedronTopology());
-  newTop->Init(tloader.GetTetraVertices(), tloader.GetTetras(), true);
+  newTop->Init(tloader.GetTetraVertices(), tloader.GetTetras(), false);
   std::unique_ptr<TetraTools::TriangleTopology> newSurf(
       new TetraTools::TriangleTopology());
   newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);

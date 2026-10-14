@@ -6,6 +6,7 @@
  */
 
 #include "TriangleTopology.h"
+#include "TopologyUtils.h"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -54,36 +55,26 @@ void TetraTools::TriangleTopology::GenerateEdges() {
               << std::endl;
     return;
   }
-  if (_edges.size() != 0)
-    _edges.clear();
-  // create a temporary map to find redundant edges
-  std::map<Edge, unsigned int> edgeMap;
-  std::map<Edge, unsigned int>::iterator itt;
-  for (unsigned int i = 0; i < _triangles.size(); ++i) {
-    const Triangle &t = _triangles[i];
+  // collect all triangle edges (smaller index first), then sort and remove
+  // duplicates; this gives the sorted list of unique edges
+  _edges.clear();
+  _edges.reserve(_triangles.size() * 3);
+  for (const Triangle &t : _triangles) {
     for (unsigned int j = 0; j < 3; ++j) {
       const unsigned int v1 = t.index[j];
       const unsigned int v2 = t.index[(j < 2) ? (j + 1) : 0];
-      // validate that the smaller index is the first one, otherwise swap them.
       Edge e;
-      if (v1 < v2) {
-        e.index[0] = v1;
-        e.index[1] = v2;
-      } else {
-        e.index[0] = v2;
-        e.index[1] = v1;
-      }
-      // determine whether the current edge already exists, if not: add it
-      if (edgeMap.find(e) == edgeMap.end()) {
-        // edge not in edgeMap so create a new one
-        const int edgeIndex = edgeMap.size();
-        edgeMap[e] = edgeIndex;
-        _edges.push_back(e);
-      }
+      e.Set(std::min(v1, v2), std::max(v1, v2));
+      _edges.push_back(e);
     }
   }
-  /// sort edge list from smallest to largest first index
   std::sort(_edges.begin(), _edges.end());
+  _edges.erase(std::unique(_edges.begin(), _edges.end(),
+                           [](const Edge &a, const Edge &b) {
+                             return !(a < b) && !(b < a);
+                           }),
+               _edges.end());
+  _edges.shrink_to_fit();
   std::cout << "\tNumEdges: " << _edges.size() << std::endl;
 }
 
@@ -94,36 +85,19 @@ void TetraTools::TriangleTopology::GenerateTriangleEdges() {
               << std::endl;
     return;
   }
-  if (_triangleEdges.size() != 0)
-    _triangleEdges.clear();
-  /// generate Edge-To-Indices map for faster lookup
-  std::map<Edge, unsigned int> m;
-  for (unsigned int i = 0; i < _edges.size(); ++i) {
-    const Edge &e = _edges[i];
-    m[e] = i;
-  }
-  std::map<Edge, unsigned int>::iterator it;
-  Edge e[3];
-  for (unsigned int i = 0; i < _triangles.size(); ++i) {
+  _triangleEdges.clear();
+  _triangleEdges.resize(_triangles.size());
+  const detail::IndexFinder<Edge> edges(GetEdges());
+  for (std::size_t i = 0; i < _triangles.size(); ++i) {
     const Triangle &t = _triangles[i];
-    TriangleEdges te;
+    TriangleEdges &te = _triangleEdges[i];
     for (unsigned int ti = 0; ti < 3; ++ti) {
-      /// eventually swap edge-indices
-      if (ti < 2) {
-        if (t.index[ti + 1] > t.index[ti])
-          e[ti].Set(t.index[ti], t.index[ti + 1]);
-        else
-          e[ti].Set(t.index[ti + 1], t.index[ti]);
-      } else {
-        if (t.index[0] > t.index[2])
-          e[ti].Set(t.index[2], t.index[0]);
-        else
-          e[ti].Set(t.index[0], t.index[2]);
-      }
-      it = m.find(e[ti]);
-      te.index[ti] = it->second;
+      const unsigned int a = t.index[ti];
+      const unsigned int b = t.index[(ti < 2) ? (ti + 1) : 0];
+      Edge e;
+      e.Set(std::min(a, b), std::max(a, b));
+      te.index[ti] = edges.find(e);
     }
-    _triangleEdges.push_back(te);
   }
 }
 
@@ -134,84 +108,30 @@ void TetraTools::TriangleTopology::GenerateEdgeMap() {
               << std::endl;
     return;
   }
-  unsigned int numVerts = _vertices.size();
-  unsigned int numEdges = _edges.size();
-  unsigned int offset = 0;
-  for (unsigned int i = 0; i < numVerts; ++i) {
-    PrimitivesPerVertex veMap;
-    unsigned int counter = 0;
-    veMap.offset = offset;
-    for (unsigned int j = 0; j < numEdges; ++j) {
-      const Edge &e = _edges[j];
-      unsigned int vertInEdge = 0;
-      EdgeVertex edgeVertex;
-      if (e.index[0] == i) {
-        edgeVertex.edgeIndex = j;
-        edgeVertex.indexInEdge = vertInEdge;
-        ++counter;
-        ++offset;
-        _edgeVertices.push_back(edgeVertex);
-      }
-      ++vertInEdge;
-      if (e.index[1] == i) {
-        edgeVertex.edgeIndex = j;
-        edgeVertex.indexInEdge = vertInEdge;
-        ++counter;
-        ++offset;
-        _edgeVertices.push_back(edgeVertex);
-      }
-    }
-    veMap.length = counter;
-    _vertexEdgesLookup.push_back(veMap);
-  }
+  unsigned int maxEdges = 0, edgesMax = 0;
+  detail::BuildVertexMap<2>(
+      _vertices.size(), _edges, _edgeVertices, _vertexEdgesLookup,
+      [](unsigned int edge, unsigned int position) {
+        EdgeVertex ev;
+        ev.edgeIndex = edge;
+        ev.indexInEdge = position;
+        return ev;
+      },
+      maxEdges, edgesMax);
 }
 
 void TetraTools::TriangleTopology::GenerateTriangleMap() {
   std::cout << "Generating TriangleMap..." << std::endl;
-  unsigned int numVerts = _vertices.size();
-  unsigned int numTriangles = _triangles.size();
-  unsigned int offset = 0;
-  unsigned int maxTriangles = 0;
-  unsigned int trianglesMax = 0;
-  for (unsigned int i = 0; i < numVerts; ++i) {
-    PrimitivesPerVertex vtMap;
-    unsigned int counter = 0;
-    vtMap.offset = offset;
-    for (unsigned int j = 0; j < numTriangles; ++j) {
-      const Triangle &t = _triangles[j];
-      unsigned int vertInTri = 0;
-      TriangleVertex triangleVertex;
-      if (t.index[0] == i) {
-        triangleVertex.triangleIndex = j;
-        triangleVertex.indexInTriangle = vertInTri;
-        ++counter;
-        ++offset;
-        _triangleVertices.push_back(triangleVertex);
-      }
-      ++vertInTri;
-      if (t.index[1] == i) {
-        triangleVertex.triangleIndex = j;
-        triangleVertex.indexInTriangle = vertInTri;
-        ++counter;
-        ++offset;
-        _triangleVertices.push_back(triangleVertex);
-      }
-      ++vertInTri;
-      if (t.index[2] == i) {
-        triangleVertex.triangleIndex = j;
-        triangleVertex.indexInTriangle = vertInTri;
-        ++counter;
-        ++offset;
-        _triangleVertices.push_back(triangleVertex);
-      }
-    }
-    vtMap.length = counter;
-    _vertexTrianglesLookup.push_back(vtMap);
-    if (counter >= maxTriangles) {
-      maxTriangles = counter;
-      trianglesMax = i;
-    }
-  }
+  unsigned int maxTriangles = 0, trianglesMax = 0;
+  detail::BuildVertexMap<3>(
+      _vertices.size(), _triangles, _triangleVertices, _vertexTrianglesLookup,
+      [](unsigned int triangle, unsigned int position) {
+        TriangleVertex tv;
+        tv.triangleIndex = triangle;
+        tv.indexInTriangle = position;
+        return tv;
+      },
+      maxTriangles, trianglesMax);
   std::cout << "\tMax number of triangles connected to a vertex: "
             << maxTriangles << " at Vertex: " << trianglesMax << std::endl;
 }
@@ -269,14 +189,9 @@ void TetraTools::TriangleTopology::Init(const std::vector<Vec3f> &vertices_,
                                         const std::vector<Triangle> &triangles_,
                                         const bool fullUpdate_) {
   Clear();
-  // GenerateBoundingBox(vertices_);
-  for (auto i = 0; i < vertices_.size(); ++i) {
-    _vertices.push_back(vertices_[i]);
-  }
+  _vertices = vertices_;
   GenerateBoundingBox();
-  for (auto tit = triangles_.begin(); tit != triangles_.end(); ++tit) {
-    _triangles.push_back(*tit);
-  }
+  _triangles = triangles_;
 }
 
 void TetraTools::TriangleTopology::Clear() {

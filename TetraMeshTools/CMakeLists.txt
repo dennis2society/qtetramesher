@@ -32,6 +32,7 @@ add_library(
   include/TetraMeshTools/TriangleTopology.h
   include/TetraMeshTools/Vec2f.h
   src/BaseMeshLoader.cpp
+  src/TopologyUtils.h
   src/GMSHMeshLoader.cpp
   src/GMSHMeshWriter.cpp
   src/Octree.cpp

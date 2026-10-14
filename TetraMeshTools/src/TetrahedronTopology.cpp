@@ -8,7 +8,9 @@
 #include "TetrahedronTopology.h"
 
 #include <algorithm>
-#include <map>
+#include <cstdint>
+
+#include "TopologyUtils.h"
 #ifndef WIN32
 #include <math.h>
 
@@ -16,6 +18,84 @@
 #else
 #include <float.h>
 #endif
+
+
+namespace {
+
+/// Face f of a tetrahedron in the orientation used throughout this class:
+/// rotated so that the smallest index comes first; tri has the orientation
+/// (v0, v2, v1), rTri the reverse one (v0, v1, v2).
+void TetraFace(const Tetrahedron &t, unsigned int f, Triangle &tri,
+               Triangle &rTri) {
+  unsigned int v[3], val;
+  if (f % 2) {
+    v[0] = t.index[(f + 1) % 4];
+    v[1] = t.index[(f + 2) % 4];
+    v[2] = t.index[(f + 3) % 4];
+  } else {
+    v[0] = t.index[(f + 1) % 4];
+    v[2] = t.index[(f + 2) % 4];
+    v[1] = t.index[(f + 3) % 4];
+  }
+  // rotate v such that v[0] is the smallest one
+  while ((v[0] > v[1]) || (v[0] > v[2])) {
+    val = v[0];
+    v[0] = v[1];
+    v[1] = v[2];
+    v[2] = val;
+  }
+  tri.index[0] = v[0];
+  tri.index[1] = v[2];
+  tri.index[2] = v[1];
+  rTri.index[0] = v[0];
+  rTri.index[1] = v[1];
+  rTri.index[2] = v[2];
+}
+
+/// all tetrahedron faces, identified by their (sorted) vertex set
+struct FaceRef {
+  unsigned int key[3];  // sorted vertex indices
+  std::uint64_t face;   // 4 * tetrahedron index + face index
+
+  bool operator<(const FaceRef &o) const {
+    for (int i = 0; i < 3; ++i) {
+      if (key[i] != o.key[i]) return key[i] < o.key[i];
+    }
+    return face < o.face;
+  }
+  bool SameKey(const FaceRef &o) const {
+    return key[0] == o.key[0] && key[1] == o.key[1] && key[2] == o.key[2];
+  }
+};
+
+/// Sorted list of all tetrahedron faces. Faces shared by several tetrahedra
+/// are adjacent, in the order of their occurrence.
+std::vector<FaceRef> SortedFaces(const std::vector<Tetrahedron> &tetras) {
+  std::vector<FaceRef> faces(tetras.size() * 4);
+  Triangle tri, rTri;
+  for (std::size_t i = 0; i < tetras.size(); ++i) {
+    for (unsigned int f = 0; f < 4; ++f) {
+      TetraFace(tetras[i], f, tri, rTri);
+      FaceRef &r = faces[i * 4 + f];
+      r.key[0] = tri.index[0];
+      r.key[1] = std::min(tri.index[1], tri.index[2]);
+      r.key[2] = std::max(tri.index[1], tri.index[2]);
+      r.face = i * 4 + f;
+    }
+  }
+  std::sort(faces.begin(), faces.end());
+  return faces;
+}
+
+/// the triangle (orientation tri) of a face reference
+Triangle FaceTriangle(const std::vector<Tetrahedron> &tetras,
+                      std::uint64_t face) {
+  Triangle tri, rTri;
+  TetraFace(tetras[face / 4], static_cast<unsigned int>(face % 4), tri, rTri);
+  return tri;
+}
+
+}  // namespace
 
 TetraTools::TetrahedronTopology::TetrahedronTopology() { Clear(); }
 
@@ -33,15 +113,10 @@ void TetraTools::TetrahedronTopology::Init(
     const std::vector<Tetrahedron> &tetras_, const bool complete_) {
   /// generate Bounding Box
   Clear();
-  // GenerateBoundingBox(vertices_);
-  for (unsigned int i = 0; i < vertices_.size(); ++i) {
-    _vertices.push_back(vertices_[i]);
-  }
+  _vertices = vertices_;
   GenerateBoundingBox();
   std::cout << "Num Tetras: " << tetras_.size() << std::endl;
-  for (unsigned int i = 0; i < tetras_.size(); ++i) {
-    _tetrahedra.push_back(tetras_[i]);
-  }
+  _tetrahedra = tetras_;
   GenerateTriangles();
   GenerateEdges();
   if (complete_) {
@@ -73,53 +148,16 @@ void TetraTools::TetrahedronTopology::Clear() {
 }
 
 void TetraTools::TetrahedronTopology::GenerateTriangles() {
-  // create a temporary map to find redundant triangles
   std::cout << "Generating Triangles from Tetrahedra..." << std::endl;
-  std::map<Triangle, unsigned int> triangleMap;
-  std::map<Triangle, unsigned int>::iterator itt;
-  std::map<Triangle, unsigned int>::iterator itr;
-  Triangle tr, rtr;
-  int triangleIndex;
-  unsigned int v[3], val;
-  for (unsigned int i = 0; i < _tetrahedra.size(); ++i) {
-    const Tetrahedron &t = _tetrahedra[i];
-    for (unsigned int j = 0; j < 4; ++j) {
-      if (j % 2) {
-        v[0] = t.index[(j + 1) % 4];
-        v[1] = t.index[(j + 2) % 4];
-        v[2] = t.index[(j + 3) % 4];
-      } else {
-        v[0] = t.index[(j + 1) % 4];
-        v[2] = t.index[(j + 2) % 4];
-        v[1] = t.index[(j + 3) % 4];
-      }
-      //		std::sort(v,v+2);
-      // sort v such that v[0] is the smallest one
-      while ((v[0] > v[1]) || (v[0] > v[2])) {
-        val = v[0];
-        v[0] = v[1];
-        v[1] = v[2];
-        v[2] = val;
-      }
-      // check if a triangle with an opposite orientation already exists
-      tr.index[0] = v[0];
-      tr.index[1] = v[2];
-      tr.index[2] = v[1];
-      rtr.index[0] = v[0];
-      rtr.index[1] = v[1];
-      rtr.index[2] = v[2];
-      itt = triangleMap.find(tr);
-      itr = triangleMap.find(rtr);
-      if (itt == triangleMap.end() && itr == triangleMap.end()) {
-        // edge not in edgeMap so create a new one
-        triangleIndex = _triangles.size();
-        triangleMap[tr] = triangleIndex;
-        _triangles.push_back(tr);
-      } else {
-        triangleIndex = -1;  // itt->second;
-      }
-    }
+  // one triangle per distinct face, in the orientation of its first
+  // occurrence
+  const std::vector<FaceRef> faces = SortedFaces(_tetrahedra);
+  _triangles.clear();
+  for (std::size_t i = 0; i < faces.size(); ++i) {
+    if (i == 0 || !faces[i].SameKey(faces[i - 1]))
+      _triangles.push_back(FaceTriangle(_tetrahedra, faces[i].face));
   }
+  _triangles.shrink_to_fit();
   std::cout << "\tNum Triangles in TetraMesh: " << _triangles.size()
             << std::endl;
   std::sort(_triangles.begin(), _triangles.end());
@@ -127,243 +165,70 @@ void TetraTools::TetrahedronTopology::GenerateTriangles() {
 
 void TetraTools::TetrahedronTopology::GenerateTetraEdges() {
   std::cout << "Generating TetraEdges..." << std::endl;
-  if (_tetraEdges.size() != 0) _tetraEdges.clear();
-  /// generate Edge map for faster lookup
-  std::map<Edge, unsigned int> edgeMap;
-  std::map<Edge, unsigned int>::iterator itt;
-  for (unsigned int i = 0; i < _edges.size(); ++i) {
-    const Edge &e = _edges[i];
-    edgeMap[e] = i;
-  }
+  _tetraEdges.clear();
+  _tetraEdges.resize(_tetrahedra.size());
+  const detail::IndexFinder<Edge> edges(GetEdges());
+  // the six edges in the order (0,1) (0,2) (0,3) (1,2) (1,3) (2,3)
+  static const unsigned int pairs[6][2] = {{0, 1}, {0, 2}, {0, 3},
+                                           {1, 2}, {1, 3}, {2, 3}};
   Edge tmpEdge;
-  for (unsigned int i = 0; i < _tetrahedra.size(); ++i) {
+  for (std::size_t i = 0; i < _tetrahedra.size(); ++i) {
     const Tetrahedron &t = _tetrahedra[i];
-    TetrahedronEdges te;
-
-    /// find the six edges in the edge map
-    /// swap edge indices so that the smaller index is in the first position
-    tmpEdge.index[0] = t.index[0];
-    tmpEdge.index[1] = t.index[1];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[0] = itt->second;
-
-    tmpEdge.index[0] = t.index[0];
-    tmpEdge.index[1] = t.index[2];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[1] = itt->second;
-
-    tmpEdge.index[0] = t.index[0];
-    tmpEdge.index[1] = t.index[3];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[2] = itt->second;
-
-    tmpEdge.index[0] = t.index[1];
-    tmpEdge.index[1] = t.index[2];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[3] = itt->second;
-
-    tmpEdge.index[0] = t.index[1];
-    tmpEdge.index[1] = t.index[3];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[4] = itt->second;
-
-    tmpEdge.index[0] = t.index[2];
-    tmpEdge.index[1] = t.index[3];
-    OrderEdge(tmpEdge);
-    itt = edgeMap.find(tmpEdge);
-    te.index[5] = itt->second;
-
-    _tetraEdges.push_back(te);
+    for (unsigned int k = 0; k < 6; ++k) {
+      tmpEdge.index[0] = t.index[pairs[k][0]];
+      tmpEdge.index[1] = t.index[pairs[k][1]];
+      OrderEdge(tmpEdge);
+      _tetraEdges[i].index[k] = edges.find(tmpEdge);
+    }
   }
 }
 
 void TetraTools::TetrahedronTopology::GenerateTetrahedronMap() {
   std::cout << "Generating TetraMap..." << std::endl;
-  unsigned int numVerts = _vertices.size();
-  unsigned int numTetras = _tetrahedra.size();
-  unsigned int offset = 0;
-  unsigned int maxTetras = 0;
-  unsigned int tetrasMax = 0;
-  for (unsigned int i = 0; i < numVerts; ++i) {
-    PrimitivesPerVertex vtMap;
-    unsigned int counter = 0;
-    vtMap.offset = offset;
-    for (unsigned int j = 0; j < numTetras; ++j) {
-      const Tetrahedron &t = _tetrahedra[j];
-      unsigned int vertInTetra = 0;
-      TetrahedronVertex tetraVertex;
-      if (t.index[0] == i) {
-        tetraVertex.tetraIndex = j;
-        tetraVertex.indexInTetra = vertInTetra;
-        ++counter;
-        ++offset;
-        _tetraVertices.push_back(tetraVertex);
-      }
-      ++vertInTetra;
-      if (t.index[1] == i) {
-        tetraVertex.tetraIndex = j;
-        tetraVertex.indexInTetra = vertInTetra;
-        ++counter;
-        ++offset;
-        _tetraVertices.push_back(tetraVertex);
-      }
-      ++vertInTetra;
-      if (t.index[2] == i) {
-        tetraVertex.tetraIndex = j;
-        tetraVertex.indexInTetra = vertInTetra;
-        ++counter;
-        ++offset;
-        _tetraVertices.push_back(tetraVertex);
-      }
-      ++vertInTetra;
-      if (t.index[3] == i) {
-        tetraVertex.tetraIndex = j;
-        tetraVertex.indexInTetra = vertInTetra;
-        ++counter;
-        ++offset;
-        _tetraVertices.push_back(tetraVertex);
-      }
-    }
-    vtMap.length = counter;
-    _vertexTetrahedraLookup.push_back(vtMap);
-    if (counter >= maxTetras) {
-      maxTetras = counter;
-      tetrasMax = i;
-    }
-  }
+  unsigned int maxTetras = 0, tetrasMax = 0;
+  detail::BuildVertexMap<4>(
+      _vertices.size(), _tetrahedra, _tetraVertices, _vertexTetrahedraLookup,
+      [](unsigned int tetra, unsigned int position) {
+        TetrahedronVertex tv;
+        tv.tetraIndex = tetra;
+        tv.indexInTetra = position;
+        return tv;
+      },
+      maxTetras, tetrasMax);
   std::cout << "\tMax number of tetrahedra connected to a vertex: " << maxTetras
             << " at Vertex: " << tetrasMax << std::endl;
 }
 
 void TetraTools::TetrahedronTopology::GenerateSurfaceTriangles() {
   std::cout << "Generating SurfaceTriangles from tetrahedra..." << std::endl;
-  /// generate Triangle-To-Indices map for faster lookup
-  std::map<Triangle, unsigned int> triangleMap;
-  std::map<Triangle, unsigned int>::iterator itm;
-  std::map<Triangle, unsigned int> tmpTriangles;
-  std::map<Triangle, unsigned int>::iterator itt;
-  std::map<Triangle, unsigned int> trianglesBlacklist;
-  std::map<Triangle, unsigned int>::iterator itb;
-  for (unsigned int i = 0; i < _triangles.size(); ++i) {
-    const Triangle &e = _triangles[i];
-    triangleMap[e] = i;
+  // surface triangles are the faces that belong to exactly one tetrahedron
+  const std::vector<FaceRef> faces = SortedFaces(_tetrahedra);
+  _surfaceTriangles.clear();
+  for (std::size_t i = 0; i < faces.size();) {
+    std::size_t j = i + 1;
+    while (j < faces.size() && faces[j].SameKey(faces[i])) ++j;
+    if (j - i == 1)
+      _surfaceTriangles.push_back(FaceTriangle(_tetrahedra, faces[i].face));
+    i = j;
   }
-  Triangle tri, rTri;
-  unsigned int v[3], val;
-  for (unsigned int k = 0; k < _tetrahedra.size(); ++k) {
-    const Tetrahedron &t = _tetrahedra[k];
-    for (unsigned int f = 0; f < 4; ++f) {
-      if (f % 2) {
-        v[0] = t.index[(f + 1) % 4];
-        v[1] = t.index[(f + 2) % 4];
-        v[2] = t.index[(f + 3) % 4];
-      } else {
-        v[0] = t.index[(f + 1) % 4];
-        v[2] = t.index[(f + 2) % 4];
-        v[1] = t.index[(f + 3) % 4];
-      }
-      //		std::sort(v,v+2);
-      // sort v such that v[0] is the smallest one
-      while ((v[0] > v[1]) || (v[0] > v[2])) {
-        val = v[0];
-        v[0] = v[1];
-        v[1] = v[2];
-        v[2] = val;
-      }
-      rTri.index[0] = v[0];
-      rTri.index[1] = v[1];
-      rTri.index[2] = v[2];
-      tri.index[0] = v[0];
-      tri.index[1] = v[2];
-      tri.index[2] = v[1];
-      /// assume that itm always exists due to previous triangle generation
-      itm = triangleMap.find(tri);
-      itb = trianglesBlacklist.find(tri);
-      /// check if triangle is already in blacklist
-      if (itb == trianglesBlacklist.end()) {
-        const unsigned int triangleIndex = itm->second;
-        trianglesBlacklist[tri] = triangleIndex;
-        trianglesBlacklist[rTri] = triangleIndex;
-        itt = tmpTriangles.find(tri);
-        /// check if triangle is in tmpList, remove if necessary
-        if (itt == tmpTriangles.end()) {
-          tmpTriangles[tri] = triangleIndex;
-        } else {
-          tmpTriangles.erase(itt);
-        }
-      } else {
-        itt = tmpTriangles.find(tri);
-        /// check if triangle is in tmpList, remove if necessary
-        if (itt == tmpTriangles.end()) {
-        } else {
-          tmpTriangles.erase(itt);
-        }
-        itt = tmpTriangles.find(rTri);
-        /// check if triangle is in tmpList, remove if necessary
-        if (itt == tmpTriangles.end()) {
-        } else {
-          tmpTriangles.erase(itt);
-        }
-      }
-    }
-  }
-  std::cout << "\tNum surface triangles: " << tmpTriangles.size() << std::endl;
-  for (itt = tmpTriangles.begin(); itt != tmpTriangles.end(); ++itt) {
-    const Triangle &t = itt->first;
-    _surfaceTriangles.push_back(t);
-  }
+  std::sort(_surfaceTriangles.begin(), _surfaceTriangles.end());
+  std::cout << "\tNum surface triangles: " << _surfaceTriangles.size()
+            << std::endl;
 }
 
 void TetraTools::TetrahedronTopology::GenerateTetraTriangles() {
   std::cout << "Generating triangles per tetrahedron..." << std::endl;
-  if (_tetraTriangles.size() != 0) _tetraTriangles.clear();
-  /// generate Triangle-To-Indices map for faster lookup
-  std::map<Triangle, unsigned int> triangleMap;
-  std::map<Triangle, unsigned int>::iterator itm;
-  for (unsigned int i = 0; i < _triangles.size(); ++i) {
-    const Triangle &e = _triangles[i];
-    triangleMap[e] = i;
-  }
+  _tetraTriangles.clear();
+  _tetraTriangles.resize(_tetrahedra.size());
+  const detail::IndexFinder<Triangle> triangles(_triangles);
   Triangle tri, rTri;
-  unsigned int v[3], val;
-  for (unsigned int k = 0; k < _tetrahedra.size(); ++k) {
-    const Tetrahedron &t = _tetrahedra[k];
-    TetrahedronTriangles tt;
+  for (std::size_t k = 0; k < _tetrahedra.size(); ++k) {
     for (unsigned int f = 0; f < 4; ++f) {
-      if (f % 2) {
-        v[0] = t.index[(f + 1) % 4];
-        v[1] = t.index[(f + 2) % 4];
-        v[2] = t.index[(f + 3) % 4];
-      } else {
-        v[0] = t.index[(f + 1) % 4];
-        v[2] = t.index[(f + 2) % 4];
-        v[1] = t.index[(f + 3) % 4];
-      }
-      //		std::sort(v,v+2);
-      // sort v such that v[0] is the smallest one
-      while ((v[0] > v[1]) || (v[0] > v[2])) {
-        val = v[0];
-        v[0] = v[1];
-        v[1] = v[2];
-        v[2] = val;
-      }
-      tri.index[0] = v[0];
-      tri.index[1] = v[2];
-      tri.index[2] = v[1];
-      rTri.index[0] = v[0];
-      rTri.index[1] = v[1];
-      rTri.index[2] = v[2];
-      itm = triangleMap.find(tri);
-      /// assume that itm always exists. If first find fails, the triangle
-      /// should exist in the reverse orientation
-      if (itm == triangleMap.end()) itm = triangleMap.find(rTri);
-      tt.index[f] = itm->second;
+      TetraFace(_tetrahedra[k], f, tri, rTri);
+      // the triangle exists in one of the two orientations
+      unsigned int index = triangles.find(tri);
+      if (index == detail::kNotFound) index = triangles.find(rTri);
+      _tetraTriangles[k].index[f] = index;
     }
-    _tetraTriangles.push_back(tt);
   }
 }
