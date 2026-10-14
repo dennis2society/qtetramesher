@@ -88,7 +88,6 @@ void CGALTetrahedralizeWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
         facetSizeSpinBox.value(), facetDistanceSpinBox.value(),
         cellRadiusToEdgeRatioSpinBox.value());
     tMesh_->UpdateTetraMesh(cth->GetTetraVertices(), cth->GetTetras());
-    tMesh_->Draw();
     viewer_->update();
     std::stringstream ss;
     ss << "Generated tetrahedral mesh in " << t.elapsed()

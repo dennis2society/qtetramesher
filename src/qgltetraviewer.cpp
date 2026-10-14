@@ -15,26 +15,65 @@
 #include <QColorDialog>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QtmGLViewer/MeshData.hpp>
 #include <sstream>
 #include <string>
 
 // Constructor must call the base class constructor.
-QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QGLViewer(parent) {
+QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QtmGLViewer(parent) {
   tMesh = new QGLTetraMesh();
+}
+
+QGLTetraViewer::~QGLTetraViewer() {
+  // GPU resources must be released while the context is current
+  makeCurrent();
+  cleanupScene();
+  delete tMesh;
+  tMesh = NULL;
+  doneCurrent();
 }
 
 float QGLTetraViewer::getMaxBBox() const { return _maxBBox; }
 
-void QGLTetraViewer::draw() {
+void QGLTetraViewer::initializeScene() {
+  tMesh->InitGL();
+  //// The spiral from the QGLViewer examples, as a tribute
+  const int nb = 200;
+  const float nbSteps = 200.0f;
+  qtm::MeshData m;
+  for (int i = 0; i < nb; ++i) {
+    float ratio = i / nbSteps;
+    float angle = 21.0f * ratio;
+    float c = cos(angle);
+    float s = sin(angle);
+    float r1 = 1.0f - 0.8f * ratio;
+    float r2 = 0.8f - 0.8f * ratio;
+    float alt = ratio - 0.5f;
+    const float nor = 0.5f;
+    const float up = sqrt(1.0f - nor * nor);
+    const QVector3D color(1.0f - ratio, 0.2f, ratio);
+    const QVector3D normal(nor * c, up, nor * s);
+    m.positions.push_back(QVector3D(r1 * c, alt, r1 * s));
+    m.positions.push_back(QVector3D(r2 * c, alt + 0.05f, r2 * s));
+    m.normals.push_back(normal);
+    m.normals.push_back(normal);
+    m.colors.push_back(color);
+    m.colors.push_back(color);
+  }
+  // a triangle strip with the vertex order of the former GL_QUAD_STRIP
+  spiral.upload(m, GL_TRIANGLE_STRIP);
+}
+
+void QGLTetraViewer::cleanupScene() {
+  if (tMesh != NULL) tMesh->CleanupGL();
+  spiral.destroy();
+}
+
+void QGLTetraViewer::draw(const qtm::RenderContext &context) {
   if (tMesh->IsReady()) {
     BoundingBox bb = tMesh->GetBoundingBox();
-    glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    tMesh->Draw();
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
+    tMesh->Draw(context);
     std::stringstream ss;
     std::string stdMSG;
     QString msg;
@@ -44,8 +83,7 @@ void QGLTetraViewer::draw() {
          << "; Triangles: " << tMesh->GetSurface()->GetTriangles().size();
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      glColor3f(0.1f, 0.8f, 0.1f);
-      drawText(10, 30, msg);
+      drawText(10, 30, msg, QColor::fromRgbF(0.1f, 0.8f, 0.1f));
       ss.str("");
       _maxBBox = bb.max.x - bb.min.x;
       if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
@@ -55,55 +93,52 @@ void QGLTetraViewer::draw() {
          << "; Max Value: " << _maxBBox;
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      glColor3f(0.1f, 0.8f, 0.1f);
-      drawText(10, 45, msg);
+      drawText(10, 45, msg, QColor::fromRgbF(0.1f, 0.8f, 0.1f));
       ss.str("");
     }
     if (tMesh->GetTetraMesh() != NULL) {
-      glDisable(GL_LIGHTING);
-      glDisable(GL_DEPTH_TEST);
       ss << "Tetra Mesh: "
          << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
          << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      glColor3f(0.8f, 0.8f, 0.1f);
-      drawText(10, 60, msg);
+      drawText(10, 60, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
       ss.str("");
       ss << "Tetra Mesh: "
          << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
          << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      glColor3f(0.8f, 0.8f, 0.1f);
-      drawText(10, 75, msg);
+      drawText(10, 75, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
-    //// Draws a spiral
-    glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
-    const float nbSteps = 200.0;
-    const uint nb = static_cast<uint>(nbSteps);
-    glBegin(GL_QUAD_STRIP);
-    for (auto i = 0; i < nb; ++i) {
-      float ratio = i / nbSteps;
-      float angle = 21.0 * ratio;
-      float c = cos(angle);
-      float s = sin(angle);
-      float r1 = 1.0 - 0.8 * ratio;
-      float r2 = 0.8 - 0.8 * ratio;
-      float alt = ratio - 0.5;
-      const float nor = .5;
-      const float up = sqrt(1.0 - nor * nor);
-      glColor3f(1.0 - ratio, 0.2f, ratio);
-      glNormal3f(nor * c, up, nor * s);
-      glVertex3f(r1 * c, alt, r1 * s);
-      glVertex3f(r2 * c, alt + 0.05, r2 * s);
-    }
-    glEnd();
+    context.drawSolid(spiral, QColor());
   }
-  glEnable(GL_LIGHTING);
-  glEnable(GL_DEPTH_TEST);
+}
+
+void QGLTetraViewer::showAbout() {
+  QMessageBox::about(this, tr("About QTetraMesher"), helpString());
+}
+
+void QGLTetraViewer::showHelp() {
+  QMessageBox::information(
+      this, tr("QTetraMesher Help"),
+      tr("<h3>Mouse</h3>"
+         "<table>"
+         "<tr><td>Left drag</td><td>Rotate around the scene center</td></tr>"
+         "<tr><td>Right drag</td><td>Translate</td></tr>"
+         "<tr><td>Middle drag / wheel&nbsp;&nbsp;</td><td>Zoom</td></tr>"
+         "<tr><td>Left double click</td><td>Align view with axes</td></tr>"
+         "<tr><td>Right double click</td><td>Center scene</td></tr>"
+         "<tr><td>Middle double click</td><td>Show entire scene</td></tr>"
+         "</table>"
+         "<h3>Keyboard</h3>"
+         "<table>"
+         "<tr><td>A</td><td>Toggle axis</td></tr>"
+         "<tr><td>G</td><td>Toggle grid</td></tr>"
+         "<tr><td>F</td><td>Toggle FPS display</td></tr>"
+         "<tr><td>O</td><td>Toggle orthographic/perspective</td></tr>"
+         "</table>"));
 }
 
 QString QGLTetraViewer::helpString() const {
@@ -123,7 +158,7 @@ QString QGLTetraViewer::helpString() const {
       "tetrahedral meshes for "
       "finite element simulation from various surface mesh formats. It "
       "also offers a fast "
-      "and easy-to-use mesh viewer based on QGLViewer and allows basic "
+      "and easy-to-use mesh viewer and allows basic "
       "mesh manipulation.<br />"
       "<a href=\"https://github.com/dennis2society/qtetramesher\">"
       "https://github.com/dennis2society/qtetramesher</a><br /><br />"
@@ -206,7 +241,7 @@ void QGLTetraViewer::scale10() {
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   update();
   // this->camera()->showEntireScene();
@@ -223,7 +258,7 @@ void QGLTetraViewer::scale01() {
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   // updateGL();
   update();
@@ -263,9 +298,9 @@ void QGLTetraViewer::loadSurface() {
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
-  this->camera()->showEntireScene();
+  this->showEntireScene();
   this->ShowStatusMessage("Surface mesh successfully loaded...", 10000);
   emit onLoad();
 }
@@ -283,7 +318,7 @@ void QGLTetraViewer::loadGMSH() {
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   this->showEntireScene();
   this->ShowStatusMessage("GMSH successfully loaded...", 10000);
@@ -304,7 +339,7 @@ void QGLTetraViewer::loadTetgen() {
   _maxBBox = bb.max.x - bb.min.x;
   if (_maxBBox < (bb.max.y - bb.min.y)) _maxBBox = bb.max.y - bb.min.y;
   if (_maxBBox < (bb.max.z - bb.min.z)) _maxBBox = bb.max.z - bb.min.z;
-  this->setSceneCenter(qglviewer::Vec(0, 0, 0));
+  this->setSceneCenter(QVector3D(0, 0, 0));
   this->setSceneRadius(_maxBBox);
   this->showEntireScene();
   this->ShowStatusMessage("Tetgen mesh successfully loaded...", 10000);

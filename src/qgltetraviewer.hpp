@@ -8,19 +8,16 @@
 #ifndef Q_TETRA_VIEWER_H_
 #define Q_TETRA_VIEWER_H_
 
-#include <QGLViewer/qglviewer.h>
+#include <QtmGLViewer/QtmGLViewer.hpp>
 
 #include "QGLTetraMesh.hpp"
 
-class QGLTetraViewer : public QGLViewer {
+class QGLTetraViewer : public QtmGLViewer {
   Q_OBJECT
 
  public:
-#if QT_VERSION < 0x040000
-  QGLTetraViewer(QWidget *parent, const char *name);
-#else
   QGLTetraViewer(QWidget *parent);
-#endif
+  ~QGLTetraViewer() override;
 
   QGLTetraMesh *tMesh;
 
@@ -45,13 +42,19 @@ class QGLTetraViewer : public QGLViewer {
   void selectTetraColorWireframe();
   void scale10();
   void scale01();
+  void showAbout();
+  void showHelp();
 
  signals:
   void onLoad();
 
  protected:
-  virtual void draw();
-  virtual QString helpString() const;
+  void initializeScene() override;
+  void cleanupScene() override;
+  void draw(const qtm::RenderContext &context) override;
+  QString helpString() const;
+
+  qtm::MeshBuffer spiral;  // shown while no mesh is loaded
 
   float _maxBBox;  // maximum value in BBox lengths to determine suggested tetra
                    // size

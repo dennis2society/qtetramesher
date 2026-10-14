@@ -29,6 +29,9 @@
 #endif
 
 #include <QtGui/QColor>
+#include <QtmGLViewer/MeshBuffer.hpp>
+#include <QtmGLViewer/RenderContext.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -58,14 +61,28 @@ class QGLTetraMesh {
   float zLowerThreshold;
   float zUpperThreshold;
 
-  void DrawBoundingVolume(const BoundingBox &bb, Vec3f color_);
+  /// uploads all geometry marked as dirty to the GPU
+  void UpdateBuffers();
+  void UpdateSurfaceBuffers();
+  void UpdateTetraBuffers();
+  void UpdateBoundingVolumeBuffer();
+  void UpdateOctreeBuffer();
+  void DrawTetraSolid(const qtm::RenderContext &context_);
 
-  void DrawTetraTriangle(const unsigned int triangleIndex,
-                         const Vec3f &tetraCentroid, const Vec3f &color);
-
-  void DrawTetrahedron(const unsigned int tetraIndex);
-
-  void DrawOctree(const bool leafsOnyly_);
+  /// GPU buffers, (re-)uploaded lazily in Draw() when marked dirty
+  qtm::MeshBuffer surfaceSolidBuffer;
+  qtm::MeshBuffer surfaceWireframeBuffer;
+  qtm::MeshBuffer tetraSolidBuffer;  // one instance per tetrahedron
+  qtm::MeshBuffer tetraWireframeBuffer;
+  qtm::MeshBuffer boundingVolumeBuffer;
+  qtm::MeshBuffer octreeBuffer;
+  std::unique_ptr<QOpenGLShaderProgram> tetraProgram;
+  bool surfaceDirty;
+  bool tetraDirty;
+  bool boundingVolumeDirty;
+  bool octreeDirty;
+  int boundingVolumeBufferMode;  // bboxMode the buffer was built for
+  int octreeBufferMode;          // octreeMode the buffer was built for
 
   Vec3f surfaceColorSolid;
   Vec3f tetraColorSolid;
@@ -82,7 +99,14 @@ class QGLTetraMesh {
 
   TetraTools::TetrahedronTopology *GetTetraMesh() { return top; }
 
-  void Draw();
+  /// Draws all visible meshes. Requires the viewer's OpenGL context.
+  void Draw(const qtm::RenderContext &context_);
+  /// Creates/releases GPU resources (OpenGL context must be current)
+  void InitGL();
+  void CleanupGL();
+  /// Forces a re-upload of all geometry on the next Draw(). Call this after
+  /// modifying the surface or tetra mesh directly.
+  void MarkGeometryDirty();
   void LoadGMSH(const std::string &fileName_);
   void LoadTetgen(const std::string &fileName_);
   void LoadSurface(const std::string &fileName_);

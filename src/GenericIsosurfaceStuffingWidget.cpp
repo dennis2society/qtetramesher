@@ -83,7 +83,6 @@ void GenericIsosurfaceStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_
                             float(alphaLongSpinBox.value()),
                             gradedCheckBox.isChecked());
     tMesh_->UpdateTetraMesh(iso.GetTetraVertices(), iso.GetTetras());
-    tMesh_->Draw();
     viewer_->update();
     std::stringstream ss;
     ss << "Generated tetrahedral mesh in " << t.elapsed()

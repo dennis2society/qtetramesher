@@ -90,7 +90,6 @@ void GMSHWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
                             meshSizeMaxSpinBox.value(),
                             algorithm3D);
     tMesh_->UpdateTetraMesh(gw->GetTetraVertices(), gw->GetTetras());
-    tMesh_->Draw();
     viewer_->update();
     std::stringstream ss;
     ss << "Generated GMSH tetrahedral mesh in " << t.elapsed()

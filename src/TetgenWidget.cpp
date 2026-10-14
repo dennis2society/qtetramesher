@@ -77,7 +77,6 @@ void TetgenWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
                             static_cast<float>(cellSizeSpinBox.value()),
                             usePLCCheckBox.isChecked());
     tMesh_->UpdateTetraMesh(tw->GetTetraVertices(), tw->GetTetras());
-    tMesh_->Draw();
     viewer_->update();
     std::stringstream ss;
     ss << "Generated tetrahedral mesh in " << t.elapsed()

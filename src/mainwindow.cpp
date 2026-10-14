@@ -9,7 +9,6 @@
 
 #include "QMimeData"
 // #include "ui_mainwindow.h"
-#include <QGLViewer/manipulatedFrame.h>
 
 #include <QApplication>
 #include <QFrame>
@@ -94,9 +93,6 @@ void QTetraMesherMainWindow::setupUI() {
   viewer->setFPSIsDisplayed(true);
   viewer->setAxisIsDrawn(true);
   viewer->setGridIsDrawn(true);
-  viewer->setManipulatedFrame(new qglviewer::ManipulatedFrame);
-  viewer->manipulatedFrame()->setSpinningSensitivity(85.0);
-  viewer->manipulatedFrame()->setRotationSensitivity(0.2);
   viewer->setMinimumSize(820, 780);
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
@@ -170,8 +166,13 @@ void QTetraMesherMainWindow::setupUI() {
 void QTetraMesherMainWindow::connectSlots() {
   // connect stuff to slots
   connect(&actionQuit, SIGNAL(triggered()), this, SLOT(close()));
-  connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(help()));
-  connect(&actionAbout, SIGNAL(triggered()), viewer, SLOT(aboutQGLViewer()));
+  connect(&actionHelp, SIGNAL(triggered()), viewer, SLOT(showHelp()));
+  connect(&actionAbout, SIGNAL(triggered()), viewer, SLOT(showAbout()));
+  // keep the menu in sync with the viewer's keyboard shortcuts
+  connect(viewer, SIGNAL(axisIsDrawnChanged(bool)), &actionShowAxis,
+          SLOT(setChecked(bool)));
+  connect(viewer, SIGNAL(gridIsDrawnChanged(bool)), &actionShowGrid,
+          SLOT(setChecked(bool)));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
           SLOT(loadSurfaceSlot()));
   connect(&actionLoadSurface, SIGNAL(triggered()), this,
@@ -242,7 +243,7 @@ void QTetraMesherMainWindow::setGridShownSlot() {
 }
 
 void QTetraMesherMainWindow::setBBoxVisibleSlot() {
-  viewer->tMesh->ToggleBBox(actionShowBBox.isChecked());
+  viewer->ToggleBBox(actionShowBBox.isChecked());
 }
 
 void QTetraMesherMainWindow::surfaceVisChanged() {
@@ -346,21 +347,18 @@ void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
 void QTetraMesherMainWindow::cutplaneXSliderSlot() {
   viewer->tMesh->SetXRange(tetraVisWidget.tetraXCutplaneSlider.GetLowerValue(),
                            tetraVisWidget.tetraXCutplaneSlider.GetUpperValue());
-  viewer->tMesh->Draw();
   viewer->update();
 }
 
 void QTetraMesherMainWindow::cutplaneYSliderSlot() {
   viewer->tMesh->SetYRange(tetraVisWidget.tetraYCutplaneSlider.GetLowerValue(),
                            tetraVisWidget.tetraYCutplaneSlider.GetUpperValue());
-  viewer->tMesh->Draw();
   viewer->update();
 }
 
 void QTetraMesherMainWindow::cutplaneZSliderSlot() {
   viewer->tMesh->SetZRange(tetraVisWidget.tetraZCutplaneSlider.GetLowerValue(),
                            tetraVisWidget.tetraZCutplaneSlider.GetUpperValue());
-  viewer->tMesh->Draw();
   viewer->update();
 }
 
@@ -479,7 +477,6 @@ void QTetraMesherMainWindow::generateGMSHSlot() {
 
 void QTetraMesherMainWindow::generateOctreeSlot() {
   viewer->generateOctree(octreeVisWidget.octreeDepthSpinBox.value());
-  viewer->tMesh->Draw();
   viewer->update();
 }
 

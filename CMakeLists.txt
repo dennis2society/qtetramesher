@@ -15,8 +15,6 @@ list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 find_package(Sofa.Config REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets WidgetsTools Xml OpenGLWidgets OpenGL)
 set(QtLibs Qt::Core Qt::Widgets Qt::Xml Qt::OpenGL Qt::OpenGLWidgets)
-find_package(GLUT REQUIRED)
-find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(CGAL REQUIRED)
 
 find_library(SofaCore
@@ -33,7 +31,7 @@ if(NOT SofaCore)
   message(FATAL_ERROR "SofaCore library not found")
 endif()
 
-add_subdirectory(libQGLViewer)
+add_subdirectory(QtmGLViewer)
 add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
@@ -54,7 +52,6 @@ include_directories(
   GenericIsosurfaceStuffing/include
   TetgenWrapper/include
   GMSHWrapper/include
-  libQGLViewer
   ${Qt6Core_INCLUDE_DIRS}
   ${Qt6Widgets_INCLUDE_DIRS}
   ${Qt6Xml_INCLUDE_DIRS}
@@ -109,9 +106,7 @@ target_link_libraries(
   Qt6::Widgets
   Qt6::OpenGL
   Qt6::Xml
-  ${GLUT_LIBRARY}
-  OpenGL::GL
-  QGLViewer
+  QtmGLViewer
   Qt6::OpenGLWidgets
 )
 
