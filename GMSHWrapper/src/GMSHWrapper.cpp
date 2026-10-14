@@ -103,25 +103,17 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     // an underlying CAD model (see tutorials/c++/t13.cpp):                 //
     //   classifySurfaces -> createGeometry -> geo::addSurfaceLoop/addVolume//
     //                                                                      //
-    // Two parameters matter a lot for closed, smooth surfaces (e.g. a      //
-    // sphere) that have no natural sharp features to cut along:            //
-    //  - `angle' must be a moderate threshold (e.g. 40 degrees), NOT 180.  //
-    //    Using 180 keeps the whole closed surface as a single patch, which //
-    //    cannot be parametrized (a closed genus-0 surface has no boundary  //
-    //    curve to build a planar map from) and triggers "Invalid exterior  //
-    //    boundary mesh for parametrization".                               //
-    //  - `forceParametrizablePatches' must be true so GMSH introduces the  //
-    //    seam/cut curves necessary to guarantee every patch can actually   //
-    //    be parametrized, even when there are no sharp edges to split on.  //
+    // The angle parameter must be a moderate threshold (e.g. 40 degrees),  //
+    // NOT 180 degrees. Using 180 keeps the whole closed surface as a       //
+    // single patch, which cannot be parametrized (a closed genus-0 surface //
+    // has no boundary curve to build a planar map from) and triggers       //
+    // "Invalid exterior boundary mesh for parametrization".                //
     // ------------------------------------------------------------------ //
     const double classifyAngle = classifyAngleDeg * M_PI / 180.0;
-    const bool includeBoundary = true;
-    const bool forceParametrizablePatches = true;
-    const double curveAngle = M_PI; // 180 degrees: don't force extra curve splits
-
-    gmsh::model::mesh::classifySurfaces(classifyAngle, includeBoundary,
-                                        forceParametrizablePatches,
-                                        curveAngle);
+    
+    std::vector<int> oldSurfaceTags, newSurfaceTags;
+    gmsh::model::mesh::classifySurfaces(classifyAngle, oldSurfaceTags,
+                                        newSurfaceTags, true, false);
     gmsh::model::mesh::createGeometry();
 
     // Collect all dim-2 entities produced by classification.
