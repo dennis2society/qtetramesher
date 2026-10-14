@@ -210,28 +210,23 @@ class QGLTetraMesh {
     surfaceColorWireframe /= 255.0f;
   }
 
-  const QColor GetSurfaceColor() {
-    QColor c((int)(surfaceColorSolid.x * 255.0f),
-             (int)(surfaceColorSolid.y * 255.0f),
-             (int)(surfaceColorSolid.z * 255.0f));
-    return c;
+  // Colors are rounded (not truncated) so that a color survives repeated
+  // get/set round trips, e.g. when saving and restoring settings.
+  static QColor ToQColor(const Vec3f &c) {
+    return QColor(qRound(c.x * 255.0f), qRound(c.y * 255.0f),
+                  qRound(c.z * 255.0f));
   }
+
+  const QColor GetSurfaceColor() { return ToQColor(surfaceColorSolid); }
 
   const QColor GetSurfaceWireframeColor() {
-    return QColor(surfaceColorWireframe.x * 255.0f,
-                  surfaceColorWireframe.y * 255.0f,
-                  surfaceColorWireframe.z * 255.0f);
+    return ToQColor(surfaceColorWireframe);
   }
 
-  const QColor GetTetraColor() {
-    return QColor(tetraColorSolid.x * 255.0f, tetraColorSolid.y * 255.0f,
-                  tetraColorSolid.z * 255.0f);
-  }
+  const QColor GetTetraColor() { return ToQColor(tetraColorSolid); }
 
   const QColor GetTetraWireframeColor() {
-    return QColor(tetraColorWireframe.x * 255.0f,
-                  tetraColorWireframe.y * 255.0f,
-                  tetraColorWireframe.z * 255.0f);
+    return ToQColor(tetraColorWireframe);
   }
 
   void generateOctree(const unsigned int depth_);

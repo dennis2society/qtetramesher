@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(QTetraMesher VERSION 0.8.4)
+project(QTetraMesher VERSION 0.8.5)
 
 # This line is required to use the PROJECT_VERSION set above
 # in the code.
@@ -42,6 +42,7 @@ add_subdirectory(GenericIsosurfaceStuffing)
 set(CMAKE_INCLUDE_CURRENT_DIR "YES")
 set(CMAKE_AUTOMOC "YES")
 set(CMAKE_AUTOUIC "YES")
+set(CMAKE_AUTORCC "YES")
 
 include_directories(
   src
@@ -89,7 +90,13 @@ add_executable(
   src/GenericIsosurfaceStuffingWidget.cpp
   src/RangeSlider.hpp
   src/RangeSlider.cpp
+  resources/qtetramesher.qrc
 )
+
+# embeds the application icon into the Windows executable
+if (WIN32)
+  target_sources(QTetraMesher PRIVATE resources/qtetramesher.rc)
+endif()
 
 target_link_libraries(
   QTetraMesher

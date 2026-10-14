@@ -15,19 +15,30 @@ namespace qtm {
 
 namespace {
 
-// Directional light along the eye space view axis with a non-local viewer,
-// like the fixed function default GL_LIGHT0 used by libQGLViewer. The 0.2
-// ambient term matches the default GL_LIGHT_MODEL_AMBIENT.
+// Two directional lights fixed in eye space (they follow the camera):
+// a headlight along the view axis and a softer key light from above, slightly
+// from the left and the front. The key light brings out the shape of
+// surfaces that face the camera head-on. Blinn-Phong with a non-local viewer.
 const char *kLightingGlsl = R"(
 vec3 qtmHeadlight(vec3 eyeNormal, vec3 baseColor, float specular,
                   float shininess) {
   vec3 n = normalize(eyeNormal);
-  const vec3 lightDir = vec3(0.0, 0.0, 1.0);
-  const vec3 halfVector = vec3(0.0, 0.0, 1.0);
-  float diffuse = max(dot(n, lightDir), 0.0);
-  float spec = diffuse > 0.0 ? pow(max(dot(n, halfVector), 0.0), shininess)
-                             : 0.0;
-  return 0.2 * baseColor + diffuse * baseColor + specular * vec3(spec);
+  const vec3 headDir = vec3(0.0, 0.0, 1.0);
+  const vec3 keyDir = normalize(vec3(-0.3, 0.85, 0.45));
+  const vec3 viewDir = vec3(0.0, 0.0, 1.0);
+  const float ambient = 0.25;
+  const float headIntensity = 0.5;
+  const float keyIntensity = 0.45;
+  float headDiffuse = max(dot(n, headDir), 0.0);
+  float keyDiffuse = max(dot(n, keyDir), 0.0);
+  vec3 keyHalf = normalize(keyDir + viewDir);
+  float headSpec = headDiffuse > 0.0
+                       ? pow(max(dot(n, headDir), 0.0), shininess) : 0.0;
+  float keySpec = keyDiffuse > 0.0
+                      ? pow(max(dot(n, keyHalf), 0.0), shininess) : 0.0;
+  vec3 diffuse = baseColor * (ambient + headIntensity * headDiffuse +
+                              keyIntensity * keyDiffuse);
+  return diffuse + specular * (0.6 * headSpec + 0.4 * keySpec) * vec3(1.0);
 }
 )";
 

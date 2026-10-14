@@ -11,6 +11,7 @@
 // #include "ui_mainwindow.h"
 
 #include <QApplication>
+#include <QSettings>
 #include <QFrame>
 #include <QMessageBox>
 #include <QUrl>
@@ -31,6 +32,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
+  // after connectSlots() so that restored options are applied to the viewer
+  loadSettings();
 }
 
 void QTetraMesherMainWindow::setupUI() {
@@ -137,30 +140,7 @@ void QTetraMesherMainWindow::setupUI() {
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
   centralLayout.addLayout(&mainLayout, 0, 0);
-  // set color button colors
-  const QColor surfaceColor = viewer->tMesh->GetSurfaceColor();
-  surfaceVisWidget.surfaceColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(surfaceColor.red()) + "," +
-      QString::number(surfaceColor.green()) + "," +
-      QString::number(surfaceColor.blue()) + ");}\n");
-  const QColor wireframeeColor = viewer->tMesh->GetSurfaceWireframeColor();
-  surfaceVisWidget.surfaceWireframeColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(wireframeeColor.red()) + "," +
-      QString::number(wireframeeColor.green()) + "," +
-      QString::number(wireframeeColor.blue()) + ");}\n");
-  const QColor tetraColor = viewer->tMesh->GetTetraColor();
-  tetraVisWidget.tetraColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" + QString::number(tetraColor.red()) +
-      "," + QString::number(tetraColor.green()) + "," +
-      QString::number(tetraColor.blue()) + ");}\n");
-  const QColor tetraWireframeColor = viewer->tMesh->GetTetraWireframeColor();
-  tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(tetraWireframeColor.red()) + "," +
-      QString::number(tetraWireframeColor.green()) + "," +
-      QString::number(tetraWireframeColor.blue()) + ");}\n");
+  updateColorButtons();
 }
 
 void QTetraMesherMainWindow::connectSlots() {
@@ -257,22 +237,12 @@ void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
 
 void QTetraMesherMainWindow::surfaceColorButtonSlot() {
   viewer->selectSurfaceColor();
-  const QColor surfaceColor = viewer->tMesh->GetSurfaceColor();
-  surfaceVisWidget.surfaceColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(surfaceColor.red()) + "," +
-      QString::number(surfaceColor.green()) + "," +
-      QString::number(surfaceColor.blue()) + ");}\n");
+  updateColorButtons();
 }
 
 void QTetraMesherMainWindow::surfaceWireframeColorButtonSlot() {
   viewer->selectSurfaceColorWireframe();
-  const QColor wireframeeColor = viewer->tMesh->GetSurfaceWireframeColor();
-  surfaceVisWidget.surfaceWireframeColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(wireframeeColor.red()) + "," +
-      QString::number(wireframeeColor.green()) + "," +
-      QString::number(wireframeeColor.blue()) + ");}\n");
+  updateColorButtons();
 }
 
 void QTetraMesherMainWindow::checkSurfaceSlot() {
@@ -327,21 +297,12 @@ void QTetraMesherMainWindow::tetraVisChangedSlot() {
 
 void QTetraMesherMainWindow::tetraColorButtonSlot() {
   viewer->selectTetraColor();
-  const QColor tetraColor = viewer->tMesh->GetTetraColor();
-  tetraVisWidget.tetraColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" + QString::number(tetraColor.red()) +
-      "," + QString::number(tetraColor.green()) + "," +
-      QString::number(tetraColor.blue()) + ");}\n");
+  updateColorButtons();
 }
 
 void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
   viewer->selectTetraColorWireframe();
-  const QColor tetraWireframeColor = viewer->tMesh->GetTetraWireframeColor();
-  tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
-      "QPushButton{background-color: rgb(" +
-      QString::number(tetraWireframeColor.red()) + "," +
-      QString::number(tetraWireframeColor.green()) + "," +
-      QString::number(tetraWireframeColor.blue()) + ");}\n");
+  updateColorButtons();
 }
 
 void QTetraMesherMainWindow::cutplaneXSliderSlot() {
@@ -493,6 +454,82 @@ void QTetraMesherMainWindow::notifyDone(QString msg_, unsigned int time_) {
   viewer->update();
 }
 
-void QTetraMesherMainWindow::closeEvent(QCloseEvent *event) {}
+void QTetraMesherMainWindow::closeEvent(QCloseEvent *event) {
+  saveSettings();
+  QMainWindow::closeEvent(event);
+}
 
 void QTetraMesherMainWindow::on_viewer_onLoad() {}
+
+// Visualization options are stored with QSettings (an ini file on Linux, the
+// registry on Windows). Colors are stored as #rrggbb strings.
+void QTetraMesherMainWindow::updateColorButtons() {
+  auto style = [](const QColor &c) {
+    return QString("QPushButton{background-color: rgb(%1,%2,%3);}\n")
+        .arg(c.red())
+        .arg(c.green())
+        .arg(c.blue());
+  };
+  surfaceVisWidget.surfaceColorButton.setStyleSheet(
+      style(viewer->tMesh->GetSurfaceColor()));
+  surfaceVisWidget.surfaceWireframeColorButton.setStyleSheet(
+      style(viewer->tMesh->GetSurfaceWireframeColor()));
+  tetraVisWidget.tetraColorButton.setStyleSheet(
+      style(viewer->tMesh->GetTetraColor()));
+  tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
+      style(viewer->tMesh->GetTetraWireframeColor()));
+}
+
+void QTetraMesherMainWindow::loadSettings() {
+  QSettings settings;
+  settings.beginGroup("visualization");
+  auto color = [&settings](const QString &key, const QColor &fallback) {
+    const QColor c(settings.value(key, fallback.name()).toString());
+    return c.isValid() ? c : fallback;
+  };
+  QGLTetraMesh *mesh = viewer->tMesh;
+  QColor c = color("surfaceColor", mesh->GetSurfaceColor());
+  mesh->SetSurfaceSolidColor(c.red(), c.green(), c.blue());
+  c = color("surfaceWireframeColor", mesh->GetSurfaceWireframeColor());
+  mesh->SetSurfaceWireframeColor(c.red(), c.green(), c.blue());
+  c = color("tetraColor", mesh->GetTetraColor());
+  mesh->SetTetraSolidColor(c.red(), c.green(), c.blue());
+  c = color("tetraWireframeColor", mesh->GetTetraWireframeColor());
+  mesh->SetTetraWireframeColor(c.red(), c.green(), c.blue());
+  updateColorButtons();
+
+  // the widgets' signals apply these to the viewer
+  tetraVisWidget.drawWireframeCheckbox.setChecked(
+      settings.value("tetraWireframe", true).toBool());
+  tetraVisWidget.drawSolidCheckbox.setChecked(
+      settings.value("tetraSolid", true).toBool());
+  const int surfaceMode = settings.value("surfaceMode", 0).toInt();
+  if (surfaceMode >= 0 &&
+      surfaceMode < surfaceVisWidget.surfaceVisComboBox.count())
+    surfaceVisWidget.surfaceVisComboBox.setCurrentIndex(surfaceMode);
+  actionShowAxis.setChecked(settings.value("showAxis", true).toBool());
+  actionShowGrid.setChecked(settings.value("showGrid", true).toBool());
+  actionShowBBox.setChecked(settings.value("showBBox", false).toBool());
+  settings.endGroup();
+  viewer->update();
+}
+
+void QTetraMesherMainWindow::saveSettings() {
+  QSettings settings;
+  settings.beginGroup("visualization");
+  settings.setValue("surfaceColor", viewer->tMesh->GetSurfaceColor().name());
+  settings.setValue("surfaceWireframeColor",
+                    viewer->tMesh->GetSurfaceWireframeColor().name());
+  settings.setValue("tetraColor", viewer->tMesh->GetTetraColor().name());
+  settings.setValue("tetraWireframeColor",
+                    viewer->tMesh->GetTetraWireframeColor().name());
+  settings.setValue("tetraWireframe",
+                    tetraVisWidget.drawWireframeCheckbox.isChecked());
+  settings.setValue("tetraSolid", tetraVisWidget.drawSolidCheckbox.isChecked());
+  settings.setValue("surfaceMode",
+                    surfaceVisWidget.surfaceVisComboBox.currentIndex());
+  settings.setValue("showAxis", actionShowAxis.isChecked());
+  settings.setValue("showGrid", actionShowGrid.isChecked());
+  settings.setValue("showBBox", actionShowBBox.isChecked());
+  settings.endGroup();
+}

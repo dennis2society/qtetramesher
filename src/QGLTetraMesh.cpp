@@ -624,5 +624,7 @@ void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_) {
   for (auto &it : surf->GetVertices()) {
     it += offset_;
   }
+  // keep the bounding box in sync with the moved vertices
+  surf->GenerateBoundingBox();
   MarkGeometryDirty();
 }

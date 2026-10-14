@@ -112,6 +112,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   void connectSlots();
 
   void updateCutplaneSliders();
+  void updateColorButtons();
+  void loadSettings();
+  void saveSettings();
 
  protected:
   // override main window close event to close all child dialogs

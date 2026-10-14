@@ -1,13 +1,13 @@
-# QTetraMesher 0.8.4
+# QTetraMesher 0.8.5
 
 ![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Linux_Cutplane_01.jpg )
 ![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Windows_Cutplane_01.jpg )
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
-and easy-to-use mesh viewer based on QGLViewer. Two different methods for tetrahedralization 
-are possible: Delaunay Triangulation and two variants of Johnathan Shewchuk's Isosurface
-Stuffing algorithm.
+and easy-to-use mesh viewer. Several methods for tetrahedralization are available:
+Delaunay Triangulation (CGAL), Tetgen, GMSH and variants of Johnathan Shewchuk's Isosurface
+Stuffing algorithm (SOFA and a generic implementation).
 
 This project is using lots of 3rd-party open-source C/C++ libraries, for this reason this work is released 
 under GPL License. This includes all self-written code. 3rd-party code remains under 
@@ -18,14 +18,18 @@ History + usage instructions: https://qtm.dennis2society.de
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
 ### Running in Wayland
-libQGLViewer is not behaving well when running in a Wayland session. I only get a dark unresponsive widget at the moment. I am looking for a replacement.
-This is current workaround for this case:
-```
-export QT_QPA_PLATFORM=xcb
-./[PATH_TO]/QTetraMesher
-```
+The viewer is now based on the custom QtmGLViewer widget (OpenGL 3.3 core profile) and works in
+native Wayland sessions. The former `export QT_QPA_PLATFORM=xcb` workaround is no longer needed.
 
 ## Changelog
+### 0.8.5
+* libQGLViewer was replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
+* Two lights (headlight and a softer light from above) for better shape perception
+* Visualization options (colors, wireframe/solid options, surface mode, axis/grid/bbox) are saved and restored between sessions
+* New application icon
+* About dialog lists Tetgen, GMSH and the Generic Isosurface Stuffing
+* Fixed: bounding box was not updated when the surface mesh was moved to the origin
+
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
 * Tetrameshing Options are now in the main UI instead of popup windows

@@ -162,7 +162,7 @@ QString QGLTetraViewer::helpString() const {
       "mesh manipulation.<br />"
       "<a href=\"https://github.com/dennis2society/qtetramesher\">"
       "https://github.com/dennis2society/qtetramesher</a><br /><br />"
-      "Two different methods for tetrahedralization are possible:<br />"
+      "Several methods for tetrahedralization are available:<br />"
       "Delaunay Triangulation (CGAL implementation)<br /> "
       "<a href=\"https://www.cgal.org\">https://www.cgal.org</a><br />"
       "and<br />"
@@ -172,6 +172,16 @@ QString QGLTetraViewer::helpString() const {
       "(Implementation from Sofa Framework)<br />"
       "<a href=\"https://github.com/sofa-framework/sofa\">"
       "https://github.com/sofa-framework/sofa</a><br><br>";
+  text +=
+      "Generic Isosurface Stuffing: a self-contained implementation of "
+      "Shewchuk's Isosurface Stuffing with optional graded tetrahedra, "
+      "written for this program.<br><br>"
+      "Tetgen by Hang Si (Constrained Delaunay tetrahedralization)<br />"
+      "<a href=\"https://wias-berlin.de/software/tetgen/\">"
+      "https://wias-berlin.de/software/tetgen/</a><br><br>"
+      "GMSH by Christophe Geuzaine and Jean-Francois Remacle "
+      "(3D finite element mesh generator)<br />"
+      "<a href=\"https://gmsh.info\">https://gmsh.info</a><br><br>";
   text +=
       "A second (unfortunately rather unstable) implementation of Shewchuk's "
       "Isosurface Stuffing (Quartet Tetrahedralize) made by "
