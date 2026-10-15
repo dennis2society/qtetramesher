@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.5)
 
+# Write compile_commands.json to the build folder (used by the IDE, e.g. the
+# VSCode C/C++ extension or clangd, to find the include paths)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # This line is required to use the PROJECT_VERSION set above
 # in the code.
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
