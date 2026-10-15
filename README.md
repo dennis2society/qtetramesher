@@ -21,20 +21,22 @@ History + usage instructions: https://qtm.dennis2society.de
 ## Changelog
 ### 0.8.5
 * <b>New tetrahedralization methods:</b>
-  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary mesh size) with no external dependencies
+  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary with mesh size and selected cell size) with no external dependencies
   - Improved Tetgen integration
   - GMSH integration (this one is sensitive to surface mesh quality...)
 * Surface mesh quality check (basic test for usage with Tetgen and GMSH)
 * libQGLViewer replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
 * Two lights (headlight and a softer light from above) for better shape perception
 * Visualization options (colors, wireframe/solid options, surface mode, axis/grid/bbox) are saved and restored between sessions
-* New application icon
-* About dialog lists Tetgen, GMSH and the Generic Isosurface Stuffing
 * Fixed: bounding box was not updated when the surface mesh was moved to the origin
 * Robustness: failed or corrupt mesh files (surface, GMSH, Tetgen) are rejected with a message and keep the current mesh instead of crashing; Generate without a loaded surface no longer crashes; failed tetrahedralization keeps the surface visible
 * Fixed memory leaks (octree, file stream in the GMSH loader, Tetgen parameters)
 * GMSH files must be ASCII MSH version 2 (version 4 files are now detected and reported)
 * Tetrahedralization no longer blocks the UI: each method runs in a separate worker process and can be canceled (also when a method hangs); a crash in a method no longer takes down the program. Octree generation and the surface check run in background threads. A progress indicator is shown in the viewer
+- Fixed a bug in the cutplane rendering (slider values were not at 0 cutting off parts of the tetrahedra mesh)
+- Improved surface mesh loading including optional basic mesh repair on load
+- Better about and help dialog
+* Added an application icon
 
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...

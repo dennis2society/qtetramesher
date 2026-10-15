@@ -32,6 +32,12 @@ class QGLTetraViewer : public QtmGLViewer {
   void beginTask(const QString &id, const QString &text,
                  const QString &hint = QString());
   void endTask(const QString &id);
+  /// Shows a short notice (with an optional smaller detail line) at the top
+  /// of the viewer for the given time.
+  void showNotice(const QString &text, const QString &detail = QString(),
+                  int durationMs = 5000);
+  /// repair defects of surface meshes when loading them (default: on)
+  void setRepairOnLoad(bool repair_) { repairOnLoad = repair_; }
   float getMaxBBox() const;
 
  public slots:
@@ -75,6 +81,14 @@ class QGLTetraViewer : public QtmGLViewer {
   };
   std::map<QString, RunningTask> runningTasks;
   QTimer taskAnimationTimer;  // repaints the indicator while tasks run
+
+  void drawTaskOverlay(QPainter &painter);
+  void drawNoticeOverlay(QPainter &painter);
+  QString noticeText;
+  QString noticeDetail;
+  QTimer noticeTimer;  // hides the notice
+
+  bool repairOnLoad = true;
 
   void updateSceneFromMesh();  // sets _maxBBox, scene center and radius
 

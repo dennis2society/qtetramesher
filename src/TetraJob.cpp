@@ -8,8 +8,10 @@
  *              vertices (3 floats each), number of triangles (quint64),
  *              triangles (3 uint32 each)
  * output file: magic "QTMO", version, status (qint32, 0 = success),
- *              message (QString), number of vertices (quint64), vertices,
- *              number of tetrahedra (quint64), tetrahedra (4 uint32 each)
+ *              message (QString), used parameters (QVariantMap, e.g. the
+ *              automatically chosen sizes), number of vertices (quint64),
+ *              vertices, number of tetrahedra (quint64), tetrahedra
+ *              (4 uint32 each)
  *
  * The output file is written with QSaveFile, so it only exists if it is
  * complete.
@@ -25,8 +27,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 #include <thread>
+#include <tuple>
 
 #ifdef _WIN32
 #ifndef NOMINMAX
@@ -48,7 +52,7 @@ namespace {
 
 const quint32 kInputMagic = 0x51544D49;   // "QTMI"
 const quint32 kOutputMagic = 0x51544D4F;  // "QTMO"
-const quint32 kVersion = 1;
+const quint32 kVersion = 2;
 const char *kWorkerArgument = "--tetra-worker";
 
 void prepareStream(QDataStream &stream) {
@@ -116,20 +120,21 @@ bool readInput(const QString &fileName, WorkerInput &input) {
 }
 
 bool writeOutput(const QString &fileName, qint32 status,
-                 const QString &message, const std::vector<Vec3f> &vertices,
+                 const QString &message, const QVariantMap &usedParameters,
+                 const std::vector<Vec3f> &vertices,
                  const std::vector<Tetrahedron> &tetras) {
   QSaveFile file(fileName);
   if (!file.open(QIODevice::WriteOnly)) return false;
   QDataStream stream(&file);
   prepareStream(stream);
-  stream << kOutputMagic << kVersion << status << message;
+  stream << kOutputMagic << kVersion << status << message << usedParameters;
   writeArray(stream, vertices);
   writeArray(stream, tetras);
   return stream.status() == QDataStream::Ok && file.commit();
 }
 
 bool readOutput(const QString &fileName, qint32 &status, QString &message,
-                std::vector<Vec3f> &vertices,
+                QVariantMap &usedParameters, std::vector<Vec3f> &vertices,
                 std::vector<Tetrahedron> &tetras) {
   QFile file(fileName);
   if (!file.open(QIODevice::ReadOnly)) return false;
@@ -138,19 +143,56 @@ bool readOutput(const QString &fileName, qint32 &status, QString &message,
   quint32 magic = 0, version = 0;
   stream >> magic >> version;
   if (magic != kOutputMagic || version != kVersion) return false;
-  stream >> status >> message;
+  stream >> status >> message >> usedParameters;
   return stream.status() == QDataStream::Ok &&
          readArray(stream, file, vertices) && readArray(stream, file, tetras);
 }
 
-/// runs the requested method in the worker process
+/// Merges vertices with identical coordinates. Loaded meshes often have
+/// split vertices where normals or texture coordinates change (e.g. at the
+/// sharp edges of a cylinder). Such a surface is open in terms of its
+/// indices, which makes Tetgen fail and GMSH run (nearly) forever, although
+/// the surface check (which welds as well) reports a closed surface.
+void weldVertices(const std::vector<Vec3f> &verts,
+                  const std::vector<Triangle> &tris,
+                  std::vector<Vec3f> &weldedVerts,
+                  std::vector<Triangle> &weldedTris) {
+  std::map<std::tuple<float, float, float>, uint32_t> seen;
+  std::vector<uint32_t> remap(verts.size());
+  weldedVerts.clear();
+  weldedVerts.reserve(verts.size());
+  for (std::size_t i = 0; i < verts.size(); ++i) {
+    const auto key = std::make_tuple(verts[i].x, verts[i].y, verts[i].z);
+    auto it = seen.find(key);
+    if (it == seen.end()) {
+      it = seen.emplace(key, uint32_t(weldedVerts.size())).first;
+      weldedVerts.push_back(verts[i]);
+    }
+    remap[i] = it->second;
+  }
+  weldedTris = tris;
+  for (Triangle &t : weldedTris)
+    for (int k = 0; k < 3; ++k) t.index[k] = remap[t.index[k]];
+}
+
+/// runs the requested method in the worker process, usedParameters gets
+/// the automatically chosen values of parameters given as 0
 void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
-               std::vector<Tetrahedron> &tetras) {
+               std::vector<Tetrahedron> &tetras, QVariantMap &usedParameters) {
   const QVariantMap &p = in.parameters;
   auto real = [&p](const char *key) { return p.value(key).toDouble(); };
   auto flag = [&p](const char *key) { return p.value(key).toBool(); };
-  const std::vector<Triangle> &tris = in.triangles;
-  const std::vector<Vec3f> &verts = in.vertices;
+  for (const Triangle &t : in.triangles)
+    for (int k = 0; k < 3; ++k)
+      if (t.index[k] >= in.vertices.size())
+        throw std::runtime_error(
+            "The surface mesh has invalid vertex indices.");
+  std::vector<Vec3f> verts;
+  std::vector<Triangle> tris;
+  weldVertices(in.vertices, in.triangles, verts, tris);
+  if (verts.size() != in.vertices.size())
+    std::cout << "Tetra worker: merged " << in.vertices.size() - verts.size()
+              << " duplicate surface vertices." << std::endl;
 
   if (in.methodId == "sofa") {
     SofaTetraStuffing w;
@@ -177,6 +219,7 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
     TetgenWrapper w;
     w.GenerateFromSurface(tris, verts, float(real("qualityBound")),
                           float(real("cellSize")), flag("usePLC"));
+    usedParameters["cellSize"] = double(w.GetCellSize());
     vertices = std::move(w.GetTetraVertices());
     tetras = std::move(w.GetTetras());
   } else if (in.methodId == "gmsh") {
@@ -184,6 +227,8 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
     w.GenerateFromSurface(tris, verts, real("meshSizeMin"),
                           real("meshSizeMax"),
                           p.value("algorithm3D").toInt());
+    usedParameters["meshSizeMin"] = w.GetMeshSizeMin();
+    usedParameters["meshSizeMax"] = w.GetMeshSizeMax();
     vertices = std::move(w.GetTetraVertices());
     tetras = std::move(w.GetTetras());
   } else {
@@ -238,12 +283,13 @@ int TetraWorker::run(int argc, char *argv[]) {
   QString message;
   std::vector<Vec3f> vertices;
   std::vector<Tetrahedron> tetras;
+  QVariantMap usedParameters;
   WorkerInput input;
   if (!readInput(inputFile, input)) {
     message = "The worker process could not read its input file.";
   } else {
     try {
-      runMethod(input, vertices, tetras);
+      runMethod(input, vertices, tetras, usedParameters);
       if (vertices.empty() || tetras.empty())
         message = "The method did not generate any tetrahedra.";
       else
@@ -263,7 +309,8 @@ int TetraWorker::run(int argc, char *argv[]) {
     std::cerr << "Tetra worker: " << message.toStdString() << std::endl;
   }
   std::cout.flush();
-  if (!writeOutput(outputFile, status, message, vertices, tetras)) {
+  if (!writeOutput(outputFile, status, message, usedParameters, vertices,
+                   tetras)) {
     std::cerr << "Tetra worker: could not write the output file."
               << std::endl;
     return 3;
@@ -372,7 +419,8 @@ void TetraJob::processFinished(int exitCode,
     QString message;
     std::vector<Vec3f> vertices;
     std::vector<Tetrahedron> tetras;
-    if (!readOutput(file, status, message, vertices, tetras)) {
+    if (!readOutput(file, status, message, r->usedParameters, vertices,
+                    tetras)) {
       r->error = QString("The worker process ended (exit code %1) without "
                          "a valid result.")
                      .arg(exitCode);
@@ -403,6 +451,7 @@ void TetraJob::collected() {
   r->ok = shared->ok;
   r->error = shared->error;
   r->elapsedMs = shared->elapsedMs;
+  r->usedParameters = shared->usedParameters;
   r->topology = std::move(shared->topology);
   if (cancelRequested) {
     r->ok = false;

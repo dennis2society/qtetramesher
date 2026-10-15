@@ -112,12 +112,27 @@ class QGLTetraMesh {
   /// Loading functions return false and keep the current mesh on failure.
   bool LoadGMSH(const std::string &fileName_);
   bool LoadTetgen(const std::string &fileName_);
-  bool LoadSurface(const std::string &fileName_);
+  /// With repair_ set, defects of the surface are fixed where possible
+  /// (see RepairSurfaceMesh()).
+  bool LoadSurface(const std::string &fileName_, bool repair_ = true);
+  /// true if the repair of the last LoadSurface() changed the surface
+  bool WasSurfaceRepaired() const { return surfaceRepaired; }
+  /// what the repair of the last LoadSurface() changed and what is still
+  /// broken (empty if the surface was fine or the repair was off)
+  const std::string &GetSurfaceRepairSummary() const {
+    return surfaceRepairSummary;
+  }
   bool SaveGMSH(const std::string &fileName_);
   bool SaveSurface(const std::string &fileName_, const std::string extension_);
   bool SaveTetgen(const std::string &fileName_);
 
   void scalex10();
+
+ private:
+  std::string surfaceRepairSummary;
+  bool surfaceRepaired = false;
+
+ public:
 
   void scalex01();
 

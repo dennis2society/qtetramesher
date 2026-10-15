@@ -117,6 +117,12 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("Generic Isosurface Stuffing");
   tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
   tetraMeshMethodComboBox.addItem("GMSH Tetrahedralize");
+  repairOnLoadCheckBox.setText("Repair surface mesh on load");
+  repairOnLoadCheckBox.setToolTip(
+      "Merge duplicate vertices, remove degenerate and duplicate triangles, "
+      "fix the orientation and fill holes when loading a surface mesh");
+  repairOnLoadCheckBox.setChecked(true);
+  optionsLayout.addWidget(&repairOnLoadCheckBox);
   optionsLayout.addWidget(&surfaceVisWidget);
   // owned by this window (a local QFrame would be destroyed on return)
   QFrame *f1 = new QFrame(this);
@@ -143,7 +149,7 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 190);
 
-  centralWidget.setLayout(&mainLayout);
+  // centralLayout is the layout of centralWidget, mainLayout goes into it
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addLayout(&optionsLayout);
   centralLayout.addLayout(&mainLayout, 0, 0);
@@ -174,6 +180,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(surfaceColorButtonSlot()));
   connect(&surfaceVisWidget.surfaceWireframeColorButton, SIGNAL(clicked()),
           this, SLOT(surfaceWireframeColorButtonSlot()));
+  connect(&repairOnLoadCheckBox, &QCheckBox::toggled, viewer,
+          &QGLTetraViewer::setRepairOnLoad);
   connect(&surfaceVisWidget.checkSurfaceButton, SIGNAL(clicked()), this,
           SLOT(checkSurfaceSlot()));
   connect(&tetraVisWidget.drawWireframeCheckbox, SIGNAL(toggled(bool)), this,
@@ -441,15 +449,15 @@ void QTetraMesherMainWindow::loadGMSHSlot() {
 }
 
 void QTetraMesherMainWindow::updateCutplaneSliders() {
-  tetraVisWidget.tetraXCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraXCutplaneSlider.setLowerValue(0);
   tetraVisWidget.tetraXCutplaneSlider.setUpperValue(100);
-  tetraVisWidget.tetraYCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraYCutplaneSlider.setLowerValue(0);
   tetraVisWidget.tetraYCutplaneSlider.setUpperValue(100);
-  tetraVisWidget.tetraZCutplaneSlider.setLowerValue(1);
+  tetraVisWidget.tetraZCutplaneSlider.setLowerValue(0);
   tetraVisWidget.tetraZCutplaneSlider.setUpperValue(100);
-  viewer->tMesh->SetXRange(1, 100);
-  viewer->tMesh->SetYRange(1, 100);
-  viewer->tMesh->SetZRange(1, 100);
+  viewer->tMesh->SetXRange(0, 100);
+  viewer->tMesh->SetYRange(0, 100);
+  viewer->tMesh->SetZRange(0, 100);
 }
 
 void QTetraMesherMainWindow::generateSofaTetraStuffingSlot() {
@@ -605,6 +613,7 @@ void QTetraMesherMainWindow::tetraJobFinished() {
     mb.exec();
     return;
   }
+  if (widget) widget->applyUsedParameters(r->usedParameters);
   const size_t numTetras = r->topology->GetTetrahedra().size();
   const size_t numVertices = r->topology->GetVertices().size();
   viewer->tMesh->SetTetraTopology(std::move(r->topology));
@@ -703,6 +712,8 @@ void QTetraMesherMainWindow::loadSettings() {
   actionShowGrid.setChecked(settings.value("showGrid", true).toBool());
   actionShowBBox.setChecked(settings.value("showBBox", false).toBool());
   settings.endGroup();
+  repairOnLoadCheckBox.setChecked(
+      settings.value("loading/repairOnLoad", true).toBool());
   viewer->update();
 }
 
@@ -724,4 +735,5 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("showGrid", actionShowGrid.isChecked());
   settings.setValue("showBBox", actionShowBBox.isChecked());
   settings.endGroup();
+  settings.setValue("loading/repairOnLoad", repairOnLoadCheckBox.isChecked());
 }

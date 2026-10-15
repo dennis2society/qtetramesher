@@ -28,8 +28,8 @@ public:
    * @param verts        Input surface vertices
    * @param meshSizeMin  Minimum mesh element size (<=0 triggers auto-compute)
    * @param meshSizeMax  Maximum mesh element size (<=0 triggers auto-compute)
-   * @param algorithm3D  3D meshing algorithm: 5=Delaunay, 6=Frontal-Delaunay,
-   *                     10=HXT
+   * @param algorithm3D  3D meshing algorithm: 1=Delaunay, 10=HXT
+   *                     (4=Frontal needs a GMSH build with Netgen)
    */
   void GenerateFromSurface(const std::vector<Triangle> &tris,
                            const std::vector<Vec3f> &verts,
@@ -43,7 +43,14 @@ public:
   /** Returns the generated tetrahedra indices */
   std::vector<Tetrahedron> &GetTetras();
 
+  /** Mesh sizes used by the last GenerateFromSurface() call (after the
+   *  automatic computation of values <= 0) */
+  double GetMeshSizeMin() const { return usedMeshSizeMin; }
+  double GetMeshSizeMax() const { return usedMeshSizeMax; }
+
 private:
   std::vector<Vec3f> tetraPoints;
   std::vector<Tetrahedron> tetraIndices;
+  double usedMeshSizeMin = 0.0;
+  double usedMeshSizeMax = 0.0;
 };

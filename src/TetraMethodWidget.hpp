@@ -29,6 +29,11 @@ class TetraMethodWidget : public BaseOptionsWidget {
 
   virtual QPushButton &generateButton() = 0;
 
+  /// Called after a successful generation with the values the method chose
+  /// automatically (keys as in parameters()). Fields that are still set to
+  /// "auto" can show them, so they are a starting point for adjustments.
+  virtual void applyUsedParameters(const QVariantMap &) {}
+
   /// switches the generate button between "Generate" and "Cancel"
   void setRunning(bool running) {
     generateButton().setText(running ? "Cancel Generation"

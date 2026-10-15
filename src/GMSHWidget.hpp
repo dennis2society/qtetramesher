@@ -24,6 +24,7 @@ class GMSHWidget : public TetraMethodWidget {
   QString methodId() const override { return "gmsh"; }
   QString methodName() const override { return "GMSH"; }
   QVariantMap parameters() const override;
+  void applyUsedParameters(const QVariantMap &used) override;
   QString errorHint() const override {
     return "ERROR while generating GMSH tetra mesh.<br />Check the surface mesh and parameters.";
   }

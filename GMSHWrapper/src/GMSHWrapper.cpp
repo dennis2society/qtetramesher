@@ -33,6 +33,12 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   if (verts.empty() || tris.empty()) {
     throw std::runtime_error("GMSH: the surface mesh is empty.");
   }
+  // Frontal (4) needs a GMSH build with Netgen, so only these are supported
+  if (algorithm3D != 1 && algorithm3D != 10) {
+    throw std::runtime_error("GMSH: unsupported 3D algorithm " +
+                             std::to_string(algorithm3D) +
+                             " (use 1 = Delaunay or 10 = HXT).");
+  }
   for (const Triangle &t : tris) {
     for (int k = 0; k < 3; ++k) {
       if (t.index[k] >= verts.size()) {
@@ -65,6 +71,8 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
               << " max=" << meshSizeMax << " (diag=" << diag << ")"
               << std::endl;
   }
+  usedMeshSizeMin = meshSizeMin;
+  usedMeshSizeMax = meshSizeMax;
 
   // Whether a patch can be parametrized depends on where GMSH cuts the surface,
   // so surfaces with holes (genus > 0) may need a different angle to succeed.

@@ -41,6 +41,12 @@ public:
    */
   std::vector<Tetrahedron> &GetTetras();
 
+  /**
+   *  Returns the cell size used by the last GenerateFromSurface() call,
+   *  i.e. the automatically computed one if 0 was given.
+   */
+  float GetCellSize() const { return m_cellSize; }
+
   /// This function will save a Tetgen mesh (consisting of a .node and a .ele
   /// file)
   bool saveAsTetgen(const std::string path, const std::string baseName,

@@ -12,6 +12,7 @@
 #include <GMSHWidget.hpp>
 #include <OctreeVisWidget.hpp>
 #include <QAction>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFrame>
 #include <QFutureWatcher>
@@ -100,6 +101,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionAbout;
   QAction actionHelp;
   // Visualization options and task widgets
+  QCheckBox repairOnLoadCheckBox;
   SurfaceVisWidget surfaceVisWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;

@@ -24,6 +24,7 @@ class TetgenWidget : public TetraMethodWidget {
   QString methodId() const override { return "tetgen"; }
   QString methodName() const override { return "Tetgen"; }
   QVariantMap parameters() const override;
+  void applyUsedParameters(const QVariantMap &used) override;
   QString errorHint() const override {
     return "ERROR while generating Tetgen tetra mesh...<br />Check the surface mesh and parameters.";
   }

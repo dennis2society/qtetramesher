@@ -47,6 +47,8 @@ class TetraJob : public QObject {
     bool canceled = false;
     QString error;
     qint64 elapsedMs = 0;
+    /// values the method chose for parameters given as 0 (= auto)
+    QVariantMap usedParameters;
     std::unique_ptr<TetraTools::TetrahedronTopology> topology;
   };
 

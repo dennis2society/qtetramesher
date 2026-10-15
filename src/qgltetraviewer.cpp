@@ -32,6 +32,12 @@ QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QtmGLViewer(parent) {
   taskAnimationTimer.setInterval(100);
   connect(&taskAnimationTimer, &QTimer::timeout, this,
           [this]() { update(); });
+  noticeTimer.setSingleShot(true);
+  connect(&noticeTimer, &QTimer::timeout, this, [this]() {
+    noticeText.clear();
+    noticeDetail.clear();
+    update();
+  });
 }
 
 QGLTetraViewer::~QGLTetraViewer() {
@@ -141,7 +147,61 @@ void QGLTetraViewer::endTask(const QString &id) {
   update();
 }
 
+void QGLTetraViewer::showNotice(const QString &text, const QString &detail,
+                                int durationMs) {
+  noticeText = text;
+  noticeDetail = detail;
+  noticeTimer.start(durationMs);
+  update();
+}
+
 void QGLTetraViewer::drawOverlay(QPainter &painter) {
+  drawTaskOverlay(painter);
+  drawNoticeOverlay(painter);
+}
+
+void QGLTetraViewer::drawNoticeOverlay(QPainter &painter) {
+  if (noticeText.isEmpty()) return;
+  painter.save();
+  painter.setRenderHint(QPainter::Antialiasing);
+  QFont textFont = painter.font();
+  textFont.setBold(true);
+  QFont detailFont = painter.font();
+  detailFont.setPointSizeF(detailFont.pointSizeF() * 0.85);
+  const QFontMetrics textMetrics(textFont);
+  const QFontMetrics detailMetrics(detailFont);
+  const int padding = 8;
+  // a long detail line is cut to the viewer width
+  const int maxWidth = std::max(100, this->width() - 40 - 2 * padding);
+  const QString detail =
+      detailMetrics.elidedText(noticeDetail, Qt::ElideRight, maxWidth);
+  int width = textMetrics.horizontalAdvance(noticeText);
+  if (!detail.isEmpty())
+    width = std::max(width, detailMetrics.horizontalAdvance(detail));
+  width = std::min(width, maxWidth) + 2 * padding;
+  const int height = textMetrics.height() +
+                     (detail.isEmpty() ? 0 : detailMetrics.height()) +
+                     2 * padding;
+  // top center, the task indicator uses the upper right corner
+  const QRect box((this->width() - width) / 2, 10, width, height);
+  painter.setPen(QPen(QColor(90, 180, 90), 1.5));
+  painter.setBrush(QColor(0, 0, 0, 170));
+  painter.drawRoundedRect(box, 6, 6);
+  int y = box.top() + padding;
+  painter.setPen(QColor(235, 235, 235));
+  painter.setFont(textFont);
+  painter.drawText(box.left() + padding, y + textMetrics.ascent(),
+                   noticeText);
+  y += textMetrics.height();
+  if (!detail.isEmpty()) {
+    painter.setPen(QColor(170, 170, 170));
+    painter.setFont(detailFont);
+    painter.drawText(box.left() + padding, y + detailMetrics.ascent(), detail);
+  }
+  painter.restore();
+}
+
+void QGLTetraViewer::drawTaskOverlay(QPainter &painter) {
   if (runningTasks.empty()) return;
   painter.save();
   painter.setRenderHint(QPainter::Antialiasing);
@@ -276,8 +336,8 @@ QString QGLTetraViewer::helpHtml() const {
       "Parameters: Quality Bound, Cell Size (0 = automatic) and Use PLC.</td>"
       "</tr>"
       "<tr><td><b>GMSH Tetrahedralize</b></td><td>Meshing with GMSH. Parameters: "
-      "Mesh Size Min and Max (0 = automatic) and the 2D/3D algorithm (Delaunay, "
-      "Frontal or HXT).</td></tr>"
+      "Mesh Size Min and Max (0 = automatic) and the 3D algorithm (Delaunay or "
+      "HXT).</td></tr>"
       "</table>"
       "<p>Tetgen and GMSH need a closed surface without self-intersections. Use "
       "<i>Check Surface Mesh</i> in the surface options to find open edges, "
@@ -454,7 +514,7 @@ bool QGLTetraViewer::loadSurface() {
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   if (s.isEmpty()) return false;
   ShowStatusMessage("Loading Surface...");
-  if (!tMesh->LoadSurface(s.toStdString())) {
+  if (!tMesh->LoadSurface(s.toStdString(), repairOnLoad)) {
     ShowStatusMessage("Loading the surface mesh failed...", 10000);
     QMessageBox::warning(this, tr("Load Surface Mesh"),
                          tr("Could not load the surface mesh from\n%1\n\n"
@@ -469,6 +529,9 @@ bool QGLTetraViewer::loadSurface() {
   updateSceneFromMesh();
   this->showEntireScene();
   this->ShowStatusMessage("Surface mesh successfully loaded...", 10000);
+  if (tMesh->WasSurfaceRepaired())
+    showNotice("Surface mesh was repaired on load",
+               QString::fromStdString(tMesh->GetSurfaceRepairSummary()));
   emit onLoad();
   return true;
 }

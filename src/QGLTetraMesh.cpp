@@ -119,11 +119,11 @@ QGLTetraMesh::QGLTetraMesh()
       drawTetraWireframe(true),
       surfaceMode(0),
       octreeMode(0),
-      xLowerThreshold(0.01f),
+      xLowerThreshold(0.0f),
       xUpperThreshold(1.0f),
-      yLowerThreshold(0.01f),
+      yLowerThreshold(0.0f),
       yUpperThreshold(1.0f),
-      zLowerThreshold(0.01f),
+      zLowerThreshold(0.0f),
       zUpperThreshold(1.0f),
       surfaceDirty(true),
       tetraDirty(true),
@@ -463,11 +463,11 @@ bool QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
   return true;
 }
 
-bool QGLTetraMesh::LoadSurface(const std::string &fileName_) {
+bool QGLTetraMesh::LoadSurface(const std::string &fileName_, bool repair_) {
   Timer t;
   t.start();
   TetraTools::TriMeshLoader gloader;
-  if (!gloader.loadFile(fileName_)) {
+  if (!gloader.loadFile(fileName_, repair_)) {
     std::cerr << "Error loading file '" << fileName_ << "'." << std::endl;
     return false;
   }
@@ -475,8 +475,18 @@ bool QGLTetraMesh::LoadSurface(const std::string &fileName_) {
       new TetraTools::TriangleTopology());
   newSurf->Init(gloader.GetVertices(), gloader.GetTriangles(), true);
   newSurf->GenerateNormals();
+  const MeshRepairReport &repair = gloader.GetRepairReport();
+  std::string summary = repair.Summary();
+  if (repair.numBoundaryEdges || repair.numNonManifoldEdges) {
+    if (!summary.empty()) summary += "; ";
+    summary += "still " + std::to_string(repair.numBoundaryEdges) +
+               " open and " + std::to_string(repair.numNonManifoldEdges) +
+               " non-manifold edges";
+  }
   isReady = false;
   ClearAll();
+  surfaceRepairSummary = summary;
+  surfaceRepaired = repair.Changed();
   surf = newSurf.release();
   isReady = true;
   t.stop();

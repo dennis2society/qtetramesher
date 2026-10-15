@@ -59,3 +59,8 @@ QVariantMap TetgenWidget::parameters() const {
   p["usePLC"] = usePLCCheckBox.isChecked();
   return p;
 }
+
+void TetgenWidget::applyUsedParameters(const QVariantMap &used) {
+  if (cellSizeSpinBox.value() <= 0.0 && used.contains("cellSize"))
+    cellSizeSpinBox.setValue(used.value("cellSize").toDouble());
+}

@@ -35,9 +35,9 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   //  X cutplanes
   tetraXCutplaneLabel.setText("Cutplanes X");
   tetraXCutplaneLabel.setMaximumHeight(20);
-  tetraXCutplaneSlider.SetLowerValue(1);
+  tetraXCutplaneSlider.SetLowerValue(0);
   tetraXCutplaneSlider.SetUpperValue(100);
-  tetraXCutplaneSlider.SetRange(1, 100);
+  tetraXCutplaneSlider.SetRange(0, 100);
   tetraXCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraXCutplaneSlider.setMinimumSize(280, 20);
@@ -46,9 +46,9 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   // Y cutplanes
   tetraYCutplaneLabel.setText("Cutplanes Y");
   tetraYCutplaneLabel.setMaximumHeight(20);
-  tetraYCutplaneSlider.SetLowerValue(1);
+  tetraYCutplaneSlider.SetLowerValue(0);
   tetraYCutplaneSlider.SetUpperValue(100);
-  tetraYCutplaneSlider.SetRange(1, 100);
+  tetraYCutplaneSlider.SetRange(0, 100);
   tetraYCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraYCutplaneSlider.setMinimumSize(280, 20);
@@ -57,9 +57,9 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   // Z cutplanes
   tetraZCutplaneLabel.setText("Cutplanes Z");
   tetraZCutplaneLabel.setMaximumHeight(20);
-  tetraZCutplaneSlider.SetLowerValue(1);
+  tetraZCutplaneSlider.SetLowerValue(0);
   tetraZCutplaneSlider.SetUpperValue(100);
-  tetraZCutplaneSlider.SetRange(1, 100);
+  tetraZCutplaneSlider.SetRange(0, 100);
   tetraZCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraZCutplaneSlider.setMinimumSize(280, 20);
