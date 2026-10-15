@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 project(GenericIsosurfaceStuffing VERSION 1.0)
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
   src
@@ -22,6 +20,7 @@ add_library(
   src/TetStuffer.cpp
 )
 
+target_link_libraries(${PROJECT_NAME} TetraMeshTools::Headers)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_compile_options(${PROJECT_NAME} PRIVATE -O3 -Wall -Wextra -Wpedantic)
 

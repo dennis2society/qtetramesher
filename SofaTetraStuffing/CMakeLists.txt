@@ -33,8 +33,6 @@ if(NOT SofaCore)
 endif()
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
   ${SOFA_INSTALL_DIR}/include/Sofa.Config
@@ -63,6 +61,7 @@ link_directories(
 
 target_link_libraries(
   SofaTetraStuffing
+  TetraMeshTools::Headers
   ${SofaCore}
   ${SofaEngineGenerator}
 )

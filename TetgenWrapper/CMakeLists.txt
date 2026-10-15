@@ -4,8 +4,6 @@ project(TetgenWrapper VERSION 0.5)
 add_compile_definitions(TETLIBRARY)
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   src
   PRIVATE
   include
@@ -23,6 +21,7 @@ add_library(
 
 target_link_libraries(
   TetgenWrapper
+  TetraMeshTools::Headers
 )
 
 add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)

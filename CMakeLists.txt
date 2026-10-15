@@ -46,8 +46,6 @@ set(CMAKE_AUTORCC "YES")
 
 include_directories(
   src
-  TetraMeshTools/include
-  TetraMeshTools/include/TetraMeshTools
   SofaTetraStuffing/include
   CGALTetrahedralize/include
   GenericIsosurfaceStuffing/include

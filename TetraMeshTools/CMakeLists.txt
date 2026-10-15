@@ -47,8 +47,18 @@ add_library(
   src/TriMeshWriter.cpp
 )
 
+# Header-only target that only provides the include path. Libraries that use
+# the TetraMeshTools types (Vec3f, Triangle, ...) without calling into the
+# library link this instead of TetraMeshTools.
+add_library(TetraMeshToolsHeaders INTERFACE)
+add_library(TetraMeshTools::Headers ALIAS TetraMeshToolsHeaders)
+target_include_directories(TetraMeshToolsHeaders
+  INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
 target_link_libraries(
   TetraMeshTools
+  TetraMeshTools::Headers
   assimp::assimp
 )
 

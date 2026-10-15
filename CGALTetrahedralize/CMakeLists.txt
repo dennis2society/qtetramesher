@@ -4,8 +4,6 @@ project(CGALTetrahedralize VERSION 1.0)
 find_package(CGAL REQUIRED)
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
 )
@@ -19,6 +17,7 @@ add_library(
 
 target_link_libraries(
   CGALTetrahedralize
+  TetraMeshTools::Headers
   CGAL
 )
 

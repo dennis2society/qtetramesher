@@ -18,6 +18,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QSettings>
 #include <QPainter>
 #include <algorithm>
 #include <QTextBrowser>
@@ -506,13 +507,33 @@ void QGLTetraViewer::generateOctree(int d) {
   tMesh->generateOctree((unsigned int)d);
 }
 
+namespace {
+
+const char *kLastLoadDirKey = "paths/lastLoadDir";
+
+/// folder of the last file chosen in one of the load dialogs, empty (= Qt's
+/// default) if there is none or it does not exist anymore
+QString lastLoadDir() {
+  const QString dir = QSettings().value(kLastLoadDirKey).toString();
+  return !dir.isEmpty() && QDir(dir).exists() ? dir : QString();
+}
+
+/// stores the folder of fileName_ in the persistent settings
+void rememberLoadDir(const QString &fileName_) {
+  if (fileName_.isEmpty()) return;
+  QSettings().setValue(kLastLoadDirKey, QFileInfo(fileName_).absolutePath());
+}
+
+}  // namespace
+
 bool QGLTetraViewer::loadSurface() {
   const QString s = QFileDialog::getOpenFileName(
-      this, "Select mesh File", "",
+      this, "Select mesh File", lastLoadDir(),
       tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
          "*.3ds *.ply *.ac)"));
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   if (s.isEmpty()) return false;
+  rememberLoadDir(s);
   ShowStatusMessage("Loading Surface...");
   if (!tMesh->LoadSurface(s.toStdString(), repairOnLoad)) {
     ShowStatusMessage("Loading the surface mesh failed...", 10000);
@@ -537,10 +558,11 @@ bool QGLTetraViewer::loadSurface() {
 }
 
 bool QGLTetraViewer::loadGMSH() {
-  const QString s = QFileDialog::getOpenFileName(this, "Select GMSH File", "",
-                                                 "GMSH mesh file (*.msh)");
+  const QString s = QFileDialog::getOpenFileName(
+      this, "Select GMSH File", lastLoadDir(), "GMSH mesh file (*.msh)");
   std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
   if (s.isEmpty()) return false;
+  rememberLoadDir(s);
   ShowStatusMessage("Loading GMSH...");
   if (!tMesh->LoadGMSH(s.toStdString())) {
     ShowStatusMessage("Loading the GMSH mesh failed...", 10000);
@@ -560,9 +582,11 @@ bool QGLTetraViewer::loadGMSH() {
 }
 
 bool QGLTetraViewer::loadTetgen() {
-  QString s = QFileDialog::getOpenFileName(
-      this, "Select Tetgen .node file", "", "Tetgen node file (*.node)");
+  QString s = QFileDialog::getOpenFileName(this, "Select Tetgen .node file",
+                                           lastLoadDir(),
+                                           "Tetgen node file (*.node)");
   if (s.isEmpty()) return false;
+  rememberLoadDir(s);
   // Strip the .node extension - TetgenWrapper::loadAsTetgen expects the base name
   QFileInfo fi(s);
   QString basePath = fi.dir().filePath(fi.completeBaseName());

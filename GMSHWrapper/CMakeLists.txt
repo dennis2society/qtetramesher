@@ -5,8 +5,6 @@ project(GMSHWrapper VERSION 0.1)
 set(GMSH_INSTALL_PATH "/opt/gmsh_git/build/install")
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   ${GMSH_INSTALL_PATH}/include
   PRIVATE
   include
@@ -31,6 +29,7 @@ add_library(
 target_link_libraries(
   GMSHWrapper
   PRIVATE
+  TetraMeshTools::Headers
   ${GMSH_LIBRARY}
 )
 
