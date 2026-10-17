@@ -11,6 +11,7 @@
 #include <QOpenGLShaderProgram>
 #include <QtmGLViewer/Camera.hpp>
 #include <QtmGLViewer/MeshData.hpp>
+#include <algorithm>
 
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
@@ -36,6 +37,8 @@ layout(location = 0) in vec3 a_v0;
 layout(location = 1) in vec3 a_v1;
 layout(location = 2) in vec3 a_v2;
 layout(location = 3) in vec3 a_v3;
+// -1 for boundary tetrahedra, else 0 (outermost) .. 1 (deepest)
+layout(location = 4) in float a_depth;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
@@ -44,6 +47,7 @@ uniform vec3 u_cutMin;
 uniform vec3 u_cutMax;
 uniform float u_shrink;
 out vec3 v_normal;
+flat out float v_depth;
 // faces as in the original immediate mode code, and the vertex opposite to
 // each face
 const int faces[12] = int[12](0, 3, 2, 3, 1, 2, 1, 0, 2, 0, 1, 3);
@@ -51,6 +55,7 @@ const int opposite[4] = int[4](1, 0, 3, 2);
 void main() {
   vec3 v[4] = vec3[4](a_v0, a_v1, a_v2, a_v3);
   vec3 center = 0.25 * (v[0] + v[1] + v[2] + v[3]);
+  v_depth = a_depth;
   if (any(lessThan(center, u_cutMin)) ||
       any(greaterThan(center, u_cutMax))) {
     v_normal = vec3(0.0, 0.0, 1.0);
@@ -78,17 +83,95 @@ void main() {
 
 const char *kTetraFragmentShader = R"(
 in vec3 v_normal;
+flat in float v_depth;
 uniform vec3 u_color;
+uniform vec3 u_outerColor;
+uniform vec3 u_innerColor;
+uniform bool u_depthColoring;
 out vec4 fragColor;
 void main() {
   vec3 n = gl_FrontFacing ? v_normal : -v_normal;
-  fragColor = vec4(qtmHeadlight(n, u_color, 0.6, 50.0), 1.0);
+  vec3 color = (u_depthColoring && v_depth >= 0.0)
+                   ? mix(u_outerColor, u_innerColor, v_depth)
+                   : u_color;
+  fragColor = vec4(qtmHeadlight(n, color, 0.6, 50.0), 1.0);
 }
 )";
 
 QColor toQColor(const Vec3f &c) { return QColor::fromRgbF(c.x, c.y, c.z); }
 
 QVector3D toQVector(const Vec3f &v) { return QVector3D(v.x, v.y, v.z); }
+
+/// Per tetrahedron: -1 if it has a face on the mesh boundary, otherwise its
+/// face-neighbor distance from the boundary tetrahedra, normalized so the
+/// first interior layer is 0 and the deepest layer is 1.
+std::vector<float> ComputeTetraDepths(const std::vector<Tetrahedron> &tetras) {
+  struct Face {
+    unsigned int v[3];
+    unsigned int tetra;
+    bool operator<(const Face &o) const {
+      return std::lexicographical_compare(v, v + 3, o.v, o.v + 3);
+    }
+    bool SameAs(const Face &o) const {
+      return v[0] == o.v[0] && v[1] == o.v[1] && v[2] == o.v[2];
+    }
+  };
+  const size_t n = tetras.size();
+  std::vector<Face> faces;
+  faces.reserve(n * 4);
+  for (size_t i = 0; i < n; ++i) {
+    for (int k = 0; k < 4; ++k) {
+      Face f;
+      int j = 0;
+      for (int c = 0; c < 4; ++c)
+        if (c != k) f.v[j++] = tetras[i].index[c];
+      std::sort(f.v, f.v + 3);
+      f.tetra = unsigned(i);
+      faces.push_back(f);
+    }
+  }
+  std::sort(faces.begin(), faces.end());
+
+  std::vector<std::vector<unsigned int>> neighbors(n);
+  std::vector<int> depth(n, -1);
+  std::vector<unsigned int> queue;
+  for (size_t i = 0; i < faces.size();) {
+    size_t j = i + 1;
+    while (j < faces.size() && faces[j].SameAs(faces[i])) ++j;
+    if (j - i == 1) {
+      if (depth[faces[i].tetra] != 0) {
+        depth[faces[i].tetra] = 0;
+        queue.push_back(faces[i].tetra);
+      }
+    } else {
+      for (size_t a = i; a < j; ++a)
+        for (size_t b = i; b < j; ++b)
+          if (a != b) neighbors[faces[a].tetra].push_back(faces[b].tetra);
+    }
+    i = j;
+  }
+
+  int maxDepth = 0;
+  for (size_t q = 0; q < queue.size(); ++q) {
+    const unsigned int t = queue[q];
+    for (unsigned int nb : neighbors[t]) {
+      if (depth[nb] < 0) {
+        depth[nb] = depth[t] + 1;
+        maxDepth = std::max(maxDepth, depth[nb]);
+        queue.push_back(nb);
+      }
+    }
+  }
+
+  std::vector<float> result(n);
+  for (size_t i = 0; i < n; ++i) {
+    if (depth[i] <= 0)
+      result[i] = -1.0f;
+    else
+      result[i] = maxDepth > 1 ? float(depth[i] - 1) / float(maxDepth - 1) : 0.0f;
+  }
+  return result;
+}
 
 const float *toFloats(const std::vector<Vec3f> &v) { return &v[0].x; }
 
@@ -135,6 +218,9 @@ QGLTetraMesh::QGLTetraMesh()
   surf = NULL;
   surfaceColorSolid = Vec3f(0.3f, 0.3f, 0.3f);
   tetraColorSolid = Vec3f(0.5f, 0.5f, 0.1f);
+  tetraColorOuter = Vec3f(0.85f, 0.35f, 0.15f);
+  tetraColorInner = Vec3f(0.15f, 0.35f, 0.85f);
+  tetraDepthColoring = true;
   surfaceColorWireframe = Vec3f(0.1f, 0.6f, 0.1f);
   tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.6f);
   oct = NULL;
@@ -255,6 +341,8 @@ void QGLTetraMesh::UpdateTetraBuffers() {
       corners[i] = vertices[tetras[i].index[k]];
     tetraSolidBuffer.setAttribute(k, toFloats(corners), numTetras, 3, 1);
   }
+  const std::vector<float> depths = ComputeTetraDepths(tetras);
+  tetraSolidBuffer.setAttribute(4, depths.data(), numTetras, 1, 1);
   tetraSolidBuffer.setPrimitive(GL_TRIANGLES);
   tetraSolidBuffer.setVertexCount(12);
   tetraSolidBuffer.setInstanceCount(numTetras);
@@ -331,9 +419,10 @@ void QGLTetraMesh::DrawTetraSolid(const qtm::RenderContext &context_) {
   tetraProgram->setUniformValue("u_cutMin", cutMin);
   tetraProgram->setUniformValue("u_cutMax", cutMax);
   tetraProgram->setUniformValue("u_shrink", 0.95f);
-  tetraProgram->setUniformValue(
-      "u_color",
-      QVector3D(tetraColorSolid.x, tetraColorSolid.y, tetraColorSolid.z));
+  tetraProgram->setUniformValue("u_color", toQVector(tetraColorSolid));
+  tetraProgram->setUniformValue("u_outerColor", toQVector(tetraColorOuter));
+  tetraProgram->setUniformValue("u_innerColor", toQVector(tetraColorInner));
+  tetraProgram->setUniformValue("u_depthColoring", GLint(tetraDepthColoring));
   tetraSolidBuffer.draw();
   tetraProgram->release();
 }

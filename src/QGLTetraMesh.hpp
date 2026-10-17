@@ -87,7 +87,10 @@ class QGLTetraMesh {
   int octreeBufferMode;          // octreeMode the buffer was built for
 
   Vec3f surfaceColorSolid;
-  Vec3f tetraColorSolid;
+  Vec3f tetraColorSolid;  // tetrahedra with a face on the mesh boundary
+  Vec3f tetraColorOuter;  // interior gradient: next to the boundary ...
+  Vec3f tetraColorInner;  // ... to the deepest tetrahedra
+  bool tetraDepthColoring;
   Vec3f surfaceColorWireframe;
   Vec3f tetraColorWireframe;
 
@@ -222,6 +225,20 @@ class QGLTetraMesh {
     tetraColorSolid /= 255.0f;
   }
 
+  void SetTetraOuterColor(float r, float g, float b) {
+    tetraColorOuter = Vec3f(r, g, b) / 255.0f;
+  }
+
+  void SetTetraInnerColor(float r, float g, float b) {
+    tetraColorInner = Vec3f(r, g, b) / 255.0f;
+  }
+
+  /// Colors interior tetrahedra by their distance from the boundary. If off,
+  /// all tetrahedra use the tetra color.
+  void SetTetraDepthColoring(bool enabled_) { tetraDepthColoring = enabled_; }
+
+  bool GetTetraDepthColoring() const { return tetraDepthColoring; }
+
   void SetSurfaceSolidColor(float r, float g, float b) {
     surfaceColorSolid.x = r;
     surfaceColorSolid.y = g;
@@ -257,6 +274,10 @@ class QGLTetraMesh {
   }
 
   const QColor GetTetraColor() { return ToQColor(tetraColorSolid); }
+
+  const QColor GetTetraOuterColor() { return ToQColor(tetraColorOuter); }
+
+  const QColor GetTetraInnerColor() { return ToQColor(tetraColorInner); }
 
   const QColor GetTetraWireframeColor() {
     return ToQColor(tetraColorWireframe);

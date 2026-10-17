@@ -55,6 +55,8 @@ class QGLTetraViewer : public QtmGLViewer {
   void selectSurfaceColor();
   void selectSurfaceColorWireframe();
   void selectTetraColor();
+  void selectTetraOuterColor();
+  void selectTetraInnerColor();
   void selectTetraColorWireframe();
   void scale10();
   void scale01();

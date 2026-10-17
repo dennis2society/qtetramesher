@@ -190,6 +190,12 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(tetraVisChangedSlot()));
   connect(&tetraVisWidget.tetraColorButton, SIGNAL(clicked()), this,
           SLOT(tetraColorButtonSlot()));
+  connect(&tetraVisWidget.tetraOuterColorButton, SIGNAL(clicked()), this,
+          SLOT(tetraOuterColorButtonSlot()));
+  connect(&tetraVisWidget.tetraInnerColorButton, SIGNAL(clicked()), this,
+          SLOT(tetraInnerColorButtonSlot()));
+  connect(&tetraVisWidget.depthColoringCheckbox, SIGNAL(toggled(bool)), this,
+          SLOT(depthColoringSlot(bool)));
   connect(&tetraVisWidget.tetraWireframeColorButton, SIGNAL(clicked()), this,
           SLOT(tetraWirefraceColorButtonSlot()));
   connect(&tetraVisWidget.tetraXCutplaneSlider, SIGNAL(lowerValueChanged(int)),
@@ -347,6 +353,21 @@ void QTetraMesherMainWindow::tetraVisChangedSlot() {
 void QTetraMesherMainWindow::tetraColorButtonSlot() {
   viewer->selectTetraColor();
   updateColorButtons();
+}
+
+void QTetraMesherMainWindow::tetraOuterColorButtonSlot() {
+  viewer->selectTetraOuterColor();
+  updateColorButtons();
+}
+
+void QTetraMesherMainWindow::tetraInnerColorButtonSlot() {
+  viewer->selectTetraInnerColor();
+  updateColorButtons();
+}
+
+void QTetraMesherMainWindow::depthColoringSlot(bool enabled_) {
+  viewer->tMesh->SetTetraDepthColoring(enabled_);
+  viewer->update();
 }
 
 void QTetraMesherMainWindow::tetraWirefraceColorButtonSlot() {
@@ -677,6 +698,10 @@ void QTetraMesherMainWindow::updateColorButtons() {
       style(viewer->tMesh->GetSurfaceWireframeColor()));
   tetraVisWidget.tetraColorButton.setStyleSheet(
       style(viewer->tMesh->GetTetraColor()));
+  tetraVisWidget.tetraOuterColorButton.setStyleSheet(
+      style(viewer->tMesh->GetTetraOuterColor()));
+  tetraVisWidget.tetraInnerColorButton.setStyleSheet(
+      style(viewer->tMesh->GetTetraInnerColor()));
   tetraVisWidget.tetraWireframeColorButton.setStyleSheet(
       style(viewer->tMesh->GetTetraWireframeColor()));
 }
@@ -695,6 +720,10 @@ void QTetraMesherMainWindow::loadSettings() {
   mesh->SetSurfaceWireframeColor(c.red(), c.green(), c.blue());
   c = color("tetraColor", mesh->GetTetraColor());
   mesh->SetTetraSolidColor(c.red(), c.green(), c.blue());
+  c = color("tetraOuterColor", mesh->GetTetraOuterColor());
+  mesh->SetTetraOuterColor(c.red(), c.green(), c.blue());
+  c = color("tetraInnerColor", mesh->GetTetraInnerColor());
+  mesh->SetTetraInnerColor(c.red(), c.green(), c.blue());
   c = color("tetraWireframeColor", mesh->GetTetraWireframeColor());
   mesh->SetTetraWireframeColor(c.red(), c.green(), c.blue());
   updateColorButtons();
@@ -704,6 +733,8 @@ void QTetraMesherMainWindow::loadSettings() {
       settings.value("tetraWireframe", true).toBool());
   tetraVisWidget.drawSolidCheckbox.setChecked(
       settings.value("tetraSolid", true).toBool());
+  tetraVisWidget.depthColoringCheckbox.setChecked(
+      settings.value("tetraDepthColoring", true).toBool());
   const int surfaceMode = settings.value("surfaceMode", 0).toInt();
   if (surfaceMode >= 0 &&
       surfaceMode < surfaceVisWidget.surfaceVisComboBox.count())
@@ -724,6 +755,12 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("surfaceWireframeColor",
                     viewer->tMesh->GetSurfaceWireframeColor().name());
   settings.setValue("tetraColor", viewer->tMesh->GetTetraColor().name());
+  settings.setValue("tetraOuterColor",
+                    viewer->tMesh->GetTetraOuterColor().name());
+  settings.setValue("tetraInnerColor",
+                    viewer->tMesh->GetTetraInnerColor().name());
+  settings.setValue("tetraDepthColoring",
+                    tetraVisWidget.depthColoringCheckbox.isChecked());
   settings.setValue("tetraWireframeColor",
                     viewer->tMesh->GetTetraWireframeColor().name());
   settings.setValue("tetraWireframe",

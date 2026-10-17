@@ -56,6 +56,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   void checkSurfaceSlot();
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
+  void tetraOuterColorButtonSlot();
+  void tetraInnerColorButtonSlot();
+  void depthColoringSlot(bool enabled_);
   void tetraWirefraceColorButtonSlot();
   void cutplaneXSliderSlot();
   void cutplaneYSliderSlot();

@@ -29,6 +29,10 @@ class TetraVisWidget : public BaseOptionsWidget {
   QCheckBox drawWireframeCheckbox;
   QCheckBox drawSolidCheckbox;
   QPushButton tetraColorButton;
+  QCheckBox depthColoringCheckbox;
+  QHBoxLayout depthColorLayout;
+  QPushButton tetraOuterColorButton;
+  QPushButton tetraInnerColorButton;
   QPushButton tetraWireframeColorButton;
   QLabel tetraXCutplaneLabel;
   RangeSlider tetraXCutplaneSlider;

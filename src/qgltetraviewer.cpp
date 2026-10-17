@@ -348,7 +348,9 @@ QString QGLTetraViewer::helpHtml() const {
       "<li><b>Surface</b>: solid, wireframe or hidden. Surface and wireframe "
       "colors can be changed with the color buttons.</li>"
       "<li><b>TetraMesh</b>: draw the wireframe and/or the solid tetrahedra, "
-      "with their own colors.</li>"
+      "with their own colors. Tetrahedra on the surface share one color; with "
+      "<i>Color Interior by Depth</i> the inner ones fade from the outer to "
+      "the inner color the deeper they lie.</li>"
       "<li><b>Cutplanes X, Y, Z</b>: drag the handles to show only the "
       "tetrahedra whose centroid lies between the two planes. This is the way "
       "to look inside a mesh.</li>"
@@ -731,6 +733,26 @@ void QGLTetraViewer::selectTetraColor() {
                              QColorDialog::DontUseNativeDialog);
   if (c.isValid()) {
     tMesh->SetTetraSolidColor(c.red(), c.green(), c.blue());
+    update();
+  }
+}
+
+void QGLTetraViewer::selectTetraOuterColor() {
+  QColor c = QColorDialog::getColor(tMesh->GetTetraOuterColor(), this,
+                                    "Outer Tetra Color",
+                                    QColorDialog::DontUseNativeDialog);
+  if (c.isValid()) {
+    tMesh->SetTetraOuterColor(c.red(), c.green(), c.blue());
+    update();
+  }
+}
+
+void QGLTetraViewer::selectTetraInnerColor() {
+  QColor c = QColorDialog::getColor(tMesh->GetTetraInnerColor(), this,
+                                    "Inner Tetra Color",
+                                    QColorDialog::DontUseNativeDialog);
+  if (c.isValid()) {
+    tMesh->SetTetraInnerColor(c.red(), c.green(), c.blue());
     update();
   }
 }

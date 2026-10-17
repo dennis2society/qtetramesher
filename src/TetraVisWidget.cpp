@@ -28,8 +28,22 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   drawSolidCheckbox.setText("Draw Solid");
   drawSolidCheckbox.setChecked(true);
   drawSolidCheckbox.setMaximumHeight(20);
-  tetraColorButton.setText("Tetrahedra Color");
+  tetraColorButton.setText("Surface Tetrahedra Color");
   tetraColorButton.setMaximumHeight(20);
+  depthColoringCheckbox.setText("Color Interior by Depth");
+  depthColoringCheckbox.setToolTip(
+      "Color the inner tetrahedra with a gradient from the outer to the inner "
+      "color, depending on their distance from the surface tetrahedra.");
+  depthColoringCheckbox.setChecked(true);
+  depthColoringCheckbox.setMaximumHeight(20);
+  tetraOuterColorButton.setText("Outer Color");
+  tetraOuterColorButton.setMaximumHeight(20);
+  tetraInnerColorButton.setText("Inner Color");
+  tetraInnerColorButton.setMaximumHeight(20);
+  connect(&depthColoringCheckbox, &QCheckBox::toggled, &tetraOuterColorButton,
+          &QWidget::setEnabled);
+  connect(&depthColoringCheckbox, &QCheckBox::toggled, &tetraInnerColorButton,
+          &QWidget::setEnabled);
   tetraWireframeColorButton.setText("Wireframe Color");
   tetraWireframeColorButton.setMaximumHeight(20);
   //  X cutplanes
@@ -72,6 +86,10 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   drawOptionsLayout.addWidget(&drawSolidCheckbox);
   layout.addLayout(&drawOptionsLayout);
   layout.addWidget(&tetraColorButton);
+  layout.addWidget(&depthColoringCheckbox);
+  depthColorLayout.addWidget(&tetraOuterColorButton);
+  depthColorLayout.addWidget(&tetraInnerColorButton);
+  layout.addLayout(&depthColorLayout);
   layout.addWidget(&tetraWireframeColorButton);
   layout.addWidget(&tetraXCutplaneLabel);
   layout.addWidget(&tetraXCutplaneSlider);
