@@ -29,7 +29,8 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
       cgalTetrahedralizeWidget(this),
       genericIsosurfaceStuffingWidget(this),
       tetgenWidget(this),
-      gmshWidget(this) {
+      gmshWidget(this),
+      ftetwildWidget(this) {
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
@@ -117,6 +118,9 @@ void QTetraMesherMainWindow::setupUI() {
   tetraMeshMethodComboBox.addItem("Generic Isosurface Stuffing");
   tetraMeshMethodComboBox.addItem("Tetgen Tetrahedralize");
   tetraMeshMethodComboBox.addItem("GMSH Tetrahedralize");
+#ifdef QTM_HAVE_FTETWILD
+  tetraMeshMethodComboBox.addItem("fTetWild Tetrahedralize");
+#endif
   repairOnLoadCheckBox.setText("Repair surface mesh on load");
   repairOnLoadCheckBox.setToolTip(
       "Merge duplicate vertices, remove degenerate and duplicate triangles, "
@@ -142,10 +146,12 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&genericIsosurfaceStuffingWidget);
   optionsLayout.addWidget(&tetgenWidget);
   optionsLayout.addWidget(&gmshWidget);
+  optionsLayout.addWidget(&ftetwildWidget);
   cgalTetrahedralizeWidget.hide();
   genericIsosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
   gmshWidget.hide();
+  ftetwildWidget.hide();
   optionsLayout.addStretch();
   surfaceVisWidget.setMinimumSize(230, 190);
 
@@ -220,6 +226,8 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(generateTetgenSlot()));
   connect(&gmshWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
           SLOT(generateGMSHSlot()));
+  connect(&ftetwildWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
+          SLOT(generateFTetWildSlot()));
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
@@ -410,6 +418,7 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   genericIsosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
   gmshWidget.hide();
+  ftetwildWidget.hide();
   // show only selected
   switch (newSelectedMethod) {
     case 0:
@@ -426,6 +435,9 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
       break;
     case 4:
       gmshWidget.show();
+      break;
+    case 5:
+      ftetwildWidget.show();
       break;
     default:
       break;
@@ -499,6 +511,10 @@ void QTetraMesherMainWindow::generateTetgenSlot() {
 
 void QTetraMesherMainWindow::generateGMSHSlot() {
   startOrCancelTetraJob(gmshWidget);
+}
+
+void QTetraMesherMainWindow::generateFTetWildSlot() {
+  startOrCancelTetraJob(ftetwildWidget);
 }
 
 void QTetraMesherMainWindow::generateOctreeSlot() {
@@ -579,7 +595,8 @@ void QTetraMesherMainWindow::closeEvent(QCloseEvent *event) {
 
 std::vector<TetraMethodWidget *> QTetraMesherMainWindow::tetraMethodWidgets() {
   return {&sofaTetraStuffingWidget, &cgalTetrahedralizeWidget,
-          &genericIsosurfaceStuffingWidget, &tetgenWidget, &gmshWidget};
+          &genericIsosurfaceStuffingWidget, &tetgenWidget, &gmshWidget,
+          &ftetwildWidget};
 }
 
 void QTetraMesherMainWindow::startOrCancelTetraJob(TetraMethodWidget &widget) {

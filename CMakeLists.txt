@@ -13,10 +13,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # in the code.
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
-# Set this line to where you have installed your Sofa build:
-#set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
-# example line for how it should look on Windows
-set(SOFA_INSTALL_DIR "D:/devel/sofa_git/build/install" CACHE PATH "")
+if(WIN32)
+  set(SOFA_DEFAULT_PATH "D:/devel/sofa_git/build/install")
+else()
+  set(SOFA_DEFAULT_PATH "/opt/sofa_git/build/install")
+endif()
+set(SOFA_INSTALL_DIR "${SOFA_DEFAULT_PATH}" CACHE PATH "Sofa installation directory")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
@@ -51,6 +53,23 @@ add_subdirectory(CGALTetrahedralize)
 add_subdirectory(TetgenWrapper)
 add_subdirectory(GMSHWrapper)
 add_subdirectory(GenericIsosurfaceStuffing)
+
+# Optional fTetWild module (off by default on Windows, where it is untested).
+# If fTetWild or one of its requirements is missing, the module is skipped.
+if(WIN32)
+  set(QTM_WITH_FTETWILD_DEFAULT OFF)
+else()
+  set(QTM_WITH_FTETWILD_DEFAULT ON)
+endif()
+option(QTM_WITH_FTETWILD "Build the optional fTetWild module"
+       ${QTM_WITH_FTETWILD_DEFAULT})
+if(QTM_WITH_FTETWILD)
+  if(CMAKE_VERSION VERSION_LESS 3.20)
+    message(WARNING "fTetWild needs CMake 3.20, building without fTetWild.")
+  else()
+    add_subdirectory(FTetWildWrapper)
+  endif()
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR "YES")
 set(CMAKE_AUTOMOC "YES")
@@ -97,6 +116,8 @@ add_executable(
   src/TetgenWidget.cpp
   src/GMSHWidget.hpp
   src/GMSHWidget.cpp
+  src/FTetWildWidget.hpp
+  src/FTetWildWidget.cpp
   src/GenericIsosurfaceStuffingWidget.hpp
   src/GenericIsosurfaceStuffingWidget.cpp
   src/RangeSlider.hpp
@@ -105,6 +126,7 @@ add_executable(
   src/TetraJob.cpp
   src/TetraMethodWidget.hpp
   resources/qtetramesher.qrc
+  FTetWildWrapper/include/FTetWildWrapper.h
 )
 
 # embeds the application icon into the Windows executable
@@ -134,6 +156,12 @@ target_link_libraries(
 
 # Sofa namespaces require C++17 features
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+
+if(TARGET FTetWildWrapper)
+  message(STATUS "fTetWild module enabled")
+  target_link_libraries(QTetraMesher FTetWildWrapper)
+  target_compile_definitions(QTetraMesher PRIVATE QTM_HAVE_FTETWILD)
+endif()
 
 # attempt to hide the console window on Windows
 if (WIN32)

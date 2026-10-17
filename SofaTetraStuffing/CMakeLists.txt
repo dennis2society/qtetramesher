@@ -3,7 +3,12 @@ project(SofaTetraStuffing VERSION 1.0)
 
 # Set this to where you have installed your Sofa build:
 # (This is only needed if you want to build this lib from here)
-set(SOFA_AUX_PATH "/opt/sofa_git/build/install/" CACHE PATH "")
+if(WIN32)
+  set(SOFA_AUX_DEFAULT_PATH "D:/devel/sofa_git/build/install")
+else()
+  set(SOFA_AUX_DEFAULT_PATH "/opt/sofa_git/build/install")
+endif()
+set(SOFA_AUX_PATH "${SOFA_AUX_DEFAULT_PATH}" CACHE PATH "")
 
 if (NOT DEFINED SOFA_INSTALL_DIR)
   message("Setting  SOFA_INSTALL_DIR...")

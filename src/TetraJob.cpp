@@ -47,6 +47,9 @@
 #include "QGLTetraMesh.hpp"
 #include "SofaTetraStuffing.h"
 #include "TetgenWrapper.h"
+#ifdef QTM_HAVE_FTETWILD
+#include "FTetWildWrapper.h"
+#endif
 
 namespace {
 
@@ -231,6 +234,15 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
     usedParameters["meshSizeMax"] = w.GetMeshSizeMax();
     vertices = std::move(w.GetTetraVertices());
     tetras = std::move(w.GetTetras());
+#ifdef QTM_HAVE_FTETWILD
+  } else if (in.methodId == "ftetwild") {
+    FTetWildWrapper w;
+    w.GenerateFromSurface(tris, verts, real("edgeLengthRel"),
+                          real("epsilonRel"), real("stopEnergy"),
+                          flag("coarsen"));
+    vertices = std::move(w.GetTetraVertices());
+    tetras = std::move(w.GetTetras());
+#endif
   } else {
     throw std::runtime_error("Unknown tetrahedralization method '" +
                              in.methodId.toStdString() + "'.");

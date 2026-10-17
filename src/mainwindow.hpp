@@ -10,6 +10,7 @@
 
 #include <CGALTetrahedralizeWidget.hpp>
 #include <GMSHWidget.hpp>
+#include <FTetWildWidget.hpp>
 #include <OctreeVisWidget.hpp>
 #include <QAction>
 #include <QCheckBox>
@@ -75,6 +76,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateGenericIsosurfaceStuffingSlot();
   void generateTetgenSlot();
   void generateGMSHSlot();
+  void generateFTetWildSlot();
 
  private:
   // QGLViewer variant
@@ -116,6 +118,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   GenericIsosurfaceStuffingWidget genericIsosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
   GMSHWidget gmshWidget;
+  FTetWildWidget ftetwildWidget;
 
   void setupUI();
   void connectSlots();
