@@ -126,7 +126,14 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     // ------------------------------------------------------------------ //
     const double classifyAngle = classifyAngleDeg * M_PI / 180.0;
     
+#if GMSH_API_VERSION_MAJOR >= 5
+    // API 5 added the old/new surface tag maps as required output arguments.
+    std::vector<int> oldSurfaceTags, newSurfaceTags;
+    gmsh::model::mesh::classifySurfaces(classifyAngle, oldSurfaceTags,
+                                        newSurfaceTags, true, false);
+#else
     gmsh::model::mesh::classifySurfaces(classifyAngle, true, false);
+#endif
     gmsh::model::mesh::createGeometry();
 
     // Collect all dim-2 entities produced by classification.
