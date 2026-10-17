@@ -106,6 +106,10 @@ void QTetraMesherMainWindow::setupUI() {
   viewer->setMinimumSize(820, 780);
   viewer->setMaximumSize(3840, 2160);
   viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+  // the layout (owned by the frame) makes the viewer follow the frame size
+  auto *viewerFrameLayout = new QVBoxLayout(&viewerFrame);
+  viewerFrameLayout->setContentsMargins(0, 0, 0, 0);
+  viewerFrameLayout->addWidget(viewer);
   viewerLayout.addWidget(&viewerFrame);
   surfaceOptionsFrame.setSizePolicy(QSizePolicy::Expanding,
                                     QSizePolicy::MinimumExpanding);
@@ -138,7 +142,6 @@ void QTetraMesherMainWindow::setupUI() {
   f2->setFrameShape(QFrame::HLine);
   f2->setFrameShadow(QFrame::Sunken);
   optionsLayout.addWidget(f2);
-  optionsLayout.addWidget(&octreeVisWidget);
   optionsLayout.addWidget(&tetraMeshMethodLabel);
   optionsLayout.addWidget(&tetraMeshMethodComboBox);
   optionsLayout.addWidget(&sofaTetraStuffingWidget);
@@ -147,6 +150,11 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(&tetgenWidget);
   optionsLayout.addWidget(&gmshWidget);
   optionsLayout.addWidget(&ftetwildWidget);
+  QFrame *f3 = new QFrame(this);
+  f3->setFrameShape(QFrame::HLine);
+  f3->setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(f3);
+  optionsLayout.addWidget(&octreeVisWidget);
   cgalTetrahedralizeWidget.hide();
   genericIsosurfaceStuffingWidget.hide();
   tetgenWidget.hide();
@@ -272,10 +280,6 @@ void QTetraMesherMainWindow::setBBoxVisibleSlot() {
 void QTetraMesherMainWindow::surfaceVisChanged() {
   int selectedIndex = surfaceVisWidget.surfaceVisComboBox.currentIndex();
   viewer->ToggleTriangleVis(selectedIndex);
-}
-
-void QTetraMesherMainWindow::resizeEvent(QResizeEvent *event) {
-  viewer->resize(viewerFrame.size());
 }
 
 void QTetraMesherMainWindow::surfaceColorButtonSlot() {
@@ -771,10 +775,15 @@ void QTetraMesherMainWindow::loadSettings() {
   repairOnLoadCheckBox.setChecked(
       settings.value("loading/repairOnLoad", true).toBool());
   viewer->update();
+
+  // restoreGeometry() keeps the window on a connected screen
+  if (!restoreGeometry(settings.value("window/geometry").toByteArray()))
+    resize(1400, 900);
 }
 
 void QTetraMesherMainWindow::saveSettings() {
   QSettings settings;
+  settings.setValue("window/geometry", saveGeometry());
   settings.beginGroup("visualization");
   settings.setValue("surfaceColor", viewer->tMesh->GetSurfaceColor().name());
   settings.setValue("surfaceWireframeColor",

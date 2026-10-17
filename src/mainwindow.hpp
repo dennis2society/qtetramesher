@@ -155,8 +155,6 @@ class QTetraMesherMainWindow : public QMainWindow {
   // override main window close event to close all child dialogs
   void closeEvent(QCloseEvent *event);
 
-  void resizeEvent(QResizeEvent *event);
-
  private slots:
   void tetraJobFinished();
   void octreeFinished();

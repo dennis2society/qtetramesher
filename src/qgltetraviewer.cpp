@@ -409,7 +409,7 @@ QString QGLTetraViewer::helpString() const {
       "<a href=\"https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf\">"
       "paper</a>) in SOFA Framework and in a generic implementation written for "
       "this program (with optional graded tetrahedra)<br />"
-      "Tetgen and GMSH<br /><br />"
+      "Tetgen, GMSH and fTetWild (optional)<br /><br />"
       "<b>Third-party libraries</b><br />"
       "<ul>"
       "<li><a href=\"https://www.qt.io\">Qt 6</a>: user interface, OpenGL "
