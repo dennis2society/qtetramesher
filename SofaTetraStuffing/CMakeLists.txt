@@ -67,7 +67,11 @@ target_link_libraries(
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+if(MSVC)
+  add_compile_options(/openmp)
+else()
+  add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+endif()
 
 add_custom_command(
   TARGET SofaTetraStuffing

@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 project(GMSHWrapper VERSION 0.1)
 
-# Set GMSH installation path
-set(GMSH_INSTALL_PATH "/opt/gmsh_git/build/install")
+if(WIN32)
+  set(GMSH_DEFAULT_PATH "D:/devel/gmsh-4.15.2-Windows64-sdk")
+else()
+  set(GMSH_DEFAULT_PATH "/opt/gmsh_git/build/install")
+endif()
+set(GMSH_INSTALL_PATH "${GMSH_DEFAULT_PATH}" CACHE PATH "GMSH installation or SDK root")
 
 include_directories(
   ${GMSH_INSTALL_PATH}/include

@@ -21,7 +21,11 @@ target_link_libraries(
   CGAL
 )
 
-add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+if(MSVC)
+  add_compile_options(/openmp)
+else()
+  add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+endif()
 
 add_custom_command(
   TARGET CGALTetrahedralize

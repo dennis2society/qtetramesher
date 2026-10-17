@@ -22,7 +22,9 @@ add_library(
 
 target_link_libraries(${PROJECT_NAME} TetraMeshTools::Headers)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-target_compile_options(${PROJECT_NAME} PRIVATE -O3 -Wall -Wextra -Wpedantic)
+if(NOT MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE -O3 -Wall -Wextra -Wpedantic)
+endif()
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)

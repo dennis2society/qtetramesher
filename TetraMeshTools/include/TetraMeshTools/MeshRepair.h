@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-struct MeshRepairReport {
+struct DLL_EXPORT MeshRepairReport {
   std::size_t numMergedVertices = 0;
   std::size_t numInvalidTriangles = 0;     ///< non-finite coordinates
   std::size_t numDegenerateTriangles = 0;  ///< collapsed by vertex merging

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.5)
 
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
+
 # Write compile_commands.json to the build folder (used by the IDE, e.g. the
 # VSCode C/C++ extension or clangd, to find the include paths)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -10,9 +14,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 # Set this line to where you have installed your Sofa build:
-set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
+#set(SOFA_INSTALL_DIR "/opt/sofa_git/build/install" CACHE PATH "")
 # example line for how it should look on Windows
-#set(SOFA_INSTALL_DIR "F:/dev/sofa_git/build/install" CACHE PATH "")
+set(SOFA_INSTALL_DIR "D:/devel/sofa_git/build/install" CACHE PATH "")
 
 list(APPEND CMAKE_PREFIX_PATH ${SOFA_INSTALL_DIR}/lib/cmake)
 
@@ -33,6 +37,11 @@ find_library(SofaComponentEngineGenerator
 
 if(NOT SofaCore)
   message(FATAL_ERROR "SofaCore library not found")
+endif()
+
+# MSVC only defines M_PI when this is set before <cmath>
+if(MSVC)
+  add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
 add_subdirectory(QtmGLViewer)

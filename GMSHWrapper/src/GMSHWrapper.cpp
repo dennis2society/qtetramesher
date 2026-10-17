@@ -126,9 +126,7 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     // ------------------------------------------------------------------ //
     const double classifyAngle = classifyAngleDeg * M_PI / 180.0;
     
-    std::vector<int> oldSurfaceTags, newSurfaceTags;
-    gmsh::model::mesh::classifySurfaces(classifyAngle, oldSurfaceTags,
-                                        newSurfaceTags, true, false);
+    gmsh::model::mesh::classifySurfaces(classifyAngle, true, false);
     gmsh::model::mesh::createGeometry();
 
     // Collect all dim-2 entities produced by classification.
