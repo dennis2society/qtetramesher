@@ -18,8 +18,17 @@ if(NOT EXISTS "${FTETWILD_SOURCE_DIR}/CMakeLists.txt")
 endif()
 
 # fTetWild stops the configuration with an error if GMP is missing
-find_path(GMP_INCLUDE_DIRS NAMES gmp.h PATHS $ENV{GMP_INC})
-find_library(GMP_LIBRARIES NAMES gmp libgmp mpir PATHS $ENV{GMP_LIB})
+# On Windows GMP comes with CGAL (<CGAL>/auxiliary/gmp)
+if(WIN32 AND CGAL_DIR)
+  get_filename_component(FTETWILD_CGAL_ROOT "${CGAL_DIR}/../../.." ABSOLUTE)
+  set(FTETWILD_GMP_HINT "${FTETWILD_CGAL_ROOT}/auxiliary/gmp")
+endif()
+find_path(GMP_INCLUDE_DIRS NAMES gmp.h
+          HINTS "${GMP_INCLUDE_DIR}" "${FTETWILD_GMP_HINT}/include"
+          PATHS $ENV{GMP_INC})
+find_library(GMP_LIBRARIES NAMES gmp libgmp mpir
+             HINTS "${FTETWILD_GMP_HINT}/lib"
+             PATHS $ENV{GMP_LIB})
 if(NOT GMP_INCLUDE_DIRS OR NOT GMP_LIBRARIES)
   message(WARNING "GMP (required by fTetWild) not found, building without "
                   "fTetWild. Set GMP_INCLUDE_DIRS and GMP_LIBRARIES.")
@@ -130,6 +139,8 @@ if(WIN32)
   find_file(GMP_DLL
     NAMES gmp.dll libgmp-10.dll gmp-10.dll mpir.dll
     HINTS "${FTETWILD_GMP_LIB_DIR}" "${FTETWILD_GMP_LIB_DIR}/../bin"
+         "${FTETWILD_GMP_HINT}/bin"
+    NO_DEFAULT_PATH
     DOC "GMP/MPIR DLL copied next to QTetraMesher"
   )
   if(GMP_DLL)

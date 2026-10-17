@@ -156,8 +156,16 @@ void QTetraMesherMainWindow::setupUI() {
   surfaceVisWidget.setMinimumSize(230, 190);
 
   // centralLayout is the layout of centralWidget, mainLayout goes into it
+  // Minimum size policy: scroll instead of squeezing the options widgets
+  optionsContainer.setLayout(&optionsLayout);
+  optionsContainer.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  optionsScrollArea.setWidget(&optionsContainer);
+  optionsScrollArea.setWidgetResizable(true);
+  optionsScrollArea.setFrameShape(QFrame::NoFrame);
+  optionsScrollArea.setSizePolicy(QSizePolicy::Minimum,
+                                  QSizePolicy::Expanding);
   mainLayout.addLayout(&viewerLayout);
-  mainLayout.addLayout(&optionsLayout);
+  mainLayout.addWidget(&optionsScrollArea);
   centralLayout.addLayout(&mainLayout, 0, 0);
   updateColorButtons();
 }

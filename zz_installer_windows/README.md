@@ -17,7 +17,7 @@ Creates a portable folder and a Setup.exe from a finished build. All commands ar
 powershell -ExecutionPolicy Bypass -File zz_installer_windows\collect_portable.ps1 -SmokeTest
 ```
 
-Collects `QTetraMesher.exe`, the project DLLs, Qt DLLs and plugins, SOFA, GMSH, assimp and GMP/MPFR DLLs, the VC runtime, `data/` and the licenses into
+Collects `QTetraMesher.exe`, the project DLLs (including `FTetWildWrapper.dll` if the build was configured with `-DQTM_WITH_FTETWILD=ON`), Qt DLLs and plugins, SOFA, GMSH, assimp, GMP/MPFR and oneTBB (`tbb12.dll`) DLLs, the VC runtime, `data/` and the licenses into
 `QTetraMesher_Win64_VS2022_0.8.5`. The folder runs by double-clicking `QTetraMesher.exe`; copy it anywhere.
 
 Options:

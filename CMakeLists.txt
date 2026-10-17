@@ -43,7 +43,7 @@ endif()
 
 # MSVC only defines M_PI when this is set before <cmath>
 if(MSVC)
-  add_compile_definitions(_USE_MATH_DEFINES)
+  add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
 endif()
 
 add_subdirectory(QtmGLViewer)

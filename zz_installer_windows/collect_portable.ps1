@@ -6,8 +6,8 @@
   Copies QTetraMesher.exe and the project DLLs from the CMake build tree, lets
   windeployqt add the Qt DLLs and plugins, then walks the PE imports of every
   collected file (dumpbin) and copies the missing DLLs from the dependency
-  install folders (SOFA, GMSH, assimp, GMP/MPFR, VC runtime). Dependency
-  locations are read from build\CMakeCache.txt.
+  install folders (SOFA, GMSH, assimp, GMP/MPFR, oneTBB for fTetWild, VC
+  runtime). Dependency locations are read from build\CMakeCache.txt.
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File collect_portable.ps1 -SmokeTest
@@ -82,6 +82,10 @@ if ($assimpDir) { Add-SearchDir (Join-Path (Get-ParentDir $assimpDir 3) 'bin') }
 
 $gmpLib = Get-CacheValue 'GMP_LIBRARY_RELEASE'
 if ($gmpLib) { Add-SearchDir (Join-Path (Get-ParentDir $gmpLib 2) 'bin') }
+
+# oneTBB (fetched by fTetWild) writes tbb12.dll to build\msvc_*_<debug|release>
+$tbbSuffix = if ($Config -eq 'Debug') { 'debug' } else { 'release' }
+Get-ChildItem $BuildDir -Directory -Filter "msvc_*_$tbbSuffix" | ForEach-Object { Add-SearchDir $_.FullName }
 
 # ------------------------------------------------------------------- VS tools
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -199,6 +203,12 @@ $tetgenLicense = Join-Path $repoRoot 'TetgenWrapper\LICENSE'
 if (Test-Path $tetgenLicense) {
   New-Item -ItemType Directory -Force -Path (Join-Path $Destination 'licenses') | Out-Null
   Copy-Item $tetgenLicense (Join-Path $Destination 'licenses\TetGen_LICENSE.txt') -Force
+}
+$ftetwildDir = Get-CacheValue 'FTETWILD_SOURCE_DIR'
+$ftetwildLicense = if ($ftetwildDir) { Join-Path $ftetwildDir 'LICENSE.MPL2' }
+if ($ftetwildLicense -and (Test-Path $ftetwildLicense)) {
+  New-Item -ItemType Directory -Force -Path (Join-Path $Destination 'licenses') | Out-Null
+  Copy-Item $ftetwildLicense (Join-Path $Destination 'licenses\fTetWild_LICENSE.MPL2.txt') -Force
 }
 
 $size = (Get-ChildItem $Destination -Recurse -File | Measure-Object Length -Sum).Sum / 1MB

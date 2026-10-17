@@ -24,6 +24,7 @@
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QWidget>
 #include <GenericIsosurfaceStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
@@ -88,6 +89,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   QFrame viewerFrame;
   QFrame surfaceOptionsFrame;
   QVBoxLayout viewerLayout;
+  // declared before optionsLayout so that the layout is destroyed first
+  QScrollArea optionsScrollArea;
+  QWidget optionsContainer;
   QVBoxLayout optionsLayout;
   QMenu fileMenu;
   QMenu helpMenu;
