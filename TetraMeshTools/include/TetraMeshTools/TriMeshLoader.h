@@ -4,7 +4,7 @@
  *  Created on: Jan 04, 2013
  *      Author: Dennis Luebke
  *
- * Loads triangle surface meshes (OBJ, STL, PLY, Collada, 3DS, ...) using
+ * Loads triangle surface meshes (OBJ, STL, OFF, PLY, Collada, 3DS, ...) using
  * the assimp library (https://github.com/assimp/assimp). All meshes of a
  * file are combined into one surface, which is optionally repaired (see
  * MeshRepair.h).

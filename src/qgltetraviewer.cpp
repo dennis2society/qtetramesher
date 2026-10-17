@@ -304,7 +304,7 @@ QString QGLTetraViewer::helpHtml() const {
       "</ol>"
       "<h3>Loading and exporting</h3>"
       "<table cellspacing=\"4\">"
-      "<tr><td><b>Load Surface Mesh</b></td><td>OBJ, STL, Collada (DAE), 3DS, "
+      "<tr><td><b>Load Surface Mesh</b></td><td>OBJ, STL, OFF, Collada (DAE), 3DS, "
       "PLY and AC3D files. Only the surface is loaded; the mesh is moved so "
       "that its bounding box is centered at the origin.</td></tr>"
       "<tr><td><b>Load GMSH</b></td><td>A *.msh file containing a tetrahedral "
@@ -408,7 +408,7 @@ QString QGLTetraViewer::helpString() const {
       "<li><a href=\"https://www.qt.io\">Qt 6</a>: user interface, OpenGL "
       "context</li>"
       "<li><a href=\"https://www.assimp.org\">Assimp</a>: loading and saving "
-      "surface meshes (OBJ, STL, Collada, 3DS, PLY, AC3D)</li>"
+      "surface meshes (OBJ, STL, OFF, Collada, 3DS, PLY, AC3D)</li>"
       "<li><a href=\"https://www.cgal.org\">CGAL</a>: Delaunay "
       "tetrahedralization</li>"
       "<li><a href=\"https://github.com/sofa-framework/sofa\">SOFA "
@@ -529,8 +529,8 @@ void rememberLoadDir(const QString &fileName_) {
 bool QGLTetraViewer::loadSurface() {
   const QString s = QFileDialog::getOpenFileName(
       this, "Select mesh File", lastLoadDir(),
-      tr("Supported Files (OBJ, STL, Collada, 3DS, PLY, AC) (*.obj *.stl *.dae "
-         "*.3ds *.ply *.ac)"));
+      tr("Supported Files (OBJ, STL, OFF, Collada, 3DS, PLY, AC) (*.obj *.stl "
+         "*.off *.dae *.3ds *.ply *.ac)"));
   std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   if (s.isEmpty()) return false;
   rememberLoadDir(s);
