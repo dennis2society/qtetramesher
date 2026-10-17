@@ -1,6 +1,10 @@
 # QTetraMesher 0.8.5
 
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg )
+<p align="center">
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg" alt="ScreenShot (Windows, fTetWild)" width="30%"></a>
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg" alt="ScreenShot (Linux, Generic Isosurface Stuffing)" width="31%"></a>
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg" alt="ScreenShot (Windows 11 VM, GMSH)" width="35%"></a>
+</p>
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
