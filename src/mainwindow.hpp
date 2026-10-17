@@ -9,23 +9,31 @@
 #define MAINWINDOW_H
 
 #include <CGALTetrahedralizeWidget.hpp>
+#include <GMSHWidget.hpp>
+#include <FTetWildWidget.hpp>
 #include <OctreeVisWidget.hpp>
 #include <QAction>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFrame>
+#include <QFutureWatcher>
+#include <atomic>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLayout>
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QWidget>
-#include <QuartetTetraStuffingWidget.hpp>
+#include <GenericIsosurfaceStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
 
+#include "TetraJob.hpp"
+#include "TetraMeshTools/SurfaceChecker.h"
 #include "qgltetraviewer.hpp"
 
 class QTetraMesherMainWindow : public QMainWindow {
@@ -33,7 +41,7 @@ class QTetraMesherMainWindow : public QMainWindow {
 
  public:
   explicit QTetraMesherMainWindow(QWidget *parent = 0);
-  //~QTetraMesherMainWindow();
+  ~QTetraMesherMainWindow() override;
 
  public slots:
   void toggleFullScreen(bool value);
@@ -47,8 +55,12 @@ class QTetraMesherMainWindow : public QMainWindow {
   void surfaceVisChanged();
   void surfaceColorButtonSlot();
   void surfaceWireframeColorButtonSlot();
+  void checkSurfaceSlot();
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
+  void tetraOuterColorButtonSlot();
+  void tetraInnerColorButtonSlot();
+  void depthColoringSlot(bool enabled_);
   void tetraWirefraceColorButtonSlot();
   void cutplaneXSliderSlot();
   void cutplaneYSliderSlot();
@@ -57,10 +69,15 @@ class QTetraMesherMainWindow : public QMainWindow {
   void exportSurfaceSlot();
   void loadGMSHSlot();
   void exportGMSHSlot();
+  void loadTetgenSlot();
+  void exportTetgenSlot();
   void tetraMethodComboBoxSlot();
   void generateSofaTetraStuffingSlot();
   void generateCGALTetrahedralizeSlot();
-  void generateQuartetTetraStuffingSlot();
+  void generateGenericIsosurfaceStuffingSlot();
+  void generateTetgenSlot();
+  void generateGMSHSlot();
+  void generateFTetWildSlot();
 
  private:
   // QGLViewer variant
@@ -72,6 +89,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   QFrame viewerFrame;
   QFrame surfaceOptionsFrame;
   QVBoxLayout viewerLayout;
+  // declared before optionsLayout so that the layout is destroyed first
+  QScrollArea optionsScrollArea;
+  QWidget optionsContainer;
   QVBoxLayout optionsLayout;
   QMenu fileMenu;
   QMenu helpMenu;
@@ -80,6 +100,8 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionLoadSurface;
   QAction actionLoadGMSH;
   QAction actionExportGMSH;
+  QAction actionLoadTetgen;
+  QAction actionExportTetgen;
   QAction actionExportSurface;
   QAction actionQuit;
   QAction actionShowAxis;
@@ -88,6 +110,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionAbout;
   QAction actionHelp;
   // Visualization options and task widgets
+  QCheckBox repairOnLoadCheckBox;
   SurfaceVisWidget surfaceVisWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;
@@ -96,13 +119,37 @@ class QTetraMesherMainWindow : public QMainWindow {
   QComboBox tetraMeshMethodComboBox;
   SofaTetraStuffingWidget sofaTetraStuffingWidget;
   CGALTetrahedralizeWidget cgalTetrahedralizeWidget;
-  QuartetTetraStuffingWidget quartetTetraStuffingWidget;
+  GenericIsosurfaceStuffingWidget genericIsosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
+  GMSHWidget gmshWidget;
+  FTetWildWidget ftetwildWidget;
 
   void setupUI();
   void connectSlots();
 
   void updateCutplaneSliders();
+
+  // Background tasks: tetrahedralization (worker process, can be
+  // canceled), octree generation and surface check (threads). While any of
+  // them runs, loading another mesh is disabled because the tasks read the
+  // current surface mesh.
+  void startOrCancelTetraJob(TetraMethodWidget &widget);
+  void updateBusyState();
+  void stopBackgroundTasks();
+  void showSurfaceCheckResult(const SurfaceCheckResult &r);
+  std::vector<TetraMethodWidget *> tetraMethodWidgets();
+
+  TetraJob tetraJob;
+  TetraMethodWidget *runningTetraWidget = nullptr;
+  QFutureWatcher<Octree *> octreeWatcher;
+  const void *octreeSurface = nullptr;  // surface the octree is built from
+  bool octreePending = false;
+  QFutureWatcher<std::shared_ptr<SurfaceCheckResult>> surfaceCheckWatcher;
+  // set when the window closes, stops the octree and surface check threads
+  std::atomic<bool> stopThreads{false};
+  void updateColorButtons();
+  void loadSettings();
+  void saveSettings();
 
  protected:
   // override main window close event to close all child dialogs
@@ -111,6 +158,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   void resizeEvent(QResizeEvent *event);
 
  private slots:
+  void tetraJobFinished();
+  void octreeFinished();
+  void surfaceCheckFinished();
   void on_viewer_onLoad();
 };
 

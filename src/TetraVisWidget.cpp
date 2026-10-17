@@ -28,16 +28,30 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   drawSolidCheckbox.setText("Draw Solid");
   drawSolidCheckbox.setChecked(true);
   drawSolidCheckbox.setMaximumHeight(20);
-  tetraColorButton.setText("Tetrahedra Color");
+  tetraColorButton.setText("Surface Tetrahedra Color");
   tetraColorButton.setMaximumHeight(20);
+  depthColoringCheckbox.setText("Color Interior by Depth");
+  depthColoringCheckbox.setToolTip(
+      "Color the inner tetrahedra with a gradient from the outer to the inner "
+      "color, depending on their distance from the surface tetrahedra.");
+  depthColoringCheckbox.setChecked(true);
+  depthColoringCheckbox.setMaximumHeight(20);
+  tetraOuterColorButton.setText("Outer Color");
+  tetraOuterColorButton.setMaximumHeight(20);
+  tetraInnerColorButton.setText("Inner Color");
+  tetraInnerColorButton.setMaximumHeight(20);
+  connect(&depthColoringCheckbox, &QCheckBox::toggled, &tetraOuterColorButton,
+          &QWidget::setEnabled);
+  connect(&depthColoringCheckbox, &QCheckBox::toggled, &tetraInnerColorButton,
+          &QWidget::setEnabled);
   tetraWireframeColorButton.setText("Wireframe Color");
   tetraWireframeColorButton.setMaximumHeight(20);
   //  X cutplanes
   tetraXCutplaneLabel.setText("Cutplanes X");
   tetraXCutplaneLabel.setMaximumHeight(20);
-  tetraXCutplaneSlider.SetLowerValue(1);
+  tetraXCutplaneSlider.SetLowerValue(0);
   tetraXCutplaneSlider.SetUpperValue(100);
-  tetraXCutplaneSlider.SetRange(1, 100);
+  tetraXCutplaneSlider.SetRange(0, 100);
   tetraXCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraXCutplaneSlider.setMinimumSize(280, 20);
@@ -46,9 +60,9 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   // Y cutplanes
   tetraYCutplaneLabel.setText("Cutplanes Y");
   tetraYCutplaneLabel.setMaximumHeight(20);
-  tetraYCutplaneSlider.SetLowerValue(1);
+  tetraYCutplaneSlider.SetLowerValue(0);
   tetraYCutplaneSlider.SetUpperValue(100);
-  tetraYCutplaneSlider.SetRange(1, 100);
+  tetraYCutplaneSlider.SetRange(0, 100);
   tetraYCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraYCutplaneSlider.setMinimumSize(280, 20);
@@ -57,9 +71,9 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   // Z cutplanes
   tetraZCutplaneLabel.setText("Cutplanes Z");
   tetraZCutplaneLabel.setMaximumHeight(20);
-  tetraZCutplaneSlider.SetLowerValue(1);
+  tetraZCutplaneSlider.SetLowerValue(0);
   tetraZCutplaneSlider.SetUpperValue(100);
-  tetraZCutplaneSlider.SetRange(1, 100);
+  tetraZCutplaneSlider.SetRange(0, 100);
   tetraZCutplaneSlider.setSizePolicy(QSizePolicy::Preferred,
                                      QSizePolicy::Preferred);
   tetraZCutplaneSlider.setMinimumSize(280, 20);
@@ -72,6 +86,10 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   drawOptionsLayout.addWidget(&drawSolidCheckbox);
   layout.addLayout(&drawOptionsLayout);
   layout.addWidget(&tetraColorButton);
+  layout.addWidget(&depthColoringCheckbox);
+  depthColorLayout.addWidget(&tetraOuterColorButton);
+  depthColorLayout.addWidget(&tetraInnerColorButton);
+  layout.addLayout(&depthColorLayout);
   layout.addWidget(&tetraWireframeColorButton);
   layout.addWidget(&tetraXCutplaneLabel);
   layout.addWidget(&tetraXCutplaneSlider);

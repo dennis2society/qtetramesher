@@ -22,6 +22,9 @@
  * and re-generate any relevant data-structures when necessary.
  */
 
+#ifndef TETRAMESHTOOLS_TRIANGLETOPOLOGY_H_
+#define TETRAMESHTOOLS_TRIANGLETOPOLOGY_H_
+
 #include "GeometryTypes.h"
 #include <vector>
 
@@ -227,3 +230,5 @@ public:
   void GenerateBoundingBox();
 };
 } // namespace TetraTools
+
+#endif /* TETRAMESHTOOLS_TRIANGLETOPOLOGY_H_ */

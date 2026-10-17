@@ -10,14 +10,11 @@
 
 #include "SofaTetraStuffingWidget.hpp"
 
-#include <QElapsedTimer>
 #include <QFont>
-#include <sstream>
 
-#include "SofaTetraStuffing.h"
 
 SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
-    : BaseOptionsWidget(parent) {
+    : TetraMethodWidget(parent) {
   labelTitle.setText("SOFA TetraStuffing");
   QFont boldFont;
   boldFont.setBold(true);
@@ -59,33 +56,12 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   layout.addStretch();
 }
 
-void SofaTetraStuffingWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
-  QElapsedTimer t;
-  t.start();
-  QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  if (tMesh_ == NULL) {
-    return;
-  }
-  const std::vector<Triangle> &tris =
-      tMesh_->GetTriangleTopology()->GetTriangles();
-  const std::vector<Vec3f> &verts =
-      tMesh_->GetTriangleTopology()->GetVertices();
-  if (tMesh_->GetSurface() == NULL) {
-    return;
-  }
-  SofaTetraStuffing sts;
-  sts.GenerateFromSurface(tris, verts, tetraSizeSpinBox.value(),
-                          alphaShortSpinBox.value(), alphaLongSpinBox.value(),
-                          snapToPointsCheckBox.isChecked(),
-                          splitTetrasCheckBox.isChecked());
-  tMesh_->UpdateTetraMesh(sts.GetTetraVertices(), sts.GetTetras());
-  tMesh_->Draw();
-  viewer_->update();
-  viewer_->displayMessage(QString("Updating visual mesh..."), 2000);
-  std::stringstream ss;
-  ss << "Generated tetrahedral mesh in " << t.elapsed()
-     << "ms. Tetras: " << sts.GetTetras().size()
-     << "; Vertices: " << sts.GetTetraVertices().size();
-  std::string stdMSG = ss.str();
-  viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
+QVariantMap SofaTetraStuffingWidget::parameters() const {
+  QVariantMap p;
+  p["size"] = tetraSizeSpinBox.value();
+  p["alphaShort"] = alphaShortSpinBox.value();
+  p["alphaLong"] = alphaLongSpinBox.value();
+  p["snapToPoints"] = snapToPointsCheckBox.isChecked();
+  p["splitTetras"] = splitTetrasCheckBox.isChecked();
+  return p;
 }

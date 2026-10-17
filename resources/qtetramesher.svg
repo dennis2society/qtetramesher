@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Tetrahedron seen from one corner: three faces, three colors -->
+  <g stroke="#1b2430" stroke-width="7" stroke-linejoin="round">
+    <polygon points="128,20 28,200 140,164" fill="#2f7fd1"/>
+    <polygon points="128,20 228,200 140,164" fill="#f2a33a"/>
+    <polygon points="28,200 228,200 140,164" fill="#3fae6a"/>
+  </g>
+</svg>

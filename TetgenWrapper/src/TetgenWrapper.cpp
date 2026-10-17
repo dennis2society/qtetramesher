@@ -7,9 +7,14 @@
 
 #include <TetgenWrapper.h>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <tetgen.h>
 #include <cstring>
+#include <cmath>
+#include <stdexcept>
+#include <vector>
 
 #ifdef _WIN32
 #include <time.h>
@@ -37,31 +42,54 @@ void generateFacets(const std::vector<Triangle> &tris,
     p->vertexlist[1] = t.index[1];
     p->vertexlist[2] = t.index[2];
   }
-  for (auto i = 0; i < io.numberoffacets; ++i) {
-    tetgenio::facet k = io.facetlist[i];
-    for (auto j = 0; j < k.numberofpolygons; ++j) {
-        std::cout << "Polygon #" << j<<": ";
-        std::cout << "F[" << i << "]: " << k.polygonlist[j].vertexlist[0] << "/" << k.polygonlist[j].vertexlist[1]
-                  << "/" << k.polygonlist[j].vertexlist[2] << std::endl;
-    }
-  }
 }
 
-TetgenWrapper::TetgenWrapper() : m_noSubDivide(false), m_usePLC(true), m_qualityBound(1.5f), m_volumeConstraint(0.3f)
+TetgenWrapper::TetgenWrapper() : m_noSubDivide(false), m_usePLC(true), m_qualityBound(2.0f), m_cellSize(0.0f)
 {}
 
 void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
                                         const std::vector<Vec3f> &verts,
                                         float qualityBounds,
-                                        float volumeConstraint,
+                                        float cellSize,
                                         bool usePLC)
 {
   tetraIndices.clear();
   tetraPoints.clear();
 
+  if (verts.empty() || tris.empty()) {
+    throw std::runtime_error("Tetgen: the surface mesh is empty.");
+  }
+  for (const Triangle &t : tris) {
+    for (int k = 0; k < 3; ++k) {
+      if (t.index[k] >= verts.size()) {
+        throw std::runtime_error(
+            "Tetgen: the surface mesh has invalid vertex indices.");
+      }
+    }
+  }
+
   m_usePLC = usePLC;
   m_qualityBound = qualityBounds;
-  m_volumeConstraint = volumeConstraint;
+  m_cellSize = cellSize;
+
+  // Auto-compute cell size from bounding box diagonal when none given (<=0)
+  if (m_cellSize <= 0.0f && !verts.empty()) {
+    Vec3f bbMin = verts[0], bbMax = verts[0];
+    for (const auto &v : verts) {
+      if (v.x < bbMin.x) bbMin.x = v.x;
+      if (v.y < bbMin.y) bbMin.y = v.y;
+      if (v.z < bbMin.z) bbMin.z = v.z;
+      if (v.x > bbMax.x) bbMax.x = v.x;
+      if (v.y > bbMax.y) bbMax.y = v.y;
+      if (v.z > bbMax.z) bbMax.z = v.z;
+    }
+    const float dx = bbMax.x - bbMin.x;
+    const float dy = bbMax.y - bbMin.y;
+    const float dz = bbMax.z - bbMin.z;
+    const float diag = std::sqrt(dx * dx + dy * dy + dz * dz);
+    m_cellSize = diag / 10.0f;
+    std::cout << "Auto cell size (diag=" << diag << "): " << m_cellSize << std::endl;
+  }
 
   tetgenio input;
   tetgenio output;
@@ -76,10 +104,6 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     input.pointlist[i * 3 + 1] = verts.at(i).y;
     input.pointlist[i * 3 + 2] = verts.at(i).z;
   }
-  for (auto i = 0; i < input.numberofpoints; ++i) {
-    std::cout << "P[" << i << "]: " << input.pointlist[i * 3] << "/" << input.pointlist[i * 3 + 1]
-              << "/" << input.pointlist[i * 3 + 2] << std::endl;
-  }
   input.pointattributelist = NULL;
   input.numberoftrifaces = 0;
   input.trifacemarkerlist = NULL;
@@ -87,15 +111,19 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
 
   /// invoke Tegen tetrahedralize
   try {
-    std::string switches = generateTetgenParamString();
-    char *params = new char[switches.size() + 1];
-    std::strcpy(params, switches.c_str());
-    tetrahedralize(params, &input, &output);
-    delete[] params;
+    const std::string switches = generateTetgenParamString();
+    // tetrahedralize() takes a non-const char*
+    std::vector<char> params(switches.begin(), switches.end());
+    params.push_back('\0');
+    tetrahedralize(params.data(), &input, &output);
   }
   catch (int e)
   {
-    std::cerr<<"Error! Tetgen tetrahedralize failed..."<<std::endl;
+    std::cerr << "Error! Tetgen tetrahedralize failed (code " << e << ")..."
+              << std::endl;
+    throw std::runtime_error(
+        "Tetgen failed. The surface mesh is probably not closed or has "
+        "self-intersections.");
   }
   std::cout << "Num. Tetgen Tetra Points: " << output.numberofpoints
             << std::endl;
@@ -116,6 +144,9 @@ void TetgenWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     t.index[3] = output.tetrahedronlist[i * 4 + 3];
     tetraIndices.push_back(t);
   }
+  if (tetraPoints.empty() || tetraIndices.empty()) {
+    throw std::runtime_error("Tetgen did not generate any tetrahedra.");
+  }
 }
 
 TetgenWrapper::~TetgenWrapper() {
@@ -131,18 +162,189 @@ bool TetgenWrapper::saveAsTetgen(const std::string path,
                                  const std::string baseName,
                                  const std::vector<Tetrahedron> &tetras,
                                  const std::vector<Vec3f> &verts) {
-  return false;
+  if (verts.empty() || tetras.empty()) {
+    std::cerr << "Error! Cannot save an empty Tetgen mesh..." << std::endl;
+    return false;
+  }
+
+  // Build the combined path/basename that Tetgen's own save_nodes()/
+  // save_elements() expect (they append the ".node"/".ele" suffix
+  // themselves).
+  std::string baseFilename = baseName;
+  if (!path.empty()) {
+    baseFilename = path;
+    if (baseFilename.back() != '/' && baseFilename.back() != '\\') {
+      baseFilename += '/';
+    }
+    baseFilename += baseName;
+  }
+
+  // Fill a tetgenio structure and let Tetgen's own I/O routines write the
+  // .node/.ele files, so the produced files are guaranteed to be in a
+  // format Tetgen itself understands.
+  tetgenio out;
+  out.firstnumber = 0;
+  out.mesh_dim = 3;
+
+  out.numberofpoints = static_cast<int>(verts.size());
+  out.pointlist = new double[verts.size() * 3];
+  for (size_t i = 0; i < verts.size(); ++i) {
+    out.pointlist[i * 3] = verts[i].x;
+    out.pointlist[i * 3 + 1] = verts[i].y;
+    out.pointlist[i * 3 + 2] = verts[i].z;
+  }
+
+  out.numberofcorners = 4;
+  out.numberoftetrahedronattributes = 0;
+  out.numberoftetrahedra = static_cast<int>(tetras.size());
+  out.tetrahedronlist = new int[tetras.size() * 4];
+  for (size_t i = 0; i < tetras.size(); ++i) {
+    out.tetrahedronlist[i * 4] = tetras[i].index[0];
+    out.tetrahedronlist[i * 4 + 1] = tetras[i].index[1];
+    out.tetrahedronlist[i * 4 + 2] = tetras[i].index[2];
+    out.tetrahedronlist[i * 4 + 3] = tetras[i].index[3];
+  }
+
+  out.save_nodes(baseFilename.c_str());
+  out.save_elements(baseFilename.c_str());
+
+  std::ifstream nodeFile(baseFilename + ".node");
+  std::ifstream eleFile(baseFilename + ".ele");
+  return nodeFile.good() && eleFile.good();
+}
+
+/// Tetgen's file readers crash (strtol(NULL)) on empty or truncated files,
+/// so check that a .node/.ele file contains all the lines its header
+/// announces. Uses the same notion of "a line with a number" as Tetgen.
+static bool tetgenFileIsComplete(const std::string &fileName,
+                                 long &headerCount) {
+  std::ifstream file(fileName);
+  if (!file.is_open()) return false;
+  headerCount = -1;
+  long dataLines = 0;
+  std::string line;
+  while (std::getline(file, line)) {
+    size_t i = 0;
+    while (i < line.size() && line[i] != '#' && line[i] != '.' &&
+           line[i] != '+' && line[i] != '-' &&
+           !(line[i] >= '0' && line[i] <= '9')) {
+      ++i;
+    }
+    if (i >= line.size() || line[i] == '#') continue;  // comment or no number
+    if (headerCount < 0) {
+      headerCount = std::strtol(line.c_str() + i, NULL, 0);
+      if (headerCount <= 0) return false;
+    } else {
+      ++dataLines;
+    }
+  }
+  return headerCount > 0 && dataLines >= headerCount;
+}
+
+bool TetgenWrapper::loadAsTetgen(const std::string path,
+                                 const std::string baseName) {
+  tetraPoints.clear();
+  tetraIndices.clear();
+
+  // Build the combined path/basename that Tetgen's own load_node()/
+  // load_tet() expect (they append the ".node"/".ele" suffix themselves).
+  std::string baseFilename = baseName;
+  if (!path.empty()) {
+    baseFilename = path;
+    if (baseFilename.back() != '/' && baseFilename.back() != '\\') {
+      baseFilename += '/';
+    }
+    baseFilename += baseName;
+  }
+
+  // tetgenio's load_*() functions take a non-const char*.
+  std::vector<char> filebasename(baseFilename.begin(), baseFilename.end());
+  filebasename.push_back('\0');
+
+  long numNodes = 0, numTetras = 0;
+  if (!tetgenFileIsComplete(baseFilename + ".node", numNodes) ||
+      !tetgenFileIsComplete(baseFilename + ".ele", numTetras)) {
+    std::cerr << "Error! The Tetgen files '" << baseFilename
+              << ".node/.ele' are missing, empty or incomplete." << std::endl;
+    return false;
+  }
+
+  tetgenio in;
+  // object = NODES (0) makes load_tetmesh() read the plain .node/.ele files
+  // (as opposed to .mesh/.neu formats).
+  // Tetgen reports fatal errors (e.g. malformed files) by throwing an int.
+  try {
+    if (!in.load_tetmesh(filebasename.data(), (int)tetgenbehavior::NODES)) {
+      std::cerr << "Error! Could not load Tetgen mesh from '" << baseFilename
+                << ".node/.ele'." << std::endl;
+      return false;
+    }
+  } catch (int e) {
+    std::cerr << "Error! Tetgen failed to read '" << baseFilename
+              << ".node/.ele' (code " << e << ")." << std::endl;
+    return false;
+  }
+  if (in.numberofpoints <= 0 || in.pointlist == NULL ||
+      in.numberoftetrahedra <= 0 || in.tetrahedronlist == NULL ||
+      in.numberofcorners < 4) {
+    std::cerr << "Error! The Tetgen files do not contain a tetrahedral mesh."
+              << std::endl;
+    return false;
+  }
+
+  // load_node() auto-detects whether indices in the file are 0- or
+  // 1-based and stores the result in 'firstnumber'; the raw values in
+  // 'tetrahedronlist' use that same base, so we must subtract it here to
+  // get valid 0-based array indices.
+  const int firstNumber = in.firstnumber;
+
+  tetraPoints.reserve(in.numberofpoints);
+  for (int i = 0; i < in.numberofpoints; ++i) {
+    tetraPoints.push_back(Vec3f(static_cast<float>(in.pointlist[i * 3]),
+                                static_cast<float>(in.pointlist[i * 3 + 1]),
+                                static_cast<float>(in.pointlist[i * 3 + 2])));
+  }
+
+  tetraIndices.reserve(in.numberoftetrahedra);
+  for (int i = 0; i < in.numberoftetrahedra; ++i) {
+    Tetrahedron t;
+    for (int k = 0; k < 4; ++k) {
+      const int index =
+          in.tetrahedronlist[i * in.numberofcorners + k] - firstNumber;
+      if (index < 0 || index >= in.numberofpoints) {
+        std::cerr << "Error! Tetrahedron " << i
+                  << " refers to a vertex that does not exist." << std::endl;
+        tetraPoints.clear();
+        tetraIndices.clear();
+        return false;
+      }
+      t.index[k] = static_cast<unsigned int>(index);
+    }
+    tetraIndices.push_back(t);
+  }
+
+  return !tetraPoints.empty() && !tetraIndices.empty();
 }
 
 std::string TetgenWrapper::generateTetgenParamString()
 {
+  // Volume of a regular tetrahedron with edge s: V = s^3 * sqrt(2) / 12
+  const double volume = static_cast<double>(m_cellSize) *
+                        static_cast<double>(m_cellSize) *
+                        static_cast<double>(m_cellSize) *
+                        0.11785113019775792;  // sqrt(2)/12
   std::stringstream ss;
   if (m_usePLC)
     ss << "p";
-  ss << "q" << m_qualityBound;
-  ss << "a" << m_volumeConstraint;
-  std::cout << "ParamString: " << ss.str();
+  ss << "q" << std::fixed << std::setprecision(6) << m_qualityBound;
+  ss << "a" << std::fixed << std::setprecision(10) << volume;
+  std::cout << "ParamString: " << ss.str() << std::endl;
   ss << "V";
+  // '-F': suppress Tetgen's own (undesired) automatic file output. Without
+  // this switch, Tetgen will silently write "*_skipped.node"/"*_skipped.face"
+  // diagnostic files to disk whenever it encounters problematic PLC facets
+  // during tetrahedralization - i.e. on every "Generate Tetrahedra" call,
+  // not only when the user explicitly chooses "Export Tetgen".
+  ss << "F";
   return ss.str();
-
 }

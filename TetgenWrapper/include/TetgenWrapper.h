@@ -29,7 +29,7 @@ public:
    */
   void GenerateFromSurface(const std::vector<Triangle> &tris,
                            const std::vector<Vec3f> &verts, float qualityBounds,
-                           float volumeConstraint, bool usePLC);
+                           float cellSize, bool usePLC);
 
   /**
    * Returns the generated tetrahedra vertices
@@ -41,11 +41,22 @@ public:
    */
   std::vector<Tetrahedron> &GetTetras();
 
+  /**
+   *  Returns the cell size used by the last GenerateFromSurface() call,
+   *  i.e. the automatically computed one if 0 was given.
+   */
+  float GetCellSize() const { return m_cellSize; }
+
   /// This function will save a Tetgen mesh (consisting of a .node and a .ele
   /// file)
   bool saveAsTetgen(const std::string path, const std::string baseName,
                     const std::vector<Tetrahedron> &tetras,
                     const std::vector<Vec3f> &verts);
+
+  /// This function will load a Tetgen mesh (consisting of a .node and a .ele
+  /// file). The resulting vertices/tetrahedra are stored internally and
+  /// accessible via GetTetraVertices() / GetTetras().
+  bool loadAsTetgen(const std::string path, const std::string baseName);
 
 private:
   std::vector<Vec3f> tetraPoints;
@@ -53,7 +64,7 @@ private:
 
   bool m_usePLC;
   float m_qualityBound;
-  float m_volumeConstraint;
+  float m_cellSize;   ///< 0 or negative triggers auto-compute from bounding box
   bool m_noSubDivide;
 
   std::string generateTetgenParamString();

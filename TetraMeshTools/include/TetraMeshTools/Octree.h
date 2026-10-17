@@ -25,8 +25,13 @@ private:
   void generateBoundingCube();
 
 public:
+  /// The optional cancel flag may be set from another thread to stop the
+  /// construction early (the octree is incomplete then).
+  /// Only one octree may be constructed at a time (OctreeNode uses static
+  /// members during the construction).
   Octree(const unsigned int maxDepth_, std::vector<Vec3f> *inPoints_,
-         std::vector<Triangle> *inTris_);
+         std::vector<Triangle> *inTris_,
+         const std::atomic<bool> *cancel_ = nullptr);
   ~Octree();
 
   OctreeNode *getRootNode();

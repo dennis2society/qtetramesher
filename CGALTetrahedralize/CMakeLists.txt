@@ -4,8 +4,6 @@ project(CGALTetrahedralize VERSION 1.0)
 find_package(CGAL REQUIRED)
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
 )
@@ -19,10 +17,15 @@ add_library(
 
 target_link_libraries(
   CGALTetrahedralize
+  TetraMeshTools::Headers
   CGAL
 )
 
-add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+if(MSVC)
+  add_compile_options(/openmp)
+else()
+  add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+endif()
 
 add_custom_command(
   TARGET CGALTetrahedralize

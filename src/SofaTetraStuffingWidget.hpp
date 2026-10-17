@@ -9,21 +9,25 @@
 #ifndef SOFA_TETRA_STUFFING_WIDGET_HPP
 #define SOFA_TETRA_STUFFING_WIDGET_HPP
 
-#include <qgltetraviewer.hpp>
-
-#include <BaseOptionsWidget.hpp>
+#include <TetraMethodWidget.hpp>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 
-class SofaTetraStuffingWidget : public BaseOptionsWidget {
+class SofaTetraStuffingWidget : public TetraMethodWidget {
   Q_OBJECT
 
  public:
   SofaTetraStuffingWidget(QWidget *parent);
   void update();
 
-  void generateTetrahedra(QGLTetraViewer *viewer_);
+  QString methodId() const override { return "sofa"; }
+  QString methodName() const override { return "SOFA TetraStuffing"; }
+  QVariantMap parameters() const override;
+  QString errorHint() const override {
+    return "ERROR while generating SOFA tetra mesh.";
+  }
+  QPushButton &generateButton() override { return generateTetrahedraButton; }
 
   QHBoxLayout tetraSizeLayout;
   QLabel tetraSizeLabel;

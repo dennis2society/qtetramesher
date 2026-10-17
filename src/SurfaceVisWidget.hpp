@@ -25,6 +25,7 @@ public:
   QComboBox surfaceVisComboBox;
   QPushButton surfaceColorButton;
   QPushButton surfaceWireframeColorButton;
+  QPushButton checkSurfaceButton;
 };
 
 #endif // SURFACE_VIS_WIDGET_H

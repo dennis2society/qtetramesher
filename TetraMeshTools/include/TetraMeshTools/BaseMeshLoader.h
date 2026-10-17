@@ -23,7 +23,9 @@
 namespace TetraTools {
 class BaseMeshLoader {
 protected:
-  std::ifstream &ReadFile(const std::string &fileName_);
+  /// Opens a file for reading. Returns false if the file cannot be opened.
+  /// The caller owns the stream.
+  bool OpenFile(const std::string &fileName_, std::ifstream &file_);
 
   virtual bool ParseFile(std::ifstream &file_) = 0;
 };

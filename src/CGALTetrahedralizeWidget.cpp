@@ -9,15 +9,11 @@
 
 #include "CGALTetrahedralizeWidget.hpp"
 
-#include <QElapsedTimer>
 #include <QFont>
-#include <QMessageBox>
-#include <sstream>
 
-#include "CGALTetrahedralize.h"
 
 CGALTetrahedralizeWidget::CGALTetrahedralizeWidget(QWidget *parent)
-    : BaseOptionsWidget(parent) {
+    : TetraMethodWidget(parent) {
   labelTitle.setText("CGAL Delaunay Triangulation");
   QFont boldFont;
   boldFont.setBold(true);
@@ -67,48 +63,12 @@ CGALTetrahedralizeWidget::CGALTetrahedralizeWidget(QWidget *parent)
   layout.addStretch();
 }
 
-void CGALTetrahedralizeWidget::generateTetrahedra(QGLTetraViewer *viewer_) {
-  QElapsedTimer t;
-  t.start();
-  QGLTetraMesh *tMesh_ = viewer_->tMesh;
-  if (tMesh_ == NULL) {
-    return;
-  }
-  const std::vector<Triangle> &tris =
-      tMesh_->GetTriangleTopology()->GetTriangles();
-  const std::vector<Vec3f> &verts =
-      tMesh_->GetTriangleTopology()->GetVertices();
-  if (tMesh_->GetSurface() == NULL) {
-    return;
-  }
-  CGALTetrahedralize *cth = new CGALTetrahedralize();
-  try {
-    cth->GenerateFromSurface(
-        tris, verts, cellSizeSpinBox.value(), facetAngleSpinBox.value(),
-        facetSizeSpinBox.value(), facetDistanceSpinBox.value(),
-        cellRadiusToEdgeRatioSpinBox.value());
-    tMesh_->UpdateTetraMesh(cth->GetTetraVertices(), cth->GetTetras());
-    tMesh_->Draw();
-    viewer_->update();
-    std::stringstream ss;
-    ss << "Generated tetrahedral mesh in " << t.elapsed()
-       << "ms. Tetras: " << cth->GetTetras().size()
-       << "; Vertices: " << cth->GetTetraVertices().size();
-    std::string stdMSG = ss.str();
-    viewer_->displayMessage(QString::fromStdString(stdMSG), 10000);
-    delete cth;
-    cth = NULL;
-  } catch (std::exception e) {
-    std::cerr << "Caught exception in CGALTetrahedralize..." << std::endl;
-    if (cth != NULL) {
-      delete cth;
-    }
-    QMessageBox mb(this);
-    mb.setIcon(QMessageBox::Warning);
-    mb.setText(
-        "ERROR while generating CGAL tetra mesh...<br />Probably the "
-        "surface mesh is violating a CGAL precondition.");
-    mb.setInformativeText(e.what());
-    mb.exec();
-  }
+QVariantMap CGALTetrahedralizeWidget::parameters() const {
+  QVariantMap p;
+  p["cellSize"] = cellSizeSpinBox.value();
+  p["facetAngle"] = facetAngleSpinBox.value();
+  p["facetSize"] = facetSizeSpinBox.value();
+  p["facetDistance"] = facetDistanceSpinBox.value();
+  p["cellRadiusEdgeRatio"] = cellRadiusToEdgeRatioSpinBox.value();
+  return p;
 }

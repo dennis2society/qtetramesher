@@ -29,6 +29,9 @@
 #endif
 
 #include <QtGui/QColor>
+#include <QtmGLViewer/MeshBuffer.hpp>
+#include <QtmGLViewer/RenderContext.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -58,17 +61,36 @@ class QGLTetraMesh {
   float zLowerThreshold;
   float zUpperThreshold;
 
-  void DrawBoundingVolume(const BoundingBox &bb, Vec3f color_);
+  /// uploads all geometry marked as dirty to the GPU
+  void ClearAll();  // deletes octree, tetra mesh and surface
+  void ScaleMesh(const float factor_);
+  void UpdateBuffers();
+  void UpdateSurfaceBuffers();
+  void UpdateTetraBuffers();
+  void UpdateBoundingVolumeBuffer();
+  void UpdateOctreeBuffer();
+  void DrawTetraSolid(const qtm::RenderContext &context_);
 
-  void DrawTetraTriangle(const unsigned int triangleIndex,
-                         const Vec3f &tetraCentroid, const Vec3f &color);
-
-  void DrawTetrahedron(const unsigned int tetraIndex);
-
-  void DrawOctree(const bool leafsOnyly_);
+  /// GPU buffers, (re-)uploaded lazily in Draw() when marked dirty
+  qtm::MeshBuffer surfaceSolidBuffer;
+  qtm::MeshBuffer surfaceWireframeBuffer;
+  qtm::MeshBuffer tetraSolidBuffer;  // one instance per tetrahedron
+  qtm::MeshBuffer tetraWireframeBuffer;
+  qtm::MeshBuffer boundingVolumeBuffer;
+  qtm::MeshBuffer octreeBuffer;
+  std::unique_ptr<QOpenGLShaderProgram> tetraProgram;
+  bool surfaceDirty;
+  bool tetraDirty;
+  bool boundingVolumeDirty;
+  bool octreeDirty;
+  int boundingVolumeBufferMode;  // bboxMode the buffer was built for
+  int octreeBufferMode;          // octreeMode the buffer was built for
 
   Vec3f surfaceColorSolid;
-  Vec3f tetraColorSolid;
+  Vec3f tetraColorSolid;  // tetrahedra with a face on the mesh boundary
+  Vec3f tetraColorOuter;  // interior gradient: next to the boundary ...
+  Vec3f tetraColorInner;  // ... to the deepest tetrahedra
+  bool tetraDepthColoring;
   Vec3f surfaceColorWireframe;
   Vec3f tetraColorWireframe;
 
@@ -82,20 +104,58 @@ class QGLTetraMesh {
 
   TetraTools::TetrahedronTopology *GetTetraMesh() { return top; }
 
-  void Draw();
-  void LoadGMSH(const std::string &fileName_);
-  void LoadTetgen(const std::string &fileName_);
-  void LoadSurface(const std::string &fileName_);
+  /// Draws all visible meshes. Requires the viewer's OpenGL context.
+  void Draw(const qtm::RenderContext &context_);
+  /// Creates/releases GPU resources (OpenGL context must be current)
+  void InitGL();
+  void CleanupGL();
+  /// Forces a re-upload of all geometry on the next Draw(). Call this after
+  /// modifying the surface or tetra mesh directly.
+  void MarkGeometryDirty();
+  /// Loading functions return false and keep the current mesh on failure.
+  bool LoadGMSH(const std::string &fileName_);
+  bool LoadTetgen(const std::string &fileName_);
+  /// With repair_ set, defects of the surface are fixed where possible
+  /// (see RepairSurfaceMesh()).
+  bool LoadSurface(const std::string &fileName_, bool repair_ = true);
+  /// true if the repair of the last LoadSurface() changed the surface
+  bool WasSurfaceRepaired() const { return surfaceRepaired; }
+  /// what the repair of the last LoadSurface() changed and what is still
+  /// broken (empty if the surface was fine or the repair was off)
+  const std::string &GetSurfaceRepairSummary() const {
+    return surfaceRepairSummary;
+  }
   bool SaveGMSH(const std::string &fileName_);
   bool SaveSurface(const std::string &fileName_, const std::string extension_);
   bool SaveTetgen(const std::string &fileName_);
 
   void scalex10();
 
+ private:
+  std::string surfaceRepairSummary;
+  bool surfaceRepaired = false;
+
+ public:
+
   void scalex01();
 
-  void UpdateTetraMesh(std::vector<Vec3f> &verts_,
+  /// Returns false (and drops the tetra mesh) if the data is empty or invalid.
+  bool UpdateTetraMesh(std::vector<Vec3f> &verts_,
                        std::vector<Tetrahedron> &tetras_);
+
+  /// Builds the topology for a tetra mesh. Returns null if the data is empty
+  /// or invalid. Does not use any QGLTetraMesh state, so it may run in a
+  /// background thread.
+  static std::unique_ptr<TetraTools::TetrahedronTopology> BuildTetraTopology(
+      const std::vector<Vec3f> &verts_,
+      const std::vector<Tetrahedron> &tetras_);
+
+  /// Replaces the tetra mesh (null removes it) and takes ownership.
+  void SetTetraTopology(std::unique_ptr<TetraTools::TetrahedronTopology> top_);
+
+  /// Replaces the octree (null removes it) and takes ownership. The octree
+  /// must have been built from the current surface mesh.
+  void SetOctree(Octree *oct_);
 
   void ClearSurface();
 
@@ -165,6 +225,20 @@ class QGLTetraMesh {
     tetraColorSolid /= 255.0f;
   }
 
+  void SetTetraOuterColor(float r, float g, float b) {
+    tetraColorOuter = Vec3f(r, g, b) / 255.0f;
+  }
+
+  void SetTetraInnerColor(float r, float g, float b) {
+    tetraColorInner = Vec3f(r, g, b) / 255.0f;
+  }
+
+  /// Colors interior tetrahedra by their distance from the boundary. If off,
+  /// all tetrahedra use the tetra color.
+  void SetTetraDepthColoring(bool enabled_) { tetraDepthColoring = enabled_; }
+
+  bool GetTetraDepthColoring() const { return tetraDepthColoring; }
+
   void SetSurfaceSolidColor(float r, float g, float b) {
     surfaceColorSolid.x = r;
     surfaceColorSolid.y = g;
@@ -186,28 +260,27 @@ class QGLTetraMesh {
     surfaceColorWireframe /= 255.0f;
   }
 
-  const QColor GetSurfaceColor() {
-    QColor c((int)(surfaceColorSolid.x * 255.0f),
-             (int)(surfaceColorSolid.y * 255.0f),
-             (int)(surfaceColorSolid.z * 255.0f));
-    return c;
+  // Colors are rounded (not truncated) so that a color survives repeated
+  // get/set round trips, e.g. when saving and restoring settings.
+  static QColor ToQColor(const Vec3f &c) {
+    return QColor(qRound(c.x * 255.0f), qRound(c.y * 255.0f),
+                  qRound(c.z * 255.0f));
   }
+
+  const QColor GetSurfaceColor() { return ToQColor(surfaceColorSolid); }
 
   const QColor GetSurfaceWireframeColor() {
-    return QColor(surfaceColorWireframe.x * 255.0f,
-                  surfaceColorWireframe.y * 255.0f,
-                  surfaceColorWireframe.z * 255.0f);
+    return ToQColor(surfaceColorWireframe);
   }
 
-  const QColor GetTetraColor() {
-    return QColor(tetraColorSolid.x * 255.0f, tetraColorSolid.y * 255.0f,
-                  tetraColorSolid.z * 255.0f);
-  }
+  const QColor GetTetraColor() { return ToQColor(tetraColorSolid); }
+
+  const QColor GetTetraOuterColor() { return ToQColor(tetraColorOuter); }
+
+  const QColor GetTetraInnerColor() { return ToQColor(tetraColorInner); }
 
   const QColor GetTetraWireframeColor() {
-    return QColor(tetraColorWireframe.x * 255.0f,
-                  tetraColorWireframe.y * 255.0f,
-                  tetraColorWireframe.z * 255.0f);
+    return ToQColor(tetraColorWireframe);
   }
 
   void generateOctree(const unsigned int depth_);

@@ -1,13 +1,12 @@
-# QTetraMesher 0.8.4
+# QTetraMesher 0.8.5
 
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Linux_Cutplane_01.jpg )
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Windows_Cutplane_01.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg )
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
-and easy-to-use mesh viewer based on QGLViewer. Two different methods for tetrahedralization 
-are possible: Delaunay Triangulation and two variants of Johnathan Shewchuk's Isosurface
-Stuffing algorithm.
+and easy-to-use mesh viewer. Several methods for tetrahedralization are available:
+Delaunay Triangulation (CGAL), Tetgen, GMSH and variants of Johnathan Shewchuk's Isosurface
+Stuffing algorithm (SOFA and a generic implementation).
 
 This project is using lots of 3rd-party open-source C/C++ libraries, for this reason this work is released 
 under GPL License. This includes all self-written code. 3rd-party code remains under 
@@ -17,15 +16,27 @@ History + usage instructions: https://qtm.dennis2society.de
 
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
-### Running in Wayland
-libQGLViewer is not behaving well when running in a Wayland session. I only get a dark unresponsive widget at the moment. I am looking for a replacement.
-This is current workaround for this case:
-```
-export QT_QPA_PLATFORM=xcb
-./[PATH_TO]/QTetraMesher
-```
 
 ## Changelog
+### 0.8.5
+* <b>New tetrahedralization methods:</b>
+  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary with mesh size and selected cell size) with no external dependencies
+  - Improved Tetgen integration
+  - GMSH integration (this one is sensitive to surface mesh quality...)
+* Surface mesh quality check (basic test for usage with Tetgen and GMSH)
+* libQGLViewer replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
+* Two lights (headlight and a softer light from above) for better shape perception
+* Visualization options (colors, wireframe/solid options, surface mode, axis/grid/bbox) are saved and restored between sessions
+* Fixed: bounding box was not updated when the surface mesh was moved to the origin
+* Robustness: failed or corrupt mesh files (surface, GMSH, Tetgen) are rejected with a message and keep the current mesh instead of crashing; Generate without a loaded surface no longer crashes; failed tetrahedralization keeps the surface visible
+* Fixed memory leaks (octree, file stream in the GMSH loader, Tetgen parameters)
+* GMSH files must be ASCII MSH version 2 (version 4 files are now detected and reported)
+* Tetrahedralization no longer blocks the UI: each method runs in a separate worker process and can be canceled (also when a method hangs); a crash in a method no longer takes down the program. Octree generation and the surface check run in background threads. A progress indicator is shown in the viewer
+- Fixed a bug in the cutplane rendering (initial slider values were not at 0 cutting off parts of the tetrahedra mesh)
+- Improved surface mesh loading including optional basic mesh repair on load
+- Better about and help dialog
+* Added an application icon
+
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
 * Tetrameshing Options are now in the main UI instead of popup windows
