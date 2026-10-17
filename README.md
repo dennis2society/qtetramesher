@@ -1,7 +1,6 @@
 # QTetraMesher 0.8.5
 
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Linux_Cutplane_01.jpg )
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Windows_Cutplane_01.jpg )
+![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg )
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
