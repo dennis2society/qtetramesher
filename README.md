@@ -32,7 +32,7 @@ History + usage instructions: https://qtm.dennis2society.de
 * libQGLViewer replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
 * Two lights (headlight and a softer light from above) for better shape perception
 * Visualization options (colors, wireframe/solid options, surface mode, axis/grid/bbox) are saved and restored between sessions
-  - Now with different surface/inside colors for tetre meshes
+  - Now with different surface/inside colors for tetra meshes
 * Fixed: bounding box was not updated when the surface mesh was moved to the origin
 * Robustness: failed or corrupt mesh files (surface, GMSH, Tetgen) are rejected with a message and keep the current mesh instead of crashing; Generate without a loaded surface no longer crashes; 
   failed tetrahedralization keeps the surface visible
