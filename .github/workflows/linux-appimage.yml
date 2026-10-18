@@ -1,0 +1,92 @@
+name: Linux AppImage
+
+on:
+  push:
+    tags: ['v*', '[0-9]*']
+  workflow_dispatch:
+
+env:
+  SOFA_VERSION: 26.06.00
+  GMSH_VERSION: 4.15.2
+  APPIMAGE_EXTRACT_AND_RUN: 1
+
+jobs:
+  build:
+    # Oldest available Ubuntu: the AppImage runs on systems with the same or a newer glibc
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fTetWild sources
+        uses: actions/checkout@v4
+        with:
+          repository: wildmeshing/fTetWild
+          path: ftetwild
+
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcgal-dev libassimp-dev libgmp-dev libmpfr-dev libboost-dev libeigen3-dev \
+            libgl1-mesa-dev libglu1-mesa-dev libopengl0 libxkbcommon-dev libxkbcommon-x11-0 \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+            libxcb-xinerama0 libxcb-xkb1 libfuse2 file wget
+
+      - name: Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.*
+          arch: linux_gcc_64
+          cache: true
+
+      - name: GMSH SDK and SOFA
+        uses: actions/cache@v4
+        id: sdk-cache
+        with:
+          path: deps
+          key: sdk-linux-sofa-${{ env.SOFA_VERSION }}-gmsh-${{ env.GMSH_VERSION }}
+
+      - name: Download GMSH SDK and SOFA
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p deps/sofa
+          wget -q "https://gmsh.info/bin/Linux/gmsh-${GMSH_VERSION}-Linux64-sdk.tgz" -O gmsh.tgz
+          tar -xzf gmsh.tgz -C deps
+          wget -q "https://github.com/sofa-framework/sofa/releases/download/v${SOFA_VERSION}/SOFA_v${SOFA_VERSION}_Linux_Python3.10.zip" -O sofa.zip
+          unzip -q sofa.zip -d deps/sofa
+
+      - name: Configure
+        run: |
+          SOFA="$(find deps/sofa -mindepth 1 -maxdepth 1 -type d | head -n1)"
+          echo "SOFA_LIBS_PATH=$PWD/$SOFA/lib" >> "$GITHUB_ENV"
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" \
+            -DSOFA_INSTALL_DIR="$PWD/$SOFA" \
+            -DGMSH_INSTALL_PATH="$PWD/deps/gmsh-${GMSH_VERSION}-Linux64-sdk" \
+            -DQTM_WITH_FTETWILD=ON \
+            -DFTETWILD_SOURCE_DIR="$PWD/ftetwild"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: AppImage
+        run: |
+          zz_linux_packaging/build_appimage.sh
+          sha256sum QTetraMesher-*-x86_64_Linux.AppImage > SHA256SUMS-linux.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QTetraMesher-linux
+          path: |
+            QTetraMesher-*-x86_64_Linux.AppImage
+            SHA256SUMS-linux.txt
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            QTetraMesher-*-x86_64_Linux.AppImage
+            SHA256SUMS-linux.txt
