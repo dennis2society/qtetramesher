@@ -43,7 +43,7 @@ History + usage instructions: https://qtm.dennis2society.de
 * Fixed a bug in the cutplane rendering (initial slider values were not at 0 cutting off parts of the tetrahedra mesh)
 * Improved surface mesh loading including optional basic mesh repair on load
 * Better about and help dialog
- Added an application icon
+* Added an application icon
 * <b>Windows binary release</b> (x64, Release/MinSizeRel):
   - Compiler: Visual Studio 2022 (17.14), MSVC 19.44
   - Qt 6.12.0
