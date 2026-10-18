@@ -22,7 +22,7 @@ History + usage instructions: https://qtm.dennis2society.de
 
 
 ## Changelog
-### 0.8.5
+### 0.8.5 - 2026-10-17
 * <b>New tetrahedralization methods:</b>
   - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary with mesh size and selected cell size) with no external dependencies
   - Improved Tetgen integration
@@ -40,10 +40,19 @@ History + usage instructions: https://qtm.dennis2society.de
 * GMSH files must be ASCII MSH version 2 (version 4 files are now detected and reported)
 * Tetrahedralization no longer blocks the UI: each method runs in a separate worker process and can be canceled (also when a method hangs); a crash in a method no longer takes down the program.   
   Octree generation and the surface check run in background threads. A progress indicator is shown in the viewer
-- Fixed a bug in the cutplane rendering (initial slider values were not at 0 cutting off parts of the tetrahedra mesh)
-- Improved surface mesh loading including optional basic mesh repair on load
-- Better about and help dialog
-* Added an application icon
+* Fixed a bug in the cutplane rendering (initial slider values were not at 0 cutting off parts of the tetrahedra mesh)
+* Improved surface mesh loading including optional basic mesh repair on load
+* Better about and help dialog
+ Added an application icon
+* <b>Windows binary release</b> (x64, Release/MinSizeRel):
+  - Compiler: Visual Studio 2022 (17.14), MSVC 19.44
+  - Qt 6.12.0
+  - Boost 1.92.0
+  - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
+  - assimp 6.0.5
+  - SOFA Framework 26.12.99
+  - GMSH 4.15.2
+  - fTetWild (git 8118f81, 2026-09-23) with oneTBB 2022.2.0, geogram 1.9.6, libigl 2.6.0, Eigen 3.4.0, spdlog 1.15.3 and fmt 11.2.0 (all statically linked except TBB)
 
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
