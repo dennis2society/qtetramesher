@@ -27,7 +27,7 @@ workflow, so no manual path setup is needed.
 | Qt 6 | `install-qt-action` (6.12) | `install-qt-action` (6.8) |
 | CGAL, assimp, Eigen, GMP, Boost | vcpkg (`x64-windows`) | apt (Ubuntu 22.04) |
 | SOFA | release zip `SOFA_v<ver>_Win64.zip` | release zip `SOFA_v<ver>_Linux_Python3.10.zip` |
-| GMSH | SDK zip from gmsh.info | SDK tgz from gmsh.info |
+| GMSH | built from source with MSVC (the SDK is MinGW) | SDK tgz from gmsh.info |
 | fTetWild | git checkout of `wildmeshing/fTetWild` (default branch) | same |
 
 Versions are set in the `env:` block at the top of each workflow (`SOFA_VERSION`,

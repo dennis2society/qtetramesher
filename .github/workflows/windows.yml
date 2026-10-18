@@ -41,23 +41,50 @@ jobs:
       - name: CGAL, assimp, Eigen (vcpkg)
         run: vcpkg install cgal assimp eigen3 --triplet x64-windows
 
-      - name: GMSH SDK and SOFA
+      - name: SOFA
         uses: actions/cache@v4
         id: sdk-cache
         with:
           path: deps
-          key: sdk-sofa-${{ env.SOFA_VERSION }}-gmsh-${{ env.GMSH_VERSION }}
+          key: sofa-${{ env.SOFA_VERSION }}
 
-      - name: Download GMSH SDK and SOFA
+      - name: Download SOFA
         if: steps.sdk-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force deps | Out-Null
-          Invoke-WebRequest "https://gmsh.info/bin/Windows/gmsh-$env:GMSH_VERSION-Windows64-sdk.zip" -OutFile gmsh.zip
-          Expand-Archive gmsh.zip deps
           $v = $env:SOFA_VERSION
           Invoke-WebRequest "https://github.com/sofa-framework/sofa/releases/download/v$v/SOFA_v${v}_Win64.zip" -OutFile sofa.zip
           Expand-Archive sofa.zip deps/sofa
+
+      # The official Windows SDK is built with MinGW; its C++ API cannot be linked with MSVC.
+      - name: GMSH (MSVC build)
+        uses: actions/cache@v4
+        id: gmsh-cache
+        with:
+          path: gmsh-sdk
+          key: gmsh-msvc-${{ env.GMSH_VERSION }}-v1
+
+      - name: Build GMSH
+        if: steps.gmsh-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest "https://gmsh.info/src/gmsh-$env:GMSH_VERSION-source.tgz" -OutFile gmsh-src.tgz
+          tar -xf gmsh-src.tgz
+          $src = "$PWD/gmsh-$env:GMSH_VERSION-source"
+          cmake -S $src -B gmsh-build -G "Visual Studio 17 2022" -A x64 `
+            -DENABLE_BUILD_SHARED=1 -DENABLE_OCC=0 -DENABLE_FLTK=0 `
+            -DENABLE_PRIVATE_API=0 -DENABLE_MPI=0 -DENABLE_OPENMP=0
+          if ($LASTEXITCODE) { exit 1 }
+          cmake --build gmsh-build --config Release --target shared --parallel
+          if ($LASTEXITCODE) { exit 1 }
+          $sdk = "$PWD/gmsh-sdk"
+          New-Item -ItemType Directory -Force "$sdk/include", "$sdk/lib", "$sdk/bin" | Out-Null
+          Copy-Item "$src/api/gmsh.h" "$sdk/include"
+          Get-ChildItem gmsh-build -Recurse -Filter 'gmsh*.lib' | Copy-Item -Destination "$sdk/lib"
+          Get-ChildItem gmsh-build -Recurse -Filter 'gmsh*.dll' | Copy-Item -Destination "$sdk/bin"
+          Get-ChildItem $sdk -Recurse | Select-Object -ExpandProperty FullName
 
       - name: Configure
         shell: pwsh
@@ -66,7 +93,7 @@ jobs:
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
             "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR;C:/vcpkg/installed/x64-windows" `
             "-DSOFA_INSTALL_DIR=$sofa" `
-            "-DGMSH_INSTALL_PATH=$PWD/deps/gmsh-$env:GMSH_VERSION-Windows64-sdk" `
+            "-DGMSH_INSTALL_PATH=$PWD/gmsh-sdk" `
             -DQTM_WITH_FTETWILD=ON `
             "-DFTETWILD_SOURCE_DIR=$PWD/ftetwild"
 
