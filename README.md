@@ -57,7 +57,7 @@ History + usage instructions: https://qtm.dennis2society.de
   - fTetWild (git 8118f81, 2026-09-23) with oneTBB 2022.2.0, geogram 1.9.6, libigl 2.6.0, Eigen 3.4.0, spdlog 1.15.3 and fmt 11.2.0 (all statically linked except TBB)
 * <b>Linux AppImage</b>
   - Qt 6.11.2
-  - Boost 1.92.0
+  - Boost 1.74.0
   - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
   - assimp 6.0.5
   - SOFA Framework 26.12.99
