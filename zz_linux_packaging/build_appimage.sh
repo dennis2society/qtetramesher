@@ -1,12 +1,12 @@
 #!/bin/bash
 # Builds QTetraMesher-x86_64.AppImage from an existing Release build in build/.
-# Usage: SOFA_LIBS_PATH=/opt/sofa_git/build/install/lib packaging/linux/build_appimage.sh [version]
+# Usage: SOFA_LIBS_PATH=/opt/sofa_git/build/install/lib zz_linux_packaging/build_appimage.sh [version]
 # The version (argument, or APP_VERSION env var) defaults to the one in CMakeLists.txt
 # and becomes part of the file name: QTetraMesher-<version>-x86_64.AppImage
 [ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SOFA_LIBS_PATH="${SOFA_LIBS_PATH:-/opt/sofa_git/build/install/lib}"
 TOOLS="$ROOT/build/appimage-tools"
 APPDIR="$ROOT/build/AppDir"
@@ -50,7 +50,7 @@ cd "$ROOT"
 "$TOOLS/linuxdeploy-x86_64.AppImage" --appimage-extract-and-run \
   --appdir "$APPDIR" \
   --executable "$APPDIR/usr/bin/QTetraMesher" \
-  --desktop-file "$ROOT/packaging/linux/qtetramesher.desktop" \
+  --desktop-file "$ROOT/zz_linux_packaging/qtetramesher.desktop" \
   --icon-file "$ROOT/resources/qtetramesher_256.png" \
   --icon-filename qtetramesher \
   "${EXTRA_LIBS[@]}" \
