@@ -44,9 +44,19 @@ History + usage instructions: https://qtm.dennis2society.de
 * Improved surface mesh loading including optional basic mesh repair on load
 * Better about and help dialog
 * Added an application icon
-* <b>Windows binary release</b> (x64, Release/MinSizeRel):
+
+## Binary Releases
+* <b>Windows binary release</b> (x64, Release/MinSizeRel) (portable ZIP archive or InnoSetup installer on the Releases page):
   - Compiler: Visual Studio 2022 (17.14), MSVC 19.44
   - Qt 6.12.0
+  - Boost 1.92.0
+  - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
+  - assimp 6.0.5
+  - SOFA Framework 26.12.99
+  - GMSH 4.15.2
+  - fTetWild (git 8118f81, 2026-09-23) with oneTBB 2022.2.0, geogram 1.9.6, libigl 2.6.0, Eigen 3.4.0, spdlog 1.15.3 and fmt 11.2.0 (all statically linked except TBB)
+* <b>Linux AppImage</b>
+  - Qt 6.11.2
   - Boost 1.92.0
   - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
   - assimp 6.0.5
