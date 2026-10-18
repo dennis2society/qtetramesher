@@ -24,9 +24,15 @@ SurfaceVisWidget::SurfaceVisWidget(QWidget *parent)
   surfaceVisComboBox.addItem("Wireframe");
   surfaceVisComboBox.addItem("Hidden");
   surfaceVisComboBox.setMaximumHeight(20);
+  checkSurfaceButton.setText("Check Surface Mesh");
+  checkSurfaceButton.setToolTip(
+      "Check for intersecting triangles, open edges and other defects that "
+      "break Tetgen/GMSH");
+  checkSurfaceButton.setMaximumHeight(20);
   layout.addWidget(&labelTitle);
   layout.addWidget(&surfaceVisComboBox);
   layout.addWidget(&surfaceColorButton);
   layout.addWidget(&surfaceWireframeColorButton);
+  layout.addWidget(&checkSurfaceButton);
   layout.addStretch();
 }

@@ -8,6 +8,9 @@
  * TriangleTopology.
  */
 
+#ifndef TETRAMESHTOOLS_TETRAHEDRONTOPOLOGY_H_
+#define TETRAMESHTOOLS_TETRAHEDRONTOPOLOGY_H_
+
 #include "TetraToolsExports.h"
 #include "TriangleTopology.h"
 
@@ -125,3 +128,5 @@ class DLL_EXPORT TetrahedronTopology : public TriangleTopology {
 };
 
 }  // namespace TetraTools
+
+#endif /* TETRAMESHTOOLS_TETRAHEDRONTOPOLOGY_H_ */

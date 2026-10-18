@@ -5,18 +5,190 @@
  *      Author: Dennis Luebke
  */
 
-#ifdef WIN32
-#include "windows.h"
-#endif
-#include "GL/gl.h"
-// #include "GL/glut.h"
 #include "QGLTetraMesh.hpp"
+
+#include <QOpenGLExtraFunctions>
+#include <QOpenGLShaderProgram>
+#include <QtmGLViewer/Camera.hpp>
+#include <QtmGLViewer/MeshData.hpp>
+#include <algorithm>
+
 #include "TetraMeshTools/GMSHMeshLoader.h"
 #include "TetraMeshTools/GMSHMeshWriter.h"
-#include "TetraMeshTools/TetgenWriter.h"
 #include "TetraMeshTools/TriMeshLoader.h"
 #include "TetraMeshTools/TriMeshWriter.h"
+#include "TetgenWrapper.h"
 #include "Timer.h"
+
+// The mesh containers are uploaded to the GPU without conversion.
+static_assert(sizeof(Vec3f) == 3 * sizeof(float), "Vec3f must be 3 floats");
+static_assert(sizeof(Edge) == 2 * sizeof(uint32_t), "Edge must be 2 indices");
+static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t),
+              "Triangle must be 3 indices");
+
+namespace {
+
+/// Instanced tetrahedron shader: every instance is one tetrahedron given by
+/// its 4 corners, drawn as 12 vertices (4 faces) shrunk towards the
+/// centroid. Tetrahedra whose centroid is outside the cutplane range are
+/// collapsed outside the clip volume.
+const char *kTetraVertexShader = R"(#version 330 core
+layout(location = 0) in vec3 a_v0;
+layout(location = 1) in vec3 a_v1;
+layout(location = 2) in vec3 a_v2;
+layout(location = 3) in vec3 a_v3;
+// -1 for boundary tetrahedra, else 0 (outermost) .. 1 (deepest)
+layout(location = 4) in float a_depth;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
+uniform mat3 u_normalMatrix;
+uniform vec3 u_cutMin;
+uniform vec3 u_cutMax;
+uniform float u_shrink;
+out vec3 v_normal;
+flat out float v_depth;
+// faces as in the original immediate mode code, and the vertex opposite to
+// each face
+const int faces[12] = int[12](0, 3, 2, 3, 1, 2, 1, 0, 2, 0, 1, 3);
+const int opposite[4] = int[4](1, 0, 3, 2);
+void main() {
+  vec3 v[4] = vec3[4](a_v0, a_v1, a_v2, a_v3);
+  vec3 center = 0.25 * (v[0] + v[1] + v[2] + v[3]);
+  v_depth = a_depth;
+  if (any(lessThan(center, u_cutMin)) ||
+      any(greaterThan(center, u_cutMax))) {
+    v_normal = vec3(0.0, 0.0, 1.0);
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+  int face = gl_VertexID / 3;
+  int corner = gl_VertexID % 3;
+  vec3 a = v[faces[face * 3]];
+  vec3 b = v[faces[face * 3 + 1]];
+  vec3 c = v[faces[face * 3 + 2]];
+  vec3 n = cross(b - a, c - a);
+  // make the face point outwards regardless of the tetra orientation
+  if (dot(n, v[opposite[face]] - a) > 0.0) {
+    n = -n;
+    if (corner == 1) corner = 2;
+    else if (corner == 2) corner = 1;
+  }
+  vec3 p = corner == 0 ? a : (corner == 1 ? b : c);
+  p = center + (p - center) * u_shrink;
+  v_normal = u_normalMatrix * normalize(n);
+  gl_Position = u_projection * u_view * u_model * vec4(p, 1.0);
+}
+)";
+
+const char *kTetraFragmentShader = R"(
+in vec3 v_normal;
+flat in float v_depth;
+uniform vec3 u_color;
+uniform vec3 u_outerColor;
+uniform vec3 u_innerColor;
+uniform bool u_depthColoring;
+out vec4 fragColor;
+void main() {
+  vec3 n = gl_FrontFacing ? v_normal : -v_normal;
+  vec3 color = (u_depthColoring && v_depth >= 0.0)
+                   ? mix(u_outerColor, u_innerColor, v_depth)
+                   : u_color;
+  fragColor = vec4(qtmHeadlight(n, color, 0.6, 50.0), 1.0);
+}
+)";
+
+QColor toQColor(const Vec3f &c) { return QColor::fromRgbF(c.x, c.y, c.z); }
+
+QVector3D toQVector(const Vec3f &v) { return QVector3D(v.x, v.y, v.z); }
+
+/// Per tetrahedron: -1 if it has a face on the mesh boundary, otherwise its
+/// face-neighbor distance from the boundary tetrahedra, normalized so the
+/// first interior layer is 0 and the deepest layer is 1.
+std::vector<float> ComputeTetraDepths(const std::vector<Tetrahedron> &tetras) {
+  struct Face {
+    unsigned int v[3];
+    unsigned int tetra;
+    bool operator<(const Face &o) const {
+      return std::lexicographical_compare(v, v + 3, o.v, o.v + 3);
+    }
+    bool SameAs(const Face &o) const {
+      return v[0] == o.v[0] && v[1] == o.v[1] && v[2] == o.v[2];
+    }
+  };
+  const size_t n = tetras.size();
+  std::vector<Face> faces;
+  faces.reserve(n * 4);
+  for (size_t i = 0; i < n; ++i) {
+    for (int k = 0; k < 4; ++k) {
+      Face f;
+      int j = 0;
+      for (int c = 0; c < 4; ++c)
+        if (c != k) f.v[j++] = tetras[i].index[c];
+      std::sort(f.v, f.v + 3);
+      f.tetra = unsigned(i);
+      faces.push_back(f);
+    }
+  }
+  std::sort(faces.begin(), faces.end());
+
+  std::vector<std::vector<unsigned int>> neighbors(n);
+  std::vector<int> depth(n, -1);
+  std::vector<unsigned int> queue;
+  for (size_t i = 0; i < faces.size();) {
+    size_t j = i + 1;
+    while (j < faces.size() && faces[j].SameAs(faces[i])) ++j;
+    if (j - i == 1) {
+      if (depth[faces[i].tetra] != 0) {
+        depth[faces[i].tetra] = 0;
+        queue.push_back(faces[i].tetra);
+      }
+    } else {
+      for (size_t a = i; a < j; ++a)
+        for (size_t b = i; b < j; ++b)
+          if (a != b) neighbors[faces[a].tetra].push_back(faces[b].tetra);
+    }
+    i = j;
+  }
+
+  int maxDepth = 0;
+  for (size_t q = 0; q < queue.size(); ++q) {
+    const unsigned int t = queue[q];
+    for (unsigned int nb : neighbors[t]) {
+      if (depth[nb] < 0) {
+        depth[nb] = depth[t] + 1;
+        maxDepth = std::max(maxDepth, depth[nb]);
+        queue.push_back(nb);
+      }
+    }
+  }
+
+  std::vector<float> result(n);
+  for (size_t i = 0; i < n; ++i) {
+    if (depth[i] <= 0)
+      result[i] = -1.0f;
+    else
+      result[i] = maxDepth > 1 ? float(depth[i] - 1) / float(maxDepth - 1) : 0.0f;
+  }
+  return result;
+}
+
+const float *toFloats(const std::vector<Vec3f> &v) { return &v[0].x; }
+
+/// true if all tetrahedron indices refer to existing vertices. Invalid
+/// indices (e.g. from a corrupt file) would crash the topology generation
+/// and the GPU upload.
+bool TetraIndicesValid(const std::vector<Vec3f> &verts,
+                       const std::vector<Tetrahedron> &tetras) {
+  for (const Tetrahedron &t : tetras) {
+    for (int k = 0; k < 4; ++k) {
+      if (t.index[k] >= verts.size()) return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
 
 QGLTetraMesh::QGLTetraMesh()
     : drawSolid(false),
@@ -28,11 +200,27 @@ QGLTetraMesh::QGLTetraMesh()
       bboxMode(0),
       drawTetraSolid(true),
       drawTetraWireframe(true),
-      surfaceMode(0) {
+      surfaceMode(0),
+      octreeMode(0),
+      xLowerThreshold(0.0f),
+      xUpperThreshold(1.0f),
+      yLowerThreshold(0.0f),
+      yUpperThreshold(1.0f),
+      zLowerThreshold(0.0f),
+      zUpperThreshold(1.0f),
+      surfaceDirty(true),
+      tetraDirty(true),
+      boundingVolumeDirty(true),
+      octreeDirty(true),
+      boundingVolumeBufferMode(-1),
+      octreeBufferMode(-1) {
   top = NULL;
   surf = NULL;
   surfaceColorSolid = Vec3f(0.3f, 0.3f, 0.3f);
   tetraColorSolid = Vec3f(0.5f, 0.5f, 0.1f);
+  tetraColorOuter = Vec3f(0.85f, 0.35f, 0.15f);
+  tetraColorInner = Vec3f(0.15f, 0.35f, 0.85f);
+  tetraDepthColoring = true;
   surfaceColorWireframe = Vec3f(0.1f, 0.6f, 0.1f);
   tetraColorWireframe = Vec3f(0.2f, 0.2f, 0.6f);
   oct = NULL;
@@ -40,456 +228,395 @@ QGLTetraMesh::QGLTetraMesh()
 
 QGLTetraMesh::~QGLTetraMesh() {
   isReady = false;
-  if (top != NULL) {
-    delete top;
+  ClearAll();
+}
+
+void QGLTetraMesh::ClearAll() {
+  // the octree references the surface mesh, so it has to go first
+  delete oct;
+  oct = NULL;
+  delete top;
+  top = NULL;
+  delete surf;
+  surf = NULL;
+  MarkGeometryDirty();
+}
+
+void QGLTetraMesh::InitGL() {
+  const QString fragment = QStringLiteral("#version 330 core\n") +
+                           QString::fromLatin1(qtm::RenderContext::lightingGlsl()) +
+                           QString::fromLatin1(kTetraFragmentShader);
+  tetraProgram = std::make_unique<QOpenGLShaderProgram>();
+  if (!tetraProgram->addShaderFromSourceCode(QOpenGLShader::Vertex,
+                                             kTetraVertexShader) ||
+      !tetraProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                             fragment) ||
+      !tetraProgram->link()) {
+    std::cerr << "Error building tetrahedron shader: "
+              << tetraProgram->log().toStdString() << std::endl;
+    tetraProgram.reset();
   }
-  if (surf != NULL) {
-    delete surf;
-  }
+  MarkGeometryDirty();
 }
 
-void QGLTetraMesh::Draw() {
-  // glEnable(GL_LIGHTING);
-  // glEnable(GL_DEPTH_TEST);
-  glEnable(GL_COLOR_MATERIAL);
-  static const float zero[4] = {0.0f, 0.0f, 0.0f};
-  static const float diff[4] = {0.8f, 0.8f, 0.85f};
-  static const float spec[4] = {0.6f, 0.6f, 0.6f};
-  glMaterialfv(GL_FRONT, GL_AMBIENT, zero);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-  glMaterialfv(GL_FRONT, GL_EMISSION, zero);
-  glMaterialf(GL_FRONT, GL_SHININESS, 50.0f);
-  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-  if (isReady) {
-    /// draw tetra mesh
-    if (top != NULL) {
-      if (drawTetraWireframe) {
-        glDisable(GL_LIGHTING);
-        glColor3f(tetraColorWireframe.x, tetraColorWireframe.y,
-                  tetraColorWireframe.z);  /// yellow wireframe
-        glVertexPointer(3, GL_FLOAT, sizeof(Vec3f), &(top->GetVertices()[0]));
-        // draw triangles
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glDrawElements(GL_LINES, top->GetNumEdges() * 2, GL_UNSIGNED_INT,
-                       &(top->GetEdges()[0]));
-        glDisableClientState(GL_VERTEX_ARRAY);
-      }
-      if (drawTetraSolid) {
-        glEnable(GL_LIGHTING);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        const std::vector<Tetrahedron> &tetras = top->GetTetrahedra();
-        const std::vector<Vec3f> &vertices = top->GetVertices();
-        BoundingBox b = top->GetBoundingBox();
-        glColor3f(tetraColorSolid.x, tetraColorSolid.y, tetraColorSolid.z);
-        for (unsigned int i = 0; i < tetras.size(); ++i) {
-          const Tetrahedron &t = tetras[i];
-          Vec3f centroid =
-              t.Centroid(vertices[t.index[0]], vertices[t.index[1]],
-                         vertices[t.index[2]], vertices[t.index[3]]);
-          float xDist = b.max.x - b.min.x;
-          float xLowerCutDist = xDist * xLowerThreshold;
-          float xUpperCutDist = xDist * xUpperThreshold;
-          float yDist = b.max.y - b.min.y;
-          float yLowerCutDist = yDist * yLowerThreshold;
-          float yUpperCutDist = yDist * yUpperThreshold;
-          float zDist = b.max.z - b.min.z;
-          float zLowerCutDist = zDist * zLowerThreshold;
-          float zUpperCutDist = zDist * zUpperThreshold;
-          Vec3f v0 = vertices[t.index[0]];
-          Vec3f v1 = vertices[t.index[1]];
-          Vec3f v2 = vertices[t.index[2]];
-          Vec3f v3 = vertices[t.index[3]];
-          Vec3f vc0 = (v0 - centroid) * 0.95f;
-          Vec3f vc1 = (v1 - centroid) * 0.95f;
-          Vec3f vc2 = (v2 - centroid) * 0.95f;
-          Vec3f vc3 = (v3 - centroid) * 0.95f;
-          /// draw tetra when its centroid is between the front and back
-          /// cutplanes
-          if ((centroid.x <= (b.max.x - xLowerCutDist)) &&
-              (centroid.x >= (b.max.x - xUpperCutDist)) &&
-              (centroid.y <= (b.max.y - yLowerCutDist)) &&
-              (centroid.y >= (b.max.y - yUpperCutDist)) &&
-              (centroid.z <= (b.max.z - zLowerCutDist)) &&
-              (centroid.z >= (b.max.z - zUpperCutDist))) {
-            /// draw 4 correctly faced tetra triangles based on the
-            /// triangles in relation to the tetrahedron's centroid
-            glBegin(GL_TRIANGLES);
-            Vec3f normal = (vc3 - vc0).cross((vc2 - vc0));
-            normal.normalize();
-            glNormal3f(normal.x, normal.y, normal.z);
-            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                       centroid.z + vc0.z);
-            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                       centroid.z + vc3.z);
-            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                       centroid.z + vc2.z);
-            normal = (vc1 - vc3).cross((vc2 - vc3));
-            normal.normalize();
-            glNormal3f(normal.x, normal.y, normal.z);
-            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                       centroid.z + vc3.z);
-            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                       centroid.z + vc1.z);
-            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                       centroid.z + vc2.z);
-            normal = (vc0 - vc1).cross((vc2 - vc1));
-            normal.normalize();
-            glNormal3f(normal.x, normal.y, normal.z);
-            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                       centroid.z + vc1.z);
-            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                       centroid.z + vc0.z);
-            glVertex3f(centroid.x + vc2.x, centroid.y + vc2.y,
-                       centroid.z + vc2.z);
-            normal = (vc1 - vc0).cross((vc3 - vc0));
-            normal.normalize();
-            glNormal3f(normal.x, normal.y, normal.z);
-            glVertex3f(centroid.x + vc0.x, centroid.y + vc0.y,
-                       centroid.z + vc0.z);
-            glVertex3f(centroid.x + vc1.x, centroid.y + vc1.y,
-                       centroid.z + vc1.z);
-            glVertex3f(centroid.x + vc3.x, centroid.y + vc3.y,
-                       centroid.z + vc3.z);
-            glEnd();
-          }
-        }
-      }
-    }
-    /// draw surface if possible
-    switch (surfaceMode) {
-      case 2:  // hide
-        break;
-      case 1:  // wireframe
-        if (surf != NULL) {
-          glColor3f(surfaceColorWireframe.x, surfaceColorWireframe.y,
-                    surfaceColorWireframe.z);  /// yellow wireframe
-          glDisable(GL_LIGHTING);
-          glVertexPointer(3, GL_FLOAT, sizeof(Vec3f),
-                          &(surf->GetVertices()[0]));
-          // draw triangles
-          glEnableClientState(GL_VERTEX_ARRAY);
-          glDrawElements(GL_LINES, surf->GetNumEdges() * 2, GL_UNSIGNED_INT,
-                         &(surf->GetEdges()[0]));
-          glDisableClientState(GL_VERTEX_ARRAY);
-        }
-        break;
-      case 0:  // surface with normals
-        if (surf != NULL) {
-          glEnable(GL_LIGHTING);
-          glEnable(GL_DEPTH_TEST);
-          glEnable(GL_CULL_FACE);
-          glColor3f(surfaceColorSolid.x, surfaceColorSolid.y,
-                    surfaceColorSolid.z);  /// grey
-          glVertexPointer(3, GL_FLOAT, sizeof(Vec3f),
-                          &(surf->GetVertices()[0]));
-          glNormalPointer(GL_FLOAT, sizeof(Vec3f), &(surf->GetNormals()[0]));
-          // draw triangles
-          glEnableClientState(GL_VERTEX_ARRAY);
-          glEnableClientState(GL_NORMAL_ARRAY);
-          glDrawElements(GL_TRIANGLES, surf->GetNumTriangles() * 3,
-                         GL_UNSIGNED_INT, &(surf->GetTriangles()[0]));
-          glDisableClientState(GL_NORMAL_ARRAY);
-          glDisableClientState(GL_VERTEX_ARRAY);
-        }
-        break;
-      default:
-        break;
-    }
-
-    /// draw bounding volume
-    BoundingBox bb;
-    BoundingCube c;
-    if (surf) {
-      bb = surf->GetBoundingBox();
-      c = surf->GetBoundingCube();
-      if (bboxMode == 3) {
-        c = surf->GetLargeBoundingCube();
-      }
-    }
-    if (top) {
-      bb = top->GetBoundingBox();
-      c = top->GetBoundingCube();
-      if (bboxMode == 3) {
-        c = surf->GetLargeBoundingCube();
-      }
-    }
-    switch (bboxMode) {
-      case 0:  // hide bounding volume
-        break;
-      case 1:  // show bounding box
-        DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
-        break;
-      case 2:  // show larger bounding cube
-        bb.min = Vec3f(c.center.x - c.size / 2, c.center.y - c.size / 2,
-                       c.center.z - c.size / 2);
-        bb.max = Vec3f(c.center.x + c.size / 2, c.center.y + c.size / 2,
-                       c.center.z + c.size / 2);
-        DrawBoundingVolume(bb, Vec3f(0.1f, 0.8f, 0.1f));
-        break;
-      default:
-        break;
-    }
-    switch (octreeMode) {
-      case 0:  // hide octree
-        break;
-      case 1:  // show octree
-        DrawOctree(false);
-        break;
-      case 2:  // show octree with smallest leafs only
-        DrawOctree(true);
-        break;
-    }
-  }
+void QGLTetraMesh::CleanupGL() {
+  surfaceSolidBuffer.destroy();
+  surfaceWireframeBuffer.destroy();
+  tetraSolidBuffer.destroy();
+  tetraWireframeBuffer.destroy();
+  boundingVolumeBuffer.destroy();
+  octreeBuffer.destroy();
+  tetraProgram.reset();
+  MarkGeometryDirty();
 }
 
-void QGLTetraMesh::DrawBoundingVolume(const BoundingBox &bb, Vec3f color_) {
-  glColor3f(color_.x, color_.y, color_.z);  /// green bbox
-  glDisable(GL_LIGHTING);
-  glBegin(GL_LINES);
-  glVertex3f(bb.min.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.max.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.max.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.min.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.min.z);
-  glVertex3f(bb.max.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.min.x, bb.min.y, bb.max.z);
-  glVertex3f(bb.min.x, bb.max.y, bb.max.z);
-  glEnd();
+void QGLTetraMesh::MarkGeometryDirty() {
+  surfaceDirty = true;
+  tetraDirty = true;
+  boundingVolumeDirty = true;
+  octreeDirty = true;
 }
 
-void QGLTetraMesh::DrawTetraTriangle(const unsigned int triangleIndex,
-                                     const Vec3f &tetraCentroid,
-                                     const Vec3f &color) {
-  const Triangle &t = top->GetTriangles()[triangleIndex];
-  // funny way to calculate the normal from the distance from the tetrahedron's
-  // centroid to the triangle's centroid
-  glBegin(GL_TRIANGLES);
-  glColor3f(color.x, color.y, color.z);
-  Vec3f v0 = (top->GetVertices()[t.index[0]] - tetraCentroid);  //*0.95f;
-  Vec3f v1 = (top->GetVertices()[t.index[1]] - tetraCentroid);  //*0.95f;
-  Vec3f v2 = (top->GetVertices()[t.index[2]] - tetraCentroid);  //*0.95f;
-  Vec3f normal = (v0 + v1 + v2);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(tetraCentroid.x + v0.x, tetraCentroid.y + v0.y,
-             tetraCentroid.z + v0.z);
-  glVertex3f(tetraCentroid.x + v1.x, tetraCentroid.y + v1.y,
-             tetraCentroid.z + v1.z);
-  glVertex3f(tetraCentroid.x + v2.x, tetraCentroid.y + v2.y,
-             tetraCentroid.z + v2.z);
-  glEnd();
-}
-
-void QGLTetraMesh::DrawTetrahedron(const unsigned int tetraIndex) {
-  const Tetrahedron &t = top->GetTetrahedra()[tetraIndex];
-  Vec3f centroid = Tetrahedron::Centroid(
-      top->GetVertices()[t.index[0]], top->GetVertices()[t.index[1]],
-      top->GetVertices()[t.index[2]], top->GetVertices()[t.index[3]]);
-  /// experimental tetra-drawing as GL_TRIANGLE_STRIP
-  Vec3f v0 = (top->GetVertices()[t.index[0]] - centroid) * 0.8f;
-  Vec3f v1 = (top->GetVertices()[t.index[1]] - centroid) * 0.8f;
-  Vec3f v2 = (top->GetVertices()[t.index[2]] - centroid) * 0.8f;
-  Vec3f v3 = (top->GetVertices()[t.index[3]] - centroid) * 0.8f;
-  Vec3f color = Vec3f(0.2f, 0.1f, 0.2f);
-  Vec3f normal;
-  glColor3f(color.x, color.y, color.z);
-  glBegin(GL_TRIANGLE_STRIP);
-  normal = Vec3f(v0.x - centroid.x, v0.y - centroid.y, v0.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v0.x, centroid.y + v0.y, centroid.z + v0.z);
-  color = Vec3f(0.4f, 0.1f, 0.4f);
-  glColor3f(color.x, color.y, color.z);
-  normal = Vec3f(v1.x - centroid.x, v1.y - centroid.y, v1.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v1.x, centroid.y + v1.y, centroid.z + v1.z);
-  color = Vec3f(0.6f, 0.1f, 0.6f);
-  glColor3f(color.x, color.y, color.z);
-  normal = Vec3f(v2.x - centroid.x, v2.y - centroid.y, v2.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v2.x, centroid.y + v2.y, centroid.z + v2.z);
-  color = Vec3f(0.8f, 0.8f, 0.8f);
-  glColor3f(color.x, color.y, color.z);
-  normal = Vec3f(v3.x - centroid.x, v3.y - centroid.y, v3.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v3.x, centroid.y + v3.y, centroid.z + v3.z);
-  color = Vec3f(0.2f, 0.1f, 0.2f);
-  glColor3f(color.x, color.y, color.z);
-  normal = Vec3f(v0.x - centroid.x, v0.y - centroid.y, v0.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v0.x, centroid.y + v0.y, centroid.z + v0.z);
-  color = Vec3f(0.4f, 0.1f, 0.4f);
-  glColor3f(color.x, color.y, color.z);
-  normal = Vec3f(v1.x - centroid.x, v1.y - centroid.y, v1.z - centroid.z);
-  normal.normalize();
-  glNormal3f(normal.x, normal.y, normal.z);
-  glVertex3f(centroid.x + v1.x, centroid.y + v1.y, centroid.z + v1.z);
-  glEnd();
-}
-
-void QGLTetraMesh::DrawOctree(const bool leafsOnyly_) {
-  if (oct != NULL) {
-    OctreeNode *root = oct->getRootNode();
-    const std::vector<OctreeNode *> &leafs = root->getLeafs(leafsOnyly_);
-    for (unsigned int k = 0; k < leafs.size(); ++k) {
-      OctreeNode *on = leafs[k];
-      BoundingBox bt;
-      bt.min = on->getMinBC();
-      bt.max = on->getMaxBC();
-      DrawBoundingVolume(bt, Vec3f(0.8f, 0.8f, 0.1f));
-    }
-  }
-}
-
-void QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
-                                   std::vector<Tetrahedron> &tetras_) {
-  isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (verts_.size() == 0 || tetras_.size() == 0) {
-    isReady = false;
+void QGLTetraMesh::UpdateSurfaceBuffers() {
+  surfaceDirty = false;
+  if (surf == NULL || surf->GetVertices().empty()) {
+    surfaceSolidBuffer.destroy();
+    surfaceWireframeBuffer.destroy();
     return;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(verts_, tetras_, true);
-  isReady = true;
+  const std::vector<Vec3f> &vertices = surf->GetVertices();
+  const std::vector<Vec3f> &normals = surf->GetNormals();
+  const std::vector<Triangle> &triangles = surf->GetTriangles();
+  const std::vector<Edge> &edges = surf->GetEdges();
+  const int numVertices = int(vertices.size());
+
+  surfaceSolidBuffer.setPrimitive(GL_TRIANGLES);
+  surfaceSolidBuffer.setAttribute(qtm::MeshBuffer::Position,
+                                  toFloats(vertices), numVertices);
+  if (normals.size() == vertices.size())
+    surfaceSolidBuffer.setAttribute(qtm::MeshBuffer::Normal, toFloats(normals),
+                                    numVertices);
+  else
+    surfaceSolidBuffer.removeAttribute(qtm::MeshBuffer::Normal);
+  if (triangles.empty())
+    surfaceSolidBuffer.destroy();
+  else
+    surfaceSolidBuffer.setIndices(&triangles[0].index[0],
+                                  int(triangles.size() * 3));
+
+  surfaceWireframeBuffer.setPrimitive(GL_LINES);
+  surfaceWireframeBuffer.setAttribute(qtm::MeshBuffer::Position,
+                                      toFloats(vertices), numVertices);
+  if (edges.empty())
+    surfaceWireframeBuffer.destroy();
+  else
+    surfaceWireframeBuffer.setIndices(&edges[0].index[0],
+                                      int(edges.size() * 2));
+}
+
+void QGLTetraMesh::UpdateTetraBuffers() {
+  tetraDirty = false;
+  if (top == NULL || top->GetTetrahedra().empty()) {
+    tetraSolidBuffer.destroy();
+    tetraWireframeBuffer.destroy();
+    return;
+  }
+  const std::vector<Vec3f> &vertices = top->GetVertices();
+  const std::vector<Tetrahedron> &tetras = top->GetTetrahedra();
+  const std::vector<Edge> &edges = top->GetEdges();
+
+  tetraWireframeBuffer.setPrimitive(GL_LINES);
+  tetraWireframeBuffer.setAttribute(qtm::MeshBuffer::Position,
+                                    toFloats(vertices), int(vertices.size()));
+  if (edges.empty())
+    tetraWireframeBuffer.destroy();
+  else
+    tetraWireframeBuffer.setIndices(&edges[0].index[0], int(edges.size() * 2));
+
+  // one instance per tetrahedron with its 4 corners as instance attributes
+  const int numTetras = int(tetras.size());
+  std::vector<Vec3f> corners(tetras.size());
+  for (GLuint k = 0; k < 4; ++k) {
+    for (int i = 0; i < numTetras; ++i)
+      corners[i] = vertices[tetras[i].index[k]];
+    tetraSolidBuffer.setAttribute(k, toFloats(corners), numTetras, 3, 1);
+  }
+  const std::vector<float> depths = ComputeTetraDepths(tetras);
+  tetraSolidBuffer.setAttribute(4, depths.data(), numTetras, 1, 1);
+  tetraSolidBuffer.setPrimitive(GL_TRIANGLES);
+  tetraSolidBuffer.setVertexCount(12);
+  tetraSolidBuffer.setInstanceCount(numTetras);
+}
+
+void QGLTetraMesh::UpdateBoundingVolumeBuffer() {
+  boundingVolumeDirty = false;
+  boundingVolumeBufferMode = bboxMode;
+  if (bboxMode != 1 && bboxMode != 2) {
+    boundingVolumeBuffer.destroy();
+    return;
+  }
+  BoundingBox bb;
+  BoundingCube c;
+  if (surf) {
+    bb = surf->GetBoundingBox();
+    c = surf->GetBoundingCube();
+  }
+  if (top) {
+    bb = top->GetBoundingBox();
+    c = top->GetBoundingCube();
+  }
+  if (bboxMode == 2) {  // larger bounding cube
+    bb.min = Vec3f(c.center.x - c.size / 2, c.center.y - c.size / 2,
+                   c.center.z - c.size / 2);
+    bb.max = Vec3f(c.center.x + c.size / 2, c.center.y + c.size / 2,
+                   c.center.z + c.size / 2);
+  }
+  qtm::MeshData lines;
+  qtm::primitives::appendBoxLines(lines, toQVector(bb.min), toQVector(bb.max));
+  boundingVolumeBuffer.upload(lines, GL_LINES);
+}
+
+void QGLTetraMesh::UpdateOctreeBuffer() {
+  octreeDirty = false;
+  octreeBufferMode = octreeMode;
+  if (oct == NULL || (octreeMode != 1 && octreeMode != 2)) {
+    octreeBuffer.destroy();
+    return;
+  }
+  // mode 2 shows the smallest leafs only
+  const std::vector<OctreeNode *> &leafs =
+      oct->getRootNode()->getLeafs(octreeMode == 2);
+  qtm::MeshData lines;
+  lines.positions.reserve(leafs.size() * 24);
+  for (OctreeNode *on : leafs) {
+    qtm::primitives::appendBoxLines(lines, toQVector(on->getMinBC()),
+                                    toQVector(on->getMaxBC()));
+  }
+  octreeBuffer.upload(lines, GL_LINES);
+}
+
+void QGLTetraMesh::UpdateBuffers() {
+  if (surfaceDirty) UpdateSurfaceBuffers();
+  if (tetraDirty) UpdateTetraBuffers();
+  if (boundingVolumeDirty || boundingVolumeBufferMode != bboxMode)
+    UpdateBoundingVolumeBuffer();
+  if (octreeDirty || octreeBufferMode != octreeMode) UpdateOctreeBuffer();
+}
+
+void QGLTetraMesh::DrawTetraSolid(const qtm::RenderContext &context_) {
+  if (!tetraProgram || tetraSolidBuffer.isEmpty()) return;
+  /// draw tetra when its centroid is between the front and back cutplanes
+  const BoundingBox b = top->GetBoundingBox();
+  const Vec3f dist = b.max - b.min;
+  const QVector3D cutMin(b.max.x - dist.x * xUpperThreshold,
+                         b.max.y - dist.y * yUpperThreshold,
+                         b.max.z - dist.z * zUpperThreshold);
+  const QVector3D cutMax(b.max.x - dist.x * xLowerThreshold,
+                         b.max.y - dist.y * yLowerThreshold,
+                         b.max.z - dist.z * zLowerThreshold);
+  tetraProgram->bind();
+  context_.setMatrixUniforms(*tetraProgram);
+  tetraProgram->setUniformValue("u_cutMin", cutMin);
+  tetraProgram->setUniformValue("u_cutMax", cutMax);
+  tetraProgram->setUniformValue("u_shrink", 0.95f);
+  tetraProgram->setUniformValue("u_color", toQVector(tetraColorSolid));
+  tetraProgram->setUniformValue("u_outerColor", toQVector(tetraColorOuter));
+  tetraProgram->setUniformValue("u_innerColor", toQVector(tetraColorInner));
+  tetraProgram->setUniformValue("u_depthColoring", GLint(tetraDepthColoring));
+  tetraSolidBuffer.draw();
+  tetraProgram->release();
+}
+
+void QGLTetraMesh::Draw(const qtm::RenderContext &context_) {
+  if (!isReady) return;
+  UpdateBuffers();
+  QOpenGLExtraFunctions *gl = context_.gl();
+  // push solid faces back a little so wireframes on top stay visible
+  gl->glPolygonOffset(1.0f, 1.0f);
+
+  /// draw tetra mesh
+  if (top != NULL) {
+    if (drawTetraWireframe)
+      context_.drawLines(tetraWireframeBuffer, toQColor(tetraColorWireframe));
+    if (drawTetraSolid) {
+      gl->glEnable(GL_CULL_FACE);
+      gl->glEnable(GL_POLYGON_OFFSET_FILL);
+      DrawTetraSolid(context_);
+    }
+  }
+  /// draw surface if possible
+  switch (surfaceMode) {
+    case 1:  // wireframe
+      context_.drawLines(surfaceWireframeBuffer,
+                         toQColor(surfaceColorWireframe));
+      break;
+    case 0:  // surface with normals
+      gl->glEnable(GL_CULL_FACE);
+      gl->glEnable(GL_POLYGON_OFFSET_FILL);
+      context_.drawSolid(surfaceSolidBuffer, toQColor(surfaceColorSolid));
+      break;
+    default:  // 2 = hidden
+      break;
+  }
+  gl->glDisable(GL_CULL_FACE);
+  gl->glDisable(GL_POLYGON_OFFSET_FILL);
+
+  /// draw bounding volume and octree
+  context_.drawLines(boundingVolumeBuffer, QColor::fromRgbF(0.1f, 0.8f, 0.1f));
+  context_.drawLines(octreeBuffer, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
+}
+
+std::unique_ptr<TetraTools::TetrahedronTopology>
+QGLTetraMesh::BuildTetraTopology(const std::vector<Vec3f> &verts_,
+                                 const std::vector<Tetrahedron> &tetras_) {
+  if (verts_.empty() || tetras_.empty() ||
+      !TetraIndicesValid(verts_, tetras_)) {
+    std::cerr << "Error! The tetrahedral mesh is empty or invalid."
+              << std::endl;
+    return nullptr;
+  }
+  std::unique_ptr<TetraTools::TetrahedronTopology> t(
+      new TetraTools::TetrahedronTopology());
+  // complete = false: the per-vertex maps, tetra edges etc. are not used by
+  // the viewer; they are generated on first access if ever needed
+  t->Init(verts_, tetras_, false);
+  return t;
+}
+
+void QGLTetraMesh::SetTetraTopology(
+    std::unique_ptr<TetraTools::TetrahedronTopology> top_) {
+  isReady = false;
+  delete top;
+  top = top_.release();
+  MarkGeometryDirty();
+  isReady = (top != NULL || surf != NULL);
+}
+
+bool QGLTetraMesh::UpdateTetraMesh(std::vector<Vec3f> &verts_,
+                                   std::vector<Tetrahedron> &tetras_) {
+  // keeps showing the surface if there is no usable tetra mesh
+  std::unique_ptr<TetraTools::TetrahedronTopology> t =
+      BuildTetraTopology(verts_, tetras_);
+  const bool valid = (t != nullptr);
+  SetTetraTopology(std::move(t));
+  return valid;
+}
+
+void QGLTetraMesh::SetOctree(Octree *oct_) {
+  delete oct;
+  oct = oct_;
+  octreeDirty = true;
 }
 
 void QGLTetraMesh::ClearSurface() {
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-  }
+  isReady = false;
+  delete oct;
+  oct = NULL;
+  delete surf;
+  surf = NULL;
+  MarkGeometryDirty();
+  isReady = (top != NULL);
 }
 
-void QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
-  isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+// The Load*() functions first load into temporary objects and replace the
+// current mesh only on success, so a failed load keeps the current mesh.
+
+bool QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
   Timer t;
   t.start();
-  TetraTools::GMSHMeshLoader *gloader = new TetraTools::GMSHMeshLoader();
-  if (!gloader->Load(fileName_)) {
+  TetraTools::GMSHMeshLoader gloader;
+  if (!gloader.Load(fileName_)) {
     std::cerr << "Error loading GMSH file '" << fileName_ << "'." << std::endl;
-    delete gloader;
-    return;
+    return false;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(gloader->GetVertices(), gloader->GetTetras(), true);
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
-  surf->GenerateNormals();
+  if (!TetraIndicesValid(gloader.GetVertices(), gloader.GetTetras())) {
+    std::cerr << "Error! The GMSH file contains invalid vertex indices."
+              << std::endl;
+    return false;
+  }
+  std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
+      new TetraTools::TetrahedronTopology());
+  newTop->Init(gloader.GetVertices(), gloader.GetTetras(), false);
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
+  newSurf->GenerateNormals();
+  isReady = false;
+  ClearAll();
+  top = newTop.release();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading GMSH TetraMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
-  delete gloader;
+  return true;
 }
 
-void QGLTetraMesh::LoadSurface(const std::string &fileName_) {
-  isReady = false;
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+bool QGLTetraMesh::LoadSurface(const std::string &fileName_, bool repair_) {
   Timer t;
   t.start();
   TetraTools::TriMeshLoader gloader;
-  if (!gloader.loadFile(fileName_)) {
+  if (!gloader.loadFile(fileName_, repair_)) {
     std::cerr << "Error loading file '" << fileName_ << "'." << std::endl;
-    return;
+    return false;
   }
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(gloader.GetVertices(), gloader.GetTriangles(), true);
-  surf->GenerateNormals();
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(gloader.GetVertices(), gloader.GetTriangles(), true);
+  newSurf->GenerateNormals();
+  const MeshRepairReport &repair = gloader.GetRepairReport();
+  std::string summary = repair.Summary();
+  if (repair.numBoundaryEdges || repair.numNonManifoldEdges) {
+    if (!summary.empty()) summary += "; ";
+    summary += "still " + std::to_string(repair.numBoundaryEdges) +
+               " open and " + std::to_string(repair.numNonManifoldEdges) +
+               " non-manifold edges";
+  }
+  isReady = false;
+  ClearAll();
+  surfaceRepairSummary = summary;
+  surfaceRepaired = repair.Changed();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading SurfaceMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
+  return true;
 }
 
-void QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
-  isReady = false;
-  if (top != NULL) {
-    delete top;
-    top = NULL;
-  }
-  if (surf != NULL) {
-    delete surf;
-    surf = NULL;
-  }
-  if (oct != NULL) {
-    delete oct;
-    oct = NULL;
-  }
+bool QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   Timer t;
   t.start();
-  TetraTools::GMSHMeshLoader *gloader = new TetraTools::GMSHMeshLoader();
-  if (!gloader->Load(fileName_)) {
-    std::cerr << "Error loading Tetgen file '" << fileName_ << "'."
-              << std::endl;
-    delete gloader;
-    return;
+  TetgenWrapper tloader;
+  if (!tloader.loadAsTetgen(std::string(), fileName_)) {
+    std::cerr << "Error loading Tetgen file '" << fileName_ << "'." << std::endl;
+    return false;
   }
-  top = new TetraTools::TetrahedronTopology();
-  top->Init(gloader->GetVertices(), gloader->GetTetras(), true);
-  surf = new TetraTools::TriangleTopology();
-  surf->Init(top->GetVertices(), top->GetSurfaceTriangles(), true);
-  surf->GenerateNormals();
+  if (!TetraIndicesValid(tloader.GetTetraVertices(), tloader.GetTetras())) {
+    std::cerr << "Error! The Tetgen files contain invalid vertex indices."
+              << std::endl;
+    return false;
+  }
+  std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
+      new TetraTools::TetrahedronTopology());
+  newTop->Init(tloader.GetTetraVertices(), tloader.GetTetras(), false);
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
+  newSurf->GenerateNormals();
+  isReady = false;
+  ClearAll();
+  top = newTop.release();
+  surf = newSurf.release();
   isReady = true;
   t.stop();
   std::cout << "Finished loading Tetgen TetraMesh in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
-  delete gloader;
+  return true;
 }
 
 bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
+  if (top == NULL) return false;
   Timer t;
   t.start();
   TetraTools::GMSHMeshWriter gwriter;
@@ -502,11 +629,14 @@ bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
 }
 
 bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
+  if (top == NULL) return false;
   Timer t;
   t.start();
-  TetraTools::TetgenWriter twriter;
-  bool success =
-      (twriter.SaveToFile(fileName_, top->GetVertices(), top->GetTetrahedra()));
+  TetgenWrapper twriter;
+  // fileName_ is the extension-less prefix; saveAsTetgen() will append the
+  // required ".node"/".ele" extensions using Tetgen's own file writers.
+  bool success = twriter.saveAsTetgen(std::string(), fileName_,
+                                      top->GetTetrahedra(), top->GetVertices());
   t.stop();
   std::cout << "Finished saving Tetgen in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;
@@ -515,6 +645,7 @@ bool QGLTetraMesh::SaveTetgen(const std::string &fileName_) {
 
 bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
                                const std::string extension_) {
+  if (surf == NULL) return false;
   Timer t;
   t.start();
   TetraTools::TriMeshWriter twriter;
@@ -526,65 +657,34 @@ bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
   return success;
 }
 
-void QGLTetraMesh::scalex10() {
-  isReady = false;
+void QGLTetraMesh::ScaleMesh(const float factor_) {
   if (surf == NULL) {
     std::cerr << "Error on scale! Surface mesh is empty..." << std::endl;
     return;
-  } else {
-    for (unsigned int i = 0; i < surf->GetVertices().size(); ++i) {
-      Vec3f &v = surf->GetVertices()[i];
-      v *= 10.0f;
-    }
-    surf->GenerateBoundingBox();
   }
-  if (top == NULL) {
-    std::cerr << "Error on scale! Tetra mesh is empty..." << std::endl;
-  } else {
-    std::vector<Vec3f> tv;
-    std::vector<Tetrahedron> tt;
-    for (unsigned int i = 0; i < top->GetVertices().size(); ++i) {
-      Vec3f v = top->GetVertices()[i];
-      v *= 10.0f;
-      tv.push_back(v);
-    }
-    for (unsigned int i = 0; i < top->GetTetrahedra().size(); ++i) {
-      tt.push_back(top->GetTetrahedra()[i]);
+  isReady = false;
+  for (Vec3f &v : surf->GetVertices()) {
+    v *= factor_;
+  }
+  surf->GenerateBoundingBox();
+  // the octree was built from the unscaled surface
+  delete oct;
+  oct = NULL;
+  if (top != NULL) {
+    std::vector<Vec3f> tv = top->GetVertices();
+    std::vector<Tetrahedron> tt = top->GetTetrahedra();
+    for (Vec3f &v : tv) {
+      v *= factor_;
     }
     UpdateTetraMesh(tv, tt);
   }
+  MarkGeometryDirty();
   isReady = true;
 }
 
-void QGLTetraMesh::scalex01() {
-  isReady = false;
-  if (surf == NULL) {
-    std::cerr << "Error on scale! Surface mesh is empty..." << std::endl;
-    return;
-  } else {
-    for (unsigned int i = 0; i < surf->GetVertices().size(); ++i) {
-      Vec3f &v = surf->GetVertices()[i];
-      v *= 0.1f;
-    }
-    surf->GenerateBoundingBox();
-  }
-  if (top == NULL) {
-    std::cerr << "Error on scale! Tetra mesh is empty..." << std::endl;
-  } else {
-    std::vector<Vec3f> tv;
-    std::vector<Tetrahedron> tt;
-    for (unsigned int i = 0; i < top->GetVertices().size(); ++i) {
-      Vec3f v = top->GetVertices()[i];
-      v *= 0.1f;
-      tv.push_back(v);
-    }
-    for (unsigned int i = 0; i < top->GetTetrahedra().size(); ++i) {
-      tt.push_back(top->GetTetrahedra()[i]);
-    }
-    UpdateTetraMesh(tv, tt);
-  }
-  isReady = true;
-}
+void QGLTetraMesh::scalex10() { ScaleMesh(10.0f); }
+
+void QGLTetraMesh::scalex01() { ScaleMesh(0.1f); }
 
 void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   if (oct != NULL) {
@@ -598,6 +698,7 @@ void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   Timer t;
   t.start();
   oct = new Octree(depth_, &(surf->GetVertices()), &(surf->GetTriangles()));
+  octreeDirty = true;
   t.stop();
   std::cout << "Octree Level " << oct->getDepth() << " generated in "
             << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
@@ -619,7 +720,11 @@ void QGLTetraMesh::SetZRange(int lower, int upper) {
 }
 
 void QGLTetraMesh::translateSurfaceMesh(const Vec3f offset_) {
+  if (surf == NULL) return;
   for (auto &it : surf->GetVertices()) {
     it += offset_;
   }
+  // keep the bounding box in sync with the moved vertices
+  surf->GenerateBoundingBox();
+  MarkGeometryDirty();
 }

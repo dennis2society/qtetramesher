@@ -1,13 +1,16 @@
-# QTetraMesher 0.8.4
+# QTetraMesher 0.8.5
 
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Linux_Cutplane_01.jpg )
-![ScreenShot](https://qtm.dennis2society.de/images/QTetraMesher_Screenshot_Windows_Cutplane_01.jpg )
+<p align="center">
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg" alt="ScreenShot (Windows, fTetWild)" width="30%"></a>
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg" alt="ScreenShot (Linux, Generic Isosurface Stuffing)" width="31%"></a>
+  <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg" alt="ScreenShot (Windows 11 VM, GMSH)" width="35%"></a>
+</p>
 
 This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
 finite element simulation from various surface mesh formats. It also offers a fast 
-and easy-to-use mesh viewer based on QGLViewer. Two different methods for tetrahedralization 
-are possible: Delaunay Triangulation and two variants of Johnathan Shewchuk's Isosurface
-Stuffing algorithm.
+and easy-to-use mesh viewer. Several methods for tetrahedralization are available:
+Delaunay Triangulation (CGAL), Tetgen, GMSH and variants of Johnathan Shewchuk's Isosurface
+Stuffing algorithm (SOFA and a generic implementation).
 
 This project is using lots of 3rd-party open-source C/C++ libraries, for this reason this work is released 
 under GPL License. This includes all self-written code. 3rd-party code remains under 
@@ -17,15 +20,50 @@ History + usage instructions: https://qtm.dennis2society.de
 
 <b>Build instructions:</b> https://qtm.dennis2society.de/#Build
 
-### Running in Wayland
-libQGLViewer is not behaving well when running in a Wayland session. I only get a dark unresponsive widget at the moment. I am looking for a replacement.
-This is current workaround for this case:
-```
-export QT_QPA_PLATFORM=xcb
-./[PATH_TO]/QTetraMesher
-```
 
 ## Changelog
+### 0.8.5 - 2026-10-17
+* <b>New tetrahedralization methods:</b>
+  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary with mesh size and selected cell size) with no external dependencies
+  - Improved Tetgen integration
+  - GMSH integration (this one is sensitive to surface mesh quality...)
+  - ftetwild integration
+* Surface mesh quality check (basic test for usage with Tetgen and GMSH)
+* libQGLViewer replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
+* Two lights (headlight and a softer light from above) for better shape perception
+* Visualization options (colors, wireframe/solid options, surface mode, axis/grid/bbox) are saved and restored between sessions
+  - Now with different surface/inside colors for tetra meshes
+* Fixed: bounding box was not updated when the surface mesh was moved to the origin
+* Robustness: failed or corrupt mesh files (surface, GMSH, Tetgen) are rejected with a message and keep the current mesh instead of crashing; Generate without a loaded surface no longer crashes; 
+  failed tetrahedralization keeps the surface visible
+* Fixed memory leaks (octree, file stream in the GMSH loader, Tetgen parameters)
+* GMSH files must be ASCII MSH version 2 (version 4 files are now detected and reported)
+* Tetrahedralization no longer blocks the UI: each method runs in a separate worker process and can be canceled (also when a method hangs); a crash in a method no longer takes down the program.   
+  Octree generation and the surface check run in background threads. A progress indicator is shown in the viewer
+* Fixed a bug in the cutplane rendering (initial slider values were not at 0 cutting off parts of the tetrahedra mesh)
+* Improved surface mesh loading including optional basic mesh repair on load
+* Better about and help dialog
+* Added an application icon
+
+## Binary Releases
+* <b>Windows binary release</b> (x64, Release/MinSizeRel) (portable ZIP archive or InnoSetup installer on the Releases page):
+  - Compiler: Visual Studio 2022 (17.14), MSVC 19.44
+  - Qt 6.12.0
+  - Boost 1.92.0
+  - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
+  - assimp 6.0.5
+  - SOFA Framework 26.12.99
+  - GMSH 4.15.2
+  - fTetWild (git 8118f81, 2026-09-23) with oneTBB 2022.2.0, geogram 1.9.6, libigl 2.6.0, Eigen 3.4.0, spdlog 1.15.3 and fmt 11.2.0 (all statically linked except TBB)
+* <b>Linux AppImage</b>
+  - Qt 6.11.2
+  - Boost 1.92.0
+  - CGAL 6.2.1 (with GMP/MPFR from the CGAL auxiliary libraries)
+  - assimp 6.0.5
+  - SOFA Framework 26.12.99
+  - GMSH 4.15.2
+  - fTetWild (git 8118f81, 2026-09-23) with oneTBB 2022.2.0, geogram 1.9.6, libigl 2.6.0, Eigen 3.4.0, spdlog 1.15.3 and fmt 11.2.0 (all statically linked except TBB)
+
 ### 0.8.4 - 2025-04-06
 * <b>Complete UI rework!</b> Bye bye *.ui files, all UI stuff is done in code because I can. And some things are incredibly tedious to do in the Qt Designer...
 * Tetrameshing Options are now in the main UI instead of popup windows

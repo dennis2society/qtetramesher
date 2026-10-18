@@ -7,21 +7,60 @@
  *      Author: Dennis Luebke
  */
 
-#include <QElapsedTimer>
 #include <QFont>
-#include <QMessageBox>
 #include <TetgenWidget.hpp>
-#include <sstream>
 
-TetgenWidget::TetgenWidget(QWidget *parent) : BaseOptionsWidget(parent) {
+
+TetgenWidget::TetgenWidget(QWidget *parent) : TetraMethodWidget(parent) {
   labelTitle.setText("Tetgen");
   QFont boldFont;
   boldFont.setBold(true);
-  notAvailebleLabel.setFont(boldFont);
-  notAvailebleLabel.setText("Düdümm... \nDisabled... Sorry!");
+  labelTitle.setFont(boldFont);
+
+  qualityBoundsLabel.setText("Quality Bound");
+  qualityBoundsLabel.setFont(boldFont);
+  qualityBoundsSpinBox.setValue(2.0);
+  qualityBoundsSpinBox.setSingleStep(0.1);
+  qualityBoundsSpinBox.setMinimum(1.0);
+  qualityBoundsLabel.setMaximumHeight(20);
+  qualityBoundsSpinBox.setMaximumHeight(20);
+  qualityBoundsLayout.addWidget(&qualityBoundsLabel);
+  qualityBoundsLayout.addWidget(&qualityBoundsSpinBox);
+
+  cellSizeLabel.setText("Cell Size (0=auto)");
+  cellSizeLabel.setFont(boldFont);
+  cellSizeSpinBox.setValue(0.0);
+  cellSizeSpinBox.setDecimals(4);
+  cellSizeSpinBox.setMaximum(1000000.0);
+  cellSizeSpinBox.setSingleStep(0.01);
+  cellSizeSpinBox.setMinimum(0.0);
+  cellSizeLabel.setMaximumHeight(20);
+  cellSizeSpinBox.setMaximumHeight(20);
+  cellSizeLayout.addWidget(&cellSizeLabel);
+  cellSizeLayout.addWidget(&cellSizeSpinBox);
+
+  usePLCCheckBox.setText("Use PLC");
+  usePLCCheckBox.setChecked(true);
+
+  generateTetrahedraButton.setText("Generate Tetrahedra");
+
   layout.addWidget(&labelTitle);
-  layout.addWidget(&notAvailebleLabel);
+  layout.addLayout(&qualityBoundsLayout);
+  layout.addLayout(&cellSizeLayout);
+  layout.addWidget(&usePLCCheckBox);
+  layout.addWidget(&generateTetrahedraButton);
   layout.addStretch();
 }
 
-void TetgenWidget::generateTetrahedra(QGLTetraViewer *viewer_) {}
+QVariantMap TetgenWidget::parameters() const {
+  QVariantMap p;
+  p["qualityBound"] = qualityBoundsSpinBox.value();
+  p["cellSize"] = cellSizeSpinBox.value();
+  p["usePLC"] = usePLCCheckBox.isChecked();
+  return p;
+}
+
+void TetgenWidget::applyUsedParameters(const QVariantMap &used) {
+  if (cellSizeSpinBox.value() <= 0.0 && used.contains("cellSize"))
+    cellSizeSpinBox.setValue(used.value("cellSize").toDouble());
+}

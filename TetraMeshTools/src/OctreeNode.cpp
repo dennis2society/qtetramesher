@@ -12,11 +12,14 @@
 std::vector<Vec3f> *OctreeNode::_points = NULL;
 std::vector<Triangle> *OctreeNode::_tris = NULL;
 unsigned int OctreeNode::_maxDepth = 0;
+const std::atomic<bool> *OctreeNode::_cancel = NULL;
 
 OctreeNode::OctreeNode(const unsigned int maxDepth_,
                        std::vector<Vec3f> *inPoints_, const Vec3f &minBC_,
-                       const Vec3f &maxBC_, std::vector<Triangle> *inTris_) {
+                       const Vec3f &maxBC_, std::vector<Triangle> *inTris_,
+                       const std::atomic<bool> *cancel_) {
   _parent = NULL;
+  _cancel = cancel_;
   _maxDepth = maxDepth_;
   _points = inPoints_;
   _minBC = minBC_;
@@ -67,6 +70,7 @@ const Vec3f &OctreeNode::getMinBC() const { return _minBC; }
 const Vec3f &OctreeNode::getMaxBC() const { return _maxBC; }
 
 void OctreeNode::buildNode() {
+  if (_cancel && _cancel->load(std::memory_order_relaxed)) return;
   if (_depth < OctreeNode::_maxDepth) {
     Vec3f center = _minBC + _maxBC;
     center /= 2.0f;
@@ -94,6 +98,7 @@ void OctreeNode::buildNode() {
     // generate Octree nodes when they are occupied by a triangle
     // using SAT (separating axis theorem)
     for (unsigned int i = 0; i < OctreeNode::_tris->size(); ++i) {
+      if (_cancel && _cancel->load(std::memory_order_relaxed)) return;
       // dirty test to avoid iterating over all vertices when all nodes are
       // occupied already...
       int setCount = 0;

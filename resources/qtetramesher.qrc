@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="/icons">
+    <file>qtetramesher_16.png</file>
+    <file>qtetramesher_32.png</file>
+    <file>qtetramesher_48.png</file>
+    <file>qtetramesher_64.png</file>
+    <file>qtetramesher_128.png</file>
+    <file>qtetramesher_256.png</file>
+  </qresource>
+</RCC>

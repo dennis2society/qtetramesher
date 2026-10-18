@@ -3,7 +3,12 @@ project(SofaTetraStuffing VERSION 1.0)
 
 # Set this to where you have installed your Sofa build:
 # (This is only needed if you want to build this lib from here)
-set(SOFA_AUX_PATH "/opt/sofa_git/build/install/" CACHE PATH "")
+if(WIN32)
+  set(SOFA_AUX_DEFAULT_PATH "D:/devel/sofa_git/build/install")
+else()
+  set(SOFA_AUX_DEFAULT_PATH "/opt/sofa_git/build/install")
+endif()
+set(SOFA_AUX_PATH "${SOFA_AUX_DEFAULT_PATH}" CACHE PATH "")
 
 if (NOT DEFINED SOFA_INSTALL_DIR)
   message("Setting  SOFA_INSTALL_DIR...")
@@ -33,8 +38,6 @@ if(NOT SofaCore)
 endif()
 
 include_directories(
-  ../TetraMeshTools/include
-  ../TetraMeshTools/include/TetraMeshTools
   PRIVATE
   include
   ${SOFA_INSTALL_DIR}/include/Sofa.Config
@@ -63,12 +66,17 @@ link_directories(
 
 target_link_libraries(
   SofaTetraStuffing
+  TetraMeshTools::Headers
   ${SofaCore}
   ${SofaEngineGenerator}
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+if(MSVC)
+  add_compile_options(/openmp)
+else()
+  add_compile_options(-O3 -Wall -Wextra -Wpedantic -fopenmp)
+endif()
 
 add_custom_command(
   TARGET SofaTetraStuffing

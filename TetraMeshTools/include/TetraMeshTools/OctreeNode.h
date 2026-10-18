@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <atomic>
 #include "GeometryTypes.h"
 #include "TetraToolsExports.h"
 #include <vector>
@@ -29,6 +30,8 @@ private:
   std::vector<OctreeNode *> _nodes;   // a maximum of 8 children is possible
   static std::vector<Vec3f> *_points; // pointer to surface mesh points
   static std::vector<Triangle> *_tris;
+  // optional flag to stop the (recursive) construction early
+  static const std::atomic<bool> *_cancel;
   Vec3f _minBC;
   Vec3f _maxBC;
   int _quadrant;
@@ -42,7 +45,8 @@ public:
   // only necessary for root node
   explicit OctreeNode(const unsigned int maxDepth_,
                       std::vector<Vec3f> *inPoints_, const Vec3f &minBC_,
-                      const Vec3f &maxBC_, std::vector<Triangle> *inTris_);
+                      const Vec3f &maxBC_, std::vector<Triangle> *inTris_,
+                      const std::atomic<bool> *cancel_ = nullptr);
   // this constructor is only for the child nodes
   explicit OctreeNode(const OctreeNode *parent_, const Vec3f &minBC_,
                       const Vec3f &maxBC_, const unsigned int depth_,

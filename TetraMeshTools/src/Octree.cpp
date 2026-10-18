@@ -16,12 +16,14 @@
 #endif
 
 Octree::Octree(const unsigned int maxDepth_, std::vector<Vec3f> *inPoints_,
-               std::vector<Triangle> *inTris_) {
+               std::vector<Triangle> *inTris_,
+               const std::atomic<bool> *cancel_) {
   _inPoints = inPoints_;
   _maxDepth = maxDepth_;
   _inTris = inTris_;
   generateBoundingCube();
-  _root = new OctreeNode(maxDepth_, inPoints_, _minBC, _maxBC, inTris_);
+  _root =
+      new OctreeNode(maxDepth_, inPoints_, _minBC, _maxBC, inTris_, cancel_);
 }
 
 Octree::~Octree() {

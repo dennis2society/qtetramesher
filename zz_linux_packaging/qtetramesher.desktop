@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=QTetraMesher
+Comment=Tetrahedral mesh generation
+Exec=QTetraMesher
+Icon=qtetramesher
+Categories=Graphics;Science;Qt;
+Terminal=false
