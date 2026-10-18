@@ -521,11 +521,15 @@ namespace {
 
 const char *kLastLoadDirKey = "paths/lastLoadDir";
 
-/// folder of the last file chosen in one of the load dialogs, empty (= Qt's
-/// default) if there is none or it does not exist anymore
+/// folder of the last file chosen in one of the load dialogs; falls back to the
+/// example data bundled in an AppImage, else empty (= Qt's default)
 QString lastLoadDir() {
   const QString dir = QSettings().value(kLastLoadDirKey).toString();
-  return !dir.isEmpty() && QDir(dir).exists() ? dir : QString();
+  if (!dir.isEmpty() && QDir(dir).exists()) return dir;
+  const QString appDir = qEnvironmentVariable("APPDIR");
+  if (appDir.isEmpty()) return QString();
+  const QString dataDir = appDir + "/usr/share/qtetramesher/data";
+  return QDir(dataDir).exists() ? dataDir : QString();
 }
 
 /// stores the folder of fileName_ in the persistent settings
