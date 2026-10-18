@@ -1,0 +1,100 @@
+name: Windows build
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  SOFA_VERSION: 26.06.00
+  GMSH_VERSION: 4.15.2
+  BUILD_CONFIG: MinSizeRel
+  VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache,readwrite
+
+jobs:
+  build:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fTetWild sources
+        uses: actions/checkout@v4
+        with:
+          repository: wildmeshing/fTetWild
+          path: ftetwild
+
+      - name: Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.*
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: vcpkg-cache
+          key: vcpkg-${{ runner.os }}-cgal-assimp-v1
+
+      - name: CGAL, assimp, Eigen (vcpkg)
+        run: vcpkg install cgal assimp eigen3 --triplet x64-windows
+
+      - name: GMSH SDK and SOFA
+        uses: actions/cache@v4
+        id: sdk-cache
+        with:
+          path: deps
+          key: sdk-sofa-${{ env.SOFA_VERSION }}-gmsh-${{ env.GMSH_VERSION }}
+
+      - name: Download GMSH SDK and SOFA
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force deps | Out-Null
+          Invoke-WebRequest "https://gmsh.info/bin/Windows/gmsh-$env:GMSH_VERSION-Windows64-sdk.zip" -OutFile gmsh.zip
+          Expand-Archive gmsh.zip deps
+          $v = $env:SOFA_VERSION
+          Invoke-WebRequest "https://github.com/sofa-framework/sofa/releases/download/v$v/SOFA_v${v}_Win64.zip" -OutFile sofa.zip
+          Expand-Archive sofa.zip deps/sofa
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          $sofa = (Get-ChildItem deps/sofa -Directory | Select-Object -First 1).FullName
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+            "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR;C:/vcpkg/installed/x64-windows" `
+            "-DSOFA_INSTALL_DIR=$sofa" `
+            "-DGMSH_INSTALL_PATH=$PWD/deps/gmsh-$env:GMSH_VERSION-Windows64-sdk" `
+            -DQTM_WITH_FTETWILD=ON `
+            "-DFTETWILD_SOURCE_DIR=$PWD/ftetwild"
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_CONFIG }} --parallel
+
+      - name: Portable folder and installer
+        shell: pwsh
+        run: |
+          ./zz_installer_windows/collect_portable.ps1 -Config $env:BUILD_CONFIG -Clean
+          ./zz_installer_windows/build_installer.ps1 -Config $env:BUILD_CONFIG -SkipCollect
+          Compress-Archive QTetraMesher_Win64_VS2022_* QTetraMesher_Win64_portable.zip
+          Get-FileHash QTetraMesher_Win64_portable.zip, zz_installer_windows/output/*.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QTetraMesher-windows
+          path: |
+            QTetraMesher_Win64_portable.zip
+            zz_installer_windows/output/*.exe
+            SHA256SUMS.txt
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            QTetraMesher_Win64_portable.zip
+            zz_installer_windows/output/*.exe
+            SHA256SUMS.txt
