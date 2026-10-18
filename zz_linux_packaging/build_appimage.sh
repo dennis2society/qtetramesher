@@ -1,8 +1,8 @@
 #!/bin/bash
-# Builds QTetraMesher-x86_64.AppImage from an existing Release build in build/.
+# Builds QTetraMesher-x86_64_Linux.AppImage from an existing Release build in build/.
 # Usage: SOFA_LIBS_PATH=/opt/sofa_git/build/install/lib zz_linux_packaging/build_appimage.sh [version]
 # The version (argument, or APP_VERSION env var) defaults to the one in CMakeLists.txt
-# and becomes part of the file name: QTetraMesher-<version>-x86_64.AppImage
+# and becomes part of the file name: QTetraMesher-<version>-x86_64_Linux.AppImage
 [ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -euo pipefail
 
@@ -57,4 +57,8 @@ cd "$ROOT"
   --plugin qt \
   --output appimage
 
-echo "Done: $(ls "$ROOT"/QTetraMesher-"$LINUXDEPLOY_OUTPUT_VERSION"-*.AppImage)"
+# linuxdeploy names the output QTetraMesher-<version>-x86_64.AppImage; add the platform.
+OUT="$ROOT/QTetraMesher-$LINUXDEPLOY_OUTPUT_VERSION-x86_64_Linux.AppImage"
+mv -f "$ROOT/QTetraMesher-$LINUXDEPLOY_OUTPUT_VERSION-x86_64.AppImage" "$OUT"
+
+echo "Done: $OUT"

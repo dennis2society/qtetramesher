@@ -1,6 +1,6 @@
 # Linux AppImage packaging
 
-Builds a portable `QTetraMesher-<version>-x86_64.AppImage` in the project root.
+Builds a portable `QTetraMesher-<version>-x86_64_Linux.AppImage` in the project root.
 
 ## Requirements
 
@@ -29,8 +29,8 @@ SOFA_LIBS_PATH=/opt/sofa_git/build/install/lib zz_linux_packaging/build_appimage
 Examples:
 
 ```bash
-zz_linux_packaging/build_appimage.sh                 # QTetraMesher-0.8.5-x86_64.AppImage
-zz_linux_packaging/build_appimage.sh 1.0.0-rc1       # QTetraMesher-1.0.0-rc1-x86_64.AppImage
+zz_linux_packaging/build_appimage.sh                 # QTetraMesher-0.8.5-x86_64_Linux.AppImage
+zz_linux_packaging/build_appimage.sh 1.0.0-rc1       # QTetraMesher-1.0.0-rc1-x86_64_Linux.AppImage
 ```
 
 ## Content
