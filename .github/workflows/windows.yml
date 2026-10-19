@@ -28,9 +28,8 @@ jobs:
       - name: Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.12.0
+          version: 6.9.*
           arch: win64_msvc2022_64
-          aqtversion: '>=3.3.0'
           cache: true
 
       - name: vcpkg cache
