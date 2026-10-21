@@ -309,14 +309,16 @@ QString QGLTetraViewer::helpHtml() const {
       "that its bounding box is centered at the origin.</td></tr>"
       "<tr><td><b>Load GMSH</b></td><td>A *.msh file containing a tetrahedral "
       "mesh. The surface of the volume mesh is shown as the surface "
-      "mesh.</td></tr>"
+      "mesh. The file is loaded in the background; 'Cancel Loading' stops "
+      "it.</td></tr>"
       "<tr><td><b>Load Tetgen</b></td><td>Select the *.node file. The matching "
       "*.ele file must be in the same folder and have the same base "
       "name.</td></tr>"
       "<tr><td><b>Export Surface</b></td><td>Saves the surface mesh as OBJ, "
       "STL, Collada, 3DS or PLY, depending on the extension you choose.</td></tr>"
       "<tr><td><b>Export GMSH</b></td><td>Saves the tetrahedral mesh as a "
-      "*.msh file.</td></tr>"
+      "*.msh file. Choose the file type GMSH 4.1 (current format) or GMSH "
+      "2.2 (for older programs that cannot read 4.x).</td></tr>"
       "<tr><td><b>Export Tetgen</b></td><td>Saves the tetrahedral mesh as a "
       "*.node and *.ele pair. Choose the base name; both files are written "
       "next to each other.</td></tr>"
@@ -520,6 +522,7 @@ void QGLTetraViewer::generateOctree(int d) {
 namespace {
 
 const char *kLastLoadDirKey = "paths/lastLoadDir";
+const char *kGmshExportVersionKey = "export/gmshVersion";
 
 /// folder of the last file chosen in one of the load dialogs; falls back to the
 /// example data bundled in an AppImage, else empty (= Qt's default)
@@ -561,38 +564,27 @@ bool QGLTetraViewer::loadSurface() {
   BoundingBox bb = tMesh->GetBoundingBox();
   Vec3f bboxCenter = bb.min + ((bb.max - bb.min) / 2.0f);
   tMesh->translateSurfaceMesh(bboxCenter * -1.0);
-  updateSceneFromMesh();
-  this->showEntireScene();
-  this->ShowStatusMessage("Surface mesh successfully loaded...", 10000);
   if (tMesh->WasSurfaceRepaired())
     showNotice("Surface mesh was repaired on load",
                QString::fromStdString(tMesh->GetSurfaceRepairSummary()));
-  emit onLoad();
+  showLoadedMesh(s, "Surface mesh successfully loaded...");
   return true;
 }
 
-bool QGLTetraViewer::loadGMSH() {
+QString QGLTetraViewer::selectGMSHFile() {
   const QString s = QFileDialog::getOpenFileName(
       this, "Select GMSH File", lastLoadDir(), "GMSH mesh file (*.msh)");
-  std::cout << "Loading GMSH Mesh... " << s.toStdString() << std::endl;
-  if (s.isEmpty()) return false;
-  rememberLoadDir(s);
-  ShowStatusMessage("Loading GMSH...");
-  if (!tMesh->LoadGMSH(s.toStdString())) {
-    ShowStatusMessage("Loading the GMSH mesh failed...", 10000);
-    QMessageBox::warning(
-        this, tr("Load GMSH"),
-        tr("Could not load a tetrahedral mesh from\n%1\n\n"
-           "Only ASCII MSH files of version 2 with tetrahedra are supported "
-           "(in GMSH set Mesh.MshFileVersion to 2.2 when saving).")
-            .arg(s));
-    return false;
-  }
+  if (!s.isEmpty()) rememberLoadDir(s);
+  return s;
+}
+
+void QGLTetraViewer::showLoadedMesh(const QString &fileName_,
+                                    const QString &message_) {
+  currentFileName = fileName_;
   updateSceneFromMesh();
   this->showEntireScene();
-  this->ShowStatusMessage("GMSH successfully loaded...", 10000);
+  this->ShowStatusMessage(message_, 10000);
   emit onLoad();
-  return true;
 }
 
 bool QGLTetraViewer::loadTetgen() {
@@ -615,10 +607,7 @@ bool QGLTetraViewer::loadTetgen() {
             .arg(s));
     return false;
   }
-  updateSceneFromMesh();
-  this->showEntireScene();
-  this->ShowStatusMessage("Tetgen mesh successfully loaded...", 10000);
-  emit onLoad();
+  showLoadedMesh(s, "Tetgen mesh successfully loaded...");
   return true;
 }
 
@@ -629,22 +618,24 @@ void QGLTetraViewer::saveGMSH() {
     return;
   }
   if (tMesh->GetTetraMesh() != NULL) {
-    QFileDialog *qfd =
-        new QFileDialog(this, "Select GMSH Output File", "", "*.msh");
-    QString s =
-        qfd->getSaveFileName(this, "Select GMSH Output File", "", "*.msh");
-    if (s.toStdString().empty()) {
-      delete qfd;
-      return;
-    }
-    qfd->setDefaultSuffix("msh");
-    QFileInfo f(s);
-    if (f.suffix().isEmpty()) {
+    // one filter per MSH version; 2.2 is for readers that do not support 4.x
+    const QString filter41 = "GMSH 4.1 (*.msh)";
+    const QString filter22 = "GMSH 2.2, legacy (*.msh)";
+    QString selectedFilter =
+        QSettings().value(kGmshExportVersionKey).toDouble() == 2.2 ? filter22
+                                                                   : filter41;
+    QString s = QFileDialog::getSaveFileName(this, "Select GMSH Output File",
+                                             "", filter41 + ";;" + filter22,
+                                             &selectedFilter);
+    if (s.isEmpty()) return;
+    const double mshVersion = (selectedFilter == filter22) ? 2.2 : 4.1;
+    QSettings().setValue(kGmshExportVersionKey, mshVersion);
+    // GMSH picks the output format by the extension
+    if (QFileInfo(s).suffix().compare("msh", Qt::CaseInsensitive) != 0)
       s += ".msh";
-    }
-    delete qfd;
-    std::cout << "Saving GMSH to file: " << s.toStdString() << std::endl;
-    if (!tMesh->SaveGMSH(s.toStdString())) {
+    std::cout << "Saving GMSH " << mshVersion
+              << " to file: " << s.toStdString() << std::endl;
+    if (!tMesh->SaveGMSH(s.toStdString(), mshVersion)) {
       ShowStatusMessage("Saving GMSH failed...", 10000);
     }
   } else {
@@ -661,16 +652,9 @@ void QGLTetraViewer::saveTetgen() {
   }
   if (tMesh->GetTetraMesh() != NULL) {
     const QString filter = "Tetgen node file (*.node)";
-    QFileDialog *qfd =
-        new QFileDialog(this, "Select Tetgen Output File prefix", "", filter);
-    qfd->setDefaultSuffix("node");
-    QString s = qfd->getSaveFileName(this, "Select Tetgen Output File prefix",
-                                     "", filter);
-    if (s.toStdString().empty()) {
-      delete qfd;
-      return;
-    }
-    delete qfd;
+    const QString s = QFileDialog::getSaveFileName(
+        this, "Select Tetgen Output File prefix", "", filter);
+    if (s.isEmpty()) return;
     // Strip the .node extension (if present) while keeping the directory —
     // TetgenWrapper::saveAsTetgen() expects a path/basename prefix without
     // any extension and will append ".node"/".ele" itself.
@@ -696,23 +680,22 @@ void QGLTetraViewer::saveSurface() {
     QString selfilter =
         tr("OBJ (*.obj);; STL (*.stl);; Collada(*.dae);; "
            "3DS (*.3ds);; PLY (*.ply)");
-    QFileDialog *qfd =
-        new QFileDialog(this, "Select Surface Output File", "", selfilter);
-    qfd->setDefaultSuffix("obj");
-
-    QString s =
-        qfd->getSaveFileName(this, "Select Surface Output File", "", selfilter);
-    if (s.toStdString().empty()) {
-      delete qfd;
-      return;
+    QString selectedFilter;
+    QString s = QFileDialog::getSaveFileName(
+        this, "Select Surface Output File", "", selfilter, &selectedFilter);
+    if (s.isEmpty()) return;
+    // without an extension use the one of the selected filter, e.g. "*.stl"
+    if (QFileInfo(s).suffix().isEmpty()) {
+      const int start = selectedFilter.indexOf("*.");
+      const int end = selectedFilter.indexOf(')', start);
+      s += (start >= 0 && end > start)
+               ? selectedFilter.mid(start + 1, end - start - 1)
+               : QString(".obj");
     }
     std::cout << "Saving Surface to file: " << s.toStdString() << std::endl;
-    std::cout << "Selected Type Filter: " << QFileInfo(s).suffix().toStdString()
-              << std::endl;
     if (!tMesh->SaveSurface(s.toStdString(),
                             QFileInfo(s).suffix().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
-    delete qfd;
   } else {
     ShowStatusMessage("Saving Surface failed! No surface mesh present...",
                       10000);

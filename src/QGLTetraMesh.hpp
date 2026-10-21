@@ -113,7 +113,7 @@ class QGLTetraMesh {
   /// modifying the surface or tetra mesh directly.
   void MarkGeometryDirty();
   /// Loading functions return false and keep the current mesh on failure.
-  bool LoadGMSH(const std::string &fileName_);
+  /// (GMSH files are loaded by a TetraJob, see SetLoadedTetraMesh().)
   bool LoadTetgen(const std::string &fileName_);
   /// With repair_ set, defects of the surface are fixed where possible
   /// (see RepairSurfaceMesh()).
@@ -125,7 +125,8 @@ class QGLTetraMesh {
   const std::string &GetSurfaceRepairSummary() const {
     return surfaceRepairSummary;
   }
-  bool SaveGMSH(const std::string &fileName_);
+  /// mshVersion_ is the MSH format version, e.g. 4.1 or 2.2
+  bool SaveGMSH(const std::string &fileName_, double mshVersion_ = 4.1);
   bool SaveSurface(const std::string &fileName_, const std::string extension_);
   bool SaveTetgen(const std::string &fileName_);
 
@@ -152,6 +153,12 @@ class QGLTetraMesh {
 
   /// Replaces the tetra mesh (null removes it) and takes ownership.
   void SetTetraTopology(std::unique_ptr<TetraTools::TetrahedronTopology> top_);
+
+  /// Replaces everything by a loaded tetra mesh and its surface (both built
+  /// in the background, e.g. by a TetraJob) and takes ownership.
+  void SetLoadedTetraMesh(
+      std::unique_ptr<TetraTools::TetrahedronTopology> top_,
+      std::unique_ptr<TetraTools::TriangleTopology> surf_);
 
   /// Replaces the octree (null removes it) and takes ownership. The octree
   /// must have been built from the current surface mesh.

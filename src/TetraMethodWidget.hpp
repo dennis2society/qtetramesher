@@ -35,9 +35,10 @@ class TetraMethodWidget : public BaseOptionsWidget {
   virtual void applyUsedParameters(const QVariantMap &) {}
 
   /// switches the generate button between "Generate" and "Cancel"
-  void setRunning(bool running) {
-    generateButton().setText(running ? "Cancel Generation"
-                                     : "Generate Tetrahedra");
+  /// while a job runs, the generate button cancels it
+  void setRunning(bool running,
+                  const QString &cancelText = "Cancel Generation") {
+    generateButton().setText(running ? cancelText : "Generate Tetrahedra");
   }
 };
 

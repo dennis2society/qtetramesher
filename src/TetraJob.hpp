@@ -13,6 +13,9 @@
  * After the worker has finished, the result is read and its topology
  * (edges, triangles, ...) is built in a background thread, so that large
  * meshes do not freeze the user interface either.
+ *
+ * Loading a GMSH file uses the same mechanism (startLoadGMSH()), as reading
+ * and preparing large meshes takes a while, too.
  */
 
 #ifndef TETRA_JOB_HPP
@@ -50,6 +53,8 @@ class TetraJob : public QObject {
     /// values the method chose for parameters given as 0 (= auto)
     QVariantMap usedParameters;
     std::unique_ptr<TetraTools::TetrahedronTopology> topology;
+    /// only set by startLoadGMSH(): the surface of the loaded tetra mesh
+    std::unique_ptr<TetraTools::TriangleTopology> surface;
   };
 
   explicit TetraJob(QObject *parent = nullptr);
@@ -66,6 +71,13 @@ class TetraJob : public QObject {
              const QVariantMap &parameters_,
              const std::vector<Vec3f> &vertices_,
              const std::vector<Triangle> &triangles_, QString *error_);
+
+  /// Starts loading the tetrahedra of a GMSH .msh file in the worker. The
+  /// result also contains the surface of the loaded mesh.
+  bool startLoadGMSH(const QString &fileName_, QString *error_);
+
+  /// true while the running job loads a file instead of generating tetras
+  bool isLoading() const;
 
   /// Stops a running job. finished() is emitted with a canceled result.
   void cancel();
@@ -84,10 +96,15 @@ class TetraJob : public QObject {
  private:
   enum class State { Idle, Running, Collecting };
 
+  bool launch(const QString &methodId_, const QString &methodName_,
+              const QVariantMap &parameters_,
+              const std::vector<Vec3f> &vertices_,
+              const std::vector<Triangle> &triangles_, QString *error_);
   void finish(std::unique_ptr<Result> result_);
 
   State state = State::Idle;
   bool cancelRequested = false;
+  QString currentMethodId;
   QString currentMethodName;
   QProcess *process = nullptr;
   std::unique_ptr<QTemporaryDir> tempDir;

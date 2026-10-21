@@ -13,10 +13,9 @@
 #include <QtmGLViewer/MeshData.hpp>
 #include <algorithm>
 
-#include "TetraMeshTools/GMSHMeshLoader.h"
-#include "TetraMeshTools/GMSHMeshWriter.h"
 #include "TetraMeshTools/TriMeshLoader.h"
 #include "TetraMeshTools/TriMeshWriter.h"
+#include "GMSHWrapper.h"
 #include "TetgenWrapper.h"
 #include "Timer.h"
 
@@ -521,35 +520,14 @@ void QGLTetraMesh::ClearSurface() {
 // The Load*() functions first load into temporary objects and replace the
 // current mesh only on success, so a failed load keeps the current mesh.
 
-bool QGLTetraMesh::LoadGMSH(const std::string &fileName_) {
-  Timer t;
-  t.start();
-  TetraTools::GMSHMeshLoader gloader;
-  if (!gloader.Load(fileName_)) {
-    std::cerr << "Error loading GMSH file '" << fileName_ << "'." << std::endl;
-    return false;
-  }
-  if (!TetraIndicesValid(gloader.GetVertices(), gloader.GetTetras())) {
-    std::cerr << "Error! The GMSH file contains invalid vertex indices."
-              << std::endl;
-    return false;
-  }
-  std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
-      new TetraTools::TetrahedronTopology());
-  newTop->Init(gloader.GetVertices(), gloader.GetTetras(), false);
-  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
-      new TetraTools::TriangleTopology());
-  newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);
-  newSurf->GenerateNormals();
+void QGLTetraMesh::SetLoadedTetraMesh(
+    std::unique_ptr<TetraTools::TetrahedronTopology> top_,
+    std::unique_ptr<TetraTools::TriangleTopology> surf_) {
   isReady = false;
   ClearAll();
-  top = newTop.release();
-  surf = newSurf.release();
-  isReady = true;
-  t.stop();
-  std::cout << "Finished loading GMSH TetraMesh in "
-            << t.getElapsedTimeInMilliSec() << " ms." << std::endl;
-  return true;
+  top = top_.release();
+  surf = surf_.release();
+  isReady = (top != NULL || surf != NULL);
 }
 
 bool QGLTetraMesh::LoadSurface(const std::string &fileName_, bool repair_) {
@@ -615,13 +593,14 @@ bool QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   return true;
 }
 
-bool QGLTetraMesh::SaveGMSH(const std::string &fileName_) {
+bool QGLTetraMesh::SaveGMSH(const std::string &fileName_,
+                            double mshVersion_) {
   if (top == NULL) return false;
   Timer t;
   t.start();
-  TetraTools::GMSHMeshWriter gwriter;
-  bool success =
-      (gwriter.SaveToFile(fileName_, top->GetVertices(), top->GetTetrahedra()));
+  GMSHWrapper gwriter;
+  bool success = gwriter.saveAsGMSH(fileName_, top->GetTetrahedra(),
+                                    top->GetVertices(), mshVersion_);
   t.stop();
   std::cout << "Finished saving GMSH in " << t.getElapsedTimeInMilliSec()
             << " ms." << std::endl;
