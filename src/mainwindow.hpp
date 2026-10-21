@@ -128,6 +128,12 @@ class QTetraMesherMainWindow : public QMainWindow {
   void connectSlots();
 
   void updateCutplaneSliders();
+  /// sets the default sizes of the methods from the mesh bounding box
+  void suggestMethodParameters();
+  /// shows the name of the loaded file in the title bar
+  void updateWindowTitle();
+  void gmshLoadFinished(std::unique_ptr<TetraJob::Result> r,
+                        const QString &fileName);
 
   // Background tasks: tetrahedralization (worker process, can be
   // canceled), octree generation and surface check (threads). While any of
@@ -141,6 +147,7 @@ class QTetraMesherMainWindow : public QMainWindow {
 
   TetraJob tetraJob;
   TetraMethodWidget *runningTetraWidget = nullptr;
+  QString loadingGMSHFile;  // file loaded by the running tetraJob
   QFutureWatcher<Octree *> octreeWatcher;
   const void *octreeSurface = nullptr;  // surface the octree is built from
   bool octreePending = false;

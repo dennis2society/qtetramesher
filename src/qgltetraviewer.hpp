@@ -39,6 +39,14 @@ class QGLTetraViewer : public QtmGLViewer {
   /// repair defects of surface meshes when loading them (default: on)
   void setRepairOnLoad(bool repair_) { repairOnLoad = repair_; }
   float getMaxBBox() const;
+  /// file of the currently shown mesh (empty if none was loaded)
+  const QString &loadedFileName() const { return currentFileName; }
+  /// Asks for a GMSH file to load, returns an empty string on cancel. The
+  /// file is loaded by the main window with a TetraJob.
+  QString selectGMSHFile();
+  /// Call after a mesh was loaded from fileName_ into tMesh: fits the view
+  /// to the new mesh and shows message_ in the status line.
+  void showLoadedMesh(const QString &fileName_, const QString &message_);
 
  public slots:
   void ToggleTetraVis(bool drawWireframe_, bool drawSolid_);
@@ -47,7 +55,6 @@ class QGLTetraViewer : public QtmGLViewer {
   void ToggleBBox(int i);
   void ShowStatusMessage(const QString &msg_, int duration_ = 2000);
   bool loadSurface();
-  bool loadGMSH();
   bool loadTetgen();
   void saveGMSH();
   void saveTetgen();
@@ -91,6 +98,7 @@ class QGLTetraViewer : public QtmGLViewer {
   QTimer noticeTimer;  // hides the notice
 
   bool repairOnLoad = true;
+  QString currentFileName;
 
   void updateSceneFromMesh();  // sets _maxBBox, scene center and radius
 

@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QSettings>
 #include <QtConcurrent/QtConcurrent>
+#include <QFileInfo>
 #include <QFrame>
 #include <QMessageBox>
 #include <QUrl>
@@ -34,6 +35,7 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   // setlocale(LC_NUMERIC, "C");
   setupUI();
   connectSlots();
+  updateWindowTitle();
   // after connectSlots() so that restored options are applied to the viewer
   loadSettings();
 }
@@ -456,15 +458,27 @@ void QTetraMesherMainWindow::tetraMethodComboBoxSlot() {
   }
 }
 
+void QTetraMesherMainWindow::suggestMethodParameters() {
+  const float maxBBox = viewer->getMaxBBox();
+  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(maxBBox * 0.05f);
+  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(maxBBox * 0.1);
+  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(maxBBox * 0.05);
+  genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(maxBBox * 0.05f);
+  gmshWidget.meshSizeMaxSpinBox.setValue(maxBBox * 0.1);
+}
+
+void QTetraMesherMainWindow::updateWindowTitle() {
+  const QString fileName = viewer->loadedFileName();
+  if (fileName.isEmpty())
+    setWindowTitle("QTetraMesher");
+  else
+    setWindowTitle(QFileInfo(fileName).fileName() + " - QTetraMesher");
+}
+
 void QTetraMesherMainWindow::loadSurfaceSlot() {
   if (!viewer->loadSurface()) return;
-  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
-                                                    0.05f);
-  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
-  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() *
-                                                     0.05);
-  genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
-  gmshWidget.meshSizeMaxSpinBox.setValue(viewer->getMaxBBox() * 0.1);
+  suggestMethodParameters();
+  updateWindowTitle();
 }
 
 void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
@@ -473,24 +487,67 @@ void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
 
 void QTetraMesherMainWindow::loadTetgenSlot() {
   if (!viewer->loadTetgen()) return;
-  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05f);
-  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
-  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() * 0.05);
-  genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
+  suggestMethodParameters();
   updateCutplaneSliders();
+  updateWindowTitle();
 }
 
 void QTetraMesherMainWindow::exportTetgenSlot() { viewer->saveTetgen(); }
 
 void QTetraMesherMainWindow::loadGMSHSlot() {
-  if (!viewer->loadGMSH()) return;
-  sofaTetraStuffingWidget.tetraSizeSpinBox.setValue(viewer->getMaxBBox() *
-                                                    0.05f);
-  cgalTetrahedralizeWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.1);
-  cgalTetrahedralizeWidget.facetSizeSpinBox.setValue(viewer->getMaxBBox() *
-                                                     0.05);
-  genericIsosurfaceStuffingWidget.cellSizeSpinBox.setValue(viewer->getMaxBBox() * 0.15);
+  if (tetraJob.isRunning()) return;
+  const QString fileName = viewer->selectGMSHFile();
+  if (fileName.isEmpty()) return;
+  std::cout << "Loading GMSH Mesh... " << fileName.toStdString() << std::endl;
+  QString error;
+  if (!tetraJob.startLoadGMSH(fileName, &error)) {
+    QMessageBox::warning(this, "Load GMSH",
+                         QString("Could not load\n%1\n\n%2")
+                             .arg(fileName, error));
+    return;
+  }
+  loadingGMSHFile = fileName;
+  viewer->beginTask("tetra",
+                    QString("Loading %1").arg(QFileInfo(fileName).fileName()),
+                    "Press 'Cancel Loading' to stop");
+  updateBusyState();
+}
+
+void QTetraMesherMainWindow::gmshLoadFinished(
+    std::unique_ptr<TetraJob::Result> r, const QString &fileName) {
+  if (!r) return;
+  if (r->canceled) {
+    viewer->displayMessage("Loading the GMSH mesh canceled.", 5000);
+    return;
+  }
+  if (!r->ok) {
+    std::cerr << "Loading GMSH failed: " << r->error.toStdString()
+              << std::endl;
+    viewer->ShowStatusMessage("Loading the GMSH mesh failed...", 10000);
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setWindowTitle("Load GMSH");
+    mb.setText(QString("Could not load a tetrahedral mesh from\n%1\n\n"
+                       "The file must be a valid MSH file containing linear "
+                       "(4-node) tetrahedra.")
+                   .arg(fileName));
+    mb.setInformativeText(r->error);
+    mb.exec();
+    return;
+  }
+  const size_t numTetras = r->topology->GetTetrahedra().size();
+  const size_t numVertices = r->topology->GetVertices().size();
+  viewer->tMesh->SetLoadedTetraMesh(std::move(r->topology),
+                                    std::move(r->surface));
+  viewer->showLoadedMesh(fileName,
+                         QString("GMSH mesh loaded in %1 ms. Tetras: %2; "
+                                 "Vertices: %3")
+                             .arg(r->elapsedMs)
+                             .arg(numTetras)
+                             .arg(numVertices));
+  suggestMethodParameters();
   updateCutplaneSliders();
+  updateWindowTitle();
 }
 
 void QTetraMesherMainWindow::updateCutplaneSliders() {
@@ -645,8 +702,14 @@ void QTetraMesherMainWindow::tetraJobFinished() {
   viewer->endTask("tetra");
   TetraMethodWidget *widget = runningTetraWidget;
   runningTetraWidget = nullptr;
-  updateBusyState();
   std::unique_ptr<TetraJob::Result> r = tetraJob.takeResult();
+  const QString loadedGMSHFile = loadingGMSHFile;
+  loadingGMSHFile.clear();
+  updateBusyState();
+  if (!loadedGMSHFile.isEmpty()) {
+    gmshLoadFinished(std::move(r), loadedGMSHFile);
+    return;
+  }
   if (!r) return;
   if (r->canceled) {
     viewer->displayMessage("Tetrahedralization canceled.", 5000);
@@ -684,15 +747,19 @@ void QTetraMesherMainWindow::updateBusyState() {
   const bool octreeRunning = octreeWatcher.isRunning();
   const bool checkRunning = surfaceCheckWatcher.isRunning();
   const bool busy = tetraRunning || octreeRunning || checkRunning;
+  // a GMSH load replaces the surface mesh when it is done
+  const bool loading = !loadingGMSHFile.isEmpty();
   // loading would replace the surface mesh used by the background tasks
   actionLoadSurface.setEnabled(!busy);
   actionLoadGMSH.setEnabled(!busy);
   actionLoadTetgen.setEnabled(!busy);
   // keep the widget with the cancel button visible while a job runs
   tetraMeshMethodComboBox.setEnabled(!tetraRunning);
-  for (TetraMethodWidget *w : tetraMethodWidgets()) w->setRunning(tetraRunning);
-  octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning);
-  surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning);
+  for (TetraMethodWidget *w : tetraMethodWidgets())
+    w->setRunning(tetraRunning,
+                  loading ? "Cancel Loading" : "Cancel Generation");
+  octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning && !loading);
+  surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning && !loading);
 }
 
 void QTetraMesherMainWindow::stopBackgroundTasks() {

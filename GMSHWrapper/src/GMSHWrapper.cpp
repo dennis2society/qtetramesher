@@ -11,9 +11,11 @@
 #include <GMSHWrapper.h>
 #include <gmsh.h>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <unordered_map>
 
 GMSHWrapper::GMSHWrapper() {}
 
@@ -246,3 +248,158 @@ std::vector<Vec3f> &GMSHWrapper::GetTetraVertices() { return tetraPoints; }
 
 std::vector<Tetrahedron> &GMSHWrapper::GetTetras() { return tetraIndices; }
 
+
+namespace {
+/// Initializes GMSH for a single file operation and finalizes it again when
+/// leaving the scope (also when GMSH throws).
+struct GmshSession {
+  explicit GmshSession(const std::string &modelName) {
+    gmsh::initialize(0, nullptr, false);
+    // 2 = errors and warnings only, no progress output for plain file I/O
+    gmsh::option::setNumber("General.Verbosity", 2);
+    gmsh::model::add(modelName);
+  }
+  ~GmshSession() {
+    if (gmsh::isInitialized())
+      gmsh::finalize();
+  }
+  GmshSession(const GmshSession &) = delete;
+  GmshSession &operator=(const GmshSession &) = delete;
+};
+} // namespace
+
+bool GMSHWrapper::saveAsGMSH(const std::string &fileName,
+                             const std::vector<Tetrahedron> &tetras,
+                             const std::vector<Vec3f> &verts,
+                             double mshVersion) {
+  if (verts.empty() || tetras.empty()) {
+    std::cerr << "Error! Cannot save an empty GMSH mesh..." << std::endl;
+    return false;
+  }
+  for (const Tetrahedron &t : tetras) {
+    for (int k = 0; k < 4; ++k) {
+      if (t.index[k] >= verts.size()) {
+        std::cerr << "Error! The tetrahedral mesh has invalid vertex indices."
+                  << std::endl;
+        return false;
+      }
+    }
+  }
+
+  try {
+    GmshSession session("qtetramesher_export");
+
+    // All nodes and tetrahedra go into one discrete volume entity.
+    gmsh::model::addDiscreteEntity(3, 1);
+
+    // Nodes (GMSH uses 1-based tags)
+    std::vector<std::size_t> nodeTags;
+    std::vector<double> nodeCoords;
+    nodeTags.reserve(verts.size());
+    nodeCoords.reserve(verts.size() * 3);
+    for (std::size_t i = 0; i < verts.size(); ++i) {
+      nodeTags.push_back(i + 1);
+      nodeCoords.push_back(static_cast<double>(verts[i].x));
+      nodeCoords.push_back(static_cast<double>(verts[i].y));
+      nodeCoords.push_back(static_cast<double>(verts[i].z));
+    }
+    gmsh::model::mesh::addNodes(3, 1, nodeTags, nodeCoords);
+
+    // Tetrahedra – element type 4 = 4-node tetrahedron
+    std::vector<std::size_t> tetNodeTags;
+    tetNodeTags.reserve(tetras.size() * 4);
+    for (const Tetrahedron &t : tetras) {
+      for (int k = 0; k < 4; ++k)
+        tetNodeTags.push_back(static_cast<std::size_t>(t.index[k]) + 1);
+    }
+    gmsh::model::mesh::addElementsByType(1, 4, {}, tetNodeTags);
+
+    // A physical group makes the volume identifiable for solvers/loaders
+    // that rely on physical tags (e.g. MSH 2.2 readers).
+    gmsh::model::addPhysicalGroup(3, {1}, 1, "Volume");
+
+    gmsh::option::setNumber("Mesh.MshFileVersion", mshVersion);
+    gmsh::option::setNumber("Mesh.Binary", 0);
+    gmsh::write(fileName);
+  } catch (const std::exception &e) {
+    std::cerr << "Error! GMSH could not save '" << fileName
+              << "': " << e.what() << std::endl;
+    return false;
+  }
+
+  std::ifstream file(fileName);
+  return file.good();
+}
+
+bool GMSHWrapper::loadAsGMSH(const std::string &fileName) {
+  tetraPoints.clear();
+  tetraIndices.clear();
+  lastError.clear();
+
+  try {
+    GmshSession session("qtetramesher_import");
+    gmsh::open(fileName);
+
+    // Tetrahedra – element type 4 = 4-node tetrahedron
+    std::vector<std::size_t> elemTags, elemNodeTags;
+    gmsh::model::mesh::getElementsByType(4, elemTags, elemNodeTags);
+    if (elemNodeTags.empty()) {
+      lastError = "The file contains no linear (4-node) tetrahedra.";
+      std::cerr << "Error! The GMSH file '" << fileName << "': " << lastError
+                << std::endl;
+      return false;
+    }
+
+    std::vector<std::size_t> nodeTags;
+    std::vector<double> coords, paramCoords;
+    gmsh::model::mesh::getNodes(nodeTags, coords, paramCoords, -1, -1, false,
+                                false);
+
+    // Keep only nodes used by a tetrahedron, in the order of the file.
+    std::unordered_map<std::size_t, unsigned int> tagToIdx;
+    tagToIdx.reserve(elemNodeTags.size());
+    for (const std::size_t tag : elemNodeTags)
+      tagToIdx.emplace(tag, 0u);
+    tetraPoints.reserve(tagToIdx.size());
+    for (std::size_t i = 0; i < nodeTags.size(); ++i) {
+      auto it = tagToIdx.find(nodeTags[i]);
+      // a node can be listed more than once (e.g. on entity boundaries)
+      if (it == tagToIdx.end() || it->second != 0u)
+        continue;
+      tetraPoints.push_back(Vec3f(static_cast<float>(coords[i * 3]),
+                                  static_cast<float>(coords[i * 3 + 1]),
+                                  static_cast<float>(coords[i * 3 + 2])));
+      // stored 1-based so that 0 marks "not assigned yet"
+      it->second = static_cast<unsigned int>(tetraPoints.size());
+    }
+
+    tetraIndices.reserve(elemNodeTags.size() / 4);
+    for (std::size_t i = 0; i + 3 < elemNodeTags.size(); i += 4) {
+      Tetrahedron t;
+      for (int k = 0; k < 4; ++k) {
+        const unsigned int idx = tagToIdx[elemNodeTags[i + k]];
+        if (idx == 0u) {
+          lastError = "A tetrahedron refers to a node that does not exist.";
+          std::cerr << "Error! The GMSH file '" << fileName
+                    << "': " << lastError << std::endl;
+          tetraPoints.clear();
+          tetraIndices.clear();
+          return false;
+        }
+        t.index[k] = idx - 1;
+      }
+      tetraIndices.push_back(t);
+    }
+  } catch (const std::exception &e) {
+    lastError = e.what();
+    std::cerr << "Error! GMSH could not load '" << fileName
+              << "': " << lastError << std::endl;
+    tetraPoints.clear();
+    tetraIndices.clear();
+    return false;
+  }
+
+  std::cout << "GMSHWrapper: loaded " << tetraPoints.size() << " vertices, "
+            << tetraIndices.size() << " tetrahedra." << std::endl;
+  return !tetraPoints.empty() && !tetraIndices.empty();
+}

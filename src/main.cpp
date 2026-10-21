@@ -9,6 +9,7 @@
 #include "mainwindow.hpp"
 #include <QApplication>
 #include <QIcon>
+#include <QLoggingCategory>
 #include <QStandardPaths>
 #include <QtmGLViewer/QtmGLViewer.hpp>
 
@@ -20,6 +21,10 @@ int main(int argc, char *argv[]) {
   // OpenGL 3.3 core profile, must be set before creating the QApplication
   QtmGLViewer::setDefaultSurfaceFormat();
   QApplication a(argc, argv);
+  // KDE's native file dialog warns about every file hidden by the name
+  // filter ("No node found for item that was just removed"). QT_LOGGING_RULES
+  // still overrides this.
+  QLoggingCategory::setFilterRules("kf.kio.widgets.kdirmodel=false");
   // used by QSettings to find the config file
   QCoreApplication::setOrganizationName("dennis2society");
   QCoreApplication::setApplicationName("QTetraMesher");

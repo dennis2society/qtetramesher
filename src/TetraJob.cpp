@@ -57,6 +57,7 @@ const quint32 kInputMagic = 0x51544D49;   // "QTMI"
 const quint32 kOutputMagic = 0x51544D4F;  // "QTMO"
 const quint32 kVersion = 2;
 const char *kWorkerArgument = "--tetra-worker";
+const char *kLoadGMSHMethod = "load_gmsh";
 
 void prepareStream(QDataStream &stream) {
   stream.setVersion(QDataStream::Qt_6_0);
@@ -185,6 +186,14 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
   const QVariantMap &p = in.parameters;
   auto real = [&p](const char *key) { return p.value(key).toDouble(); };
   auto flag = [&p](const char *key) { return p.value(key).toBool(); };
+  if (in.methodId == kLoadGMSHMethod) {
+    GMSHWrapper w;
+    if (!w.loadAsGMSH(p.value("fileName").toString().toStdString()))
+      throw std::runtime_error(w.GetLastError());
+    vertices = std::move(w.GetTetraVertices());
+    tetras = std::move(w.GetTetras());
+    return;
+  }
   for (const Triangle &t : in.triangles)
     for (int k = 0; k < 3; ++k)
       if (t.index[k] >= in.vertices.size())
@@ -354,9 +363,31 @@ bool TetraJob::start(const QString &methodId_, const QString &methodName_,
     if (error_) *error_ = message;
     return false;
   };
-  if (isRunning()) return fail("A tetrahedralization is already running.");
   if (vertices_.empty() || triangles_.empty())
     return fail("The surface mesh is empty.");
+  return launch(methodId_, methodName_, parameters_, vertices_, triangles_,
+                error_);
+}
+
+bool TetraJob::startLoadGMSH(const QString &fileName_, QString *error_) {
+  return launch(kLoadGMSHMethod, "Load GMSH", {{"fileName", fileName_}}, {},
+                {}, error_);
+}
+
+bool TetraJob::isLoading() const {
+  return isRunning() && currentMethodId == kLoadGMSHMethod;
+}
+
+bool TetraJob::launch(const QString &methodId_, const QString &methodName_,
+                      const QVariantMap &parameters_,
+                      const std::vector<Vec3f> &vertices_,
+                      const std::vector<Triangle> &triangles_,
+                      QString *error_) {
+  auto fail = [error_](const QString &message) {
+    if (error_) *error_ = message;
+    return false;
+  };
+  if (isRunning()) return fail("A tetrahedralization is already running.");
 
   tempDir = std::make_unique<QTemporaryDir>();
   if (!tempDir->isValid())
@@ -377,6 +408,7 @@ bool TetraJob::start(const QString &methodId_, const QString &methodName_,
 
   state = State::Running;
   cancelRequested = false;
+  currentMethodId = methodId_;
   currentMethodName = methodName_;
   timer.start();
   process->start(QCoreApplication::applicationFilePath(),
@@ -424,7 +456,9 @@ void TetraJob::processFinished(int exitCode,
   // read the result and build the topology in a background thread
   state = State::Collecting;
   const QString file = outputFile;
-  watcher.setFuture(QtConcurrent::run([file, exitCode, elapsed]() {
+  const bool buildSurface = (currentMethodId == kLoadGMSHMethod);
+  watcher.setFuture(QtConcurrent::run([file, exitCode, elapsed,
+                                       buildSurface]() {
     auto r = std::make_shared<Result>();
     r->elapsedMs = elapsed;
     qint32 status = 1;
@@ -452,6 +486,12 @@ void TetraJob::processFinished(int exitCode,
       r->error = "The generated tetrahedral mesh is invalid.";
       return r;
     }
+    if (buildSurface) {
+      r->surface = std::make_unique<TetraTools::TriangleTopology>();
+      r->surface->Init(r->topology->GetVertices(),
+                       r->topology->GetSurfaceTriangles(), true);
+      r->surface->GenerateNormals();
+    }
     r->ok = true;
     return r;
   }));
@@ -465,10 +505,12 @@ void TetraJob::collected() {
   r->elapsedMs = shared->elapsedMs;
   r->usedParameters = shared->usedParameters;
   r->topology = std::move(shared->topology);
+  r->surface = std::move(shared->surface);
   if (cancelRequested) {
     r->ok = false;
     r->canceled = true;
     r->topology.reset();
+    r->surface.reset();
   }
   finish(std::move(r));
 }
