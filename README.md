@@ -1,24 +1,33 @@
-# QTetraMesher 0.8.5
+# QTetraMesher
 
+This is a tetrahedral mesh generator for Windows and Linux that combines multiple tetrahedra generation algorithms in a Qt6 GUI.
 <p align="center">
   <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_ftetwild.jpg" alt="ScreenShot (Windows, fTetWild)" width="30%"></a>
   <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Linux_GIsoStuffing.jpg" alt="ScreenShot (Linux, Generic Isosurface Stuffing)" width="31%"></a>
   <a href="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg"><img src="https://qtm.dennis2society.de/images/QTetraMesher_0_8_5_Windows_VM.jpg" alt="ScreenShot (Windows 11 VM, GMSH)" width="35%"></a>
 </p>
 
-This is a Qt-based program for Windows and Linux to generate tetrahedral meshes for 
-finite element simulation from various surface mesh formats. It also offers a fast 
-and easy-to-use mesh viewer. Several methods for tetrahedralization are available:
-Delaunay Triangulation (CGAL), Tetgen, GMSH and variants of Johnathan Shewchuk's Isosurface
-Stuffing algorithm (SOFA and a generic implementation).
 
-This project is using lots of 3rd-party open-source C/C++ libraries, for this reason this work is released 
-under GPL License. This includes all self-written code. 3rd-party code remains under 
-its own license.
+<b>The following algorithms are supported in this project</b> (most of them as 3rd party libraries):
+* [SOFA TetraStuffing](https://www.sofa-framework.org/): isosurface stuffing from the SOFA Framework, based on [Shewchuk's Isosurface Stuffing](http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf)
+* [CGAL Tetrahedralize](https://www.cgal.org/): Delaunay refinement of the surface mesh with the CGAL Mesh_3 package
+* Generic Isosurface Stuffing: this project's own implementation of [Labelle and Shewchuk's Isosurface Stuffing](http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf) (SIGGRAPH 2007), with optional graded tetrahedra
+* [Tetgen](https://wias-berlin.de/software/index.jsp?id=TetGen&lang=1): constrained Delaunay tetrahedralization
+* [GMSH](https://gmsh.info/): tetrahedral meshing with the GMSH library
+* [fTetWild](https://github.com/wildmeshing/fTetWild): robust tetrahedralization of imperfect surfaces (optional module, `QTM_WITH_FTETWILD=ON`)
+
+<b>Supported surface mesh formats (Load Surface Mesh / Export Surface):</b>
+* OBJ (`*.obj`), STL (`*.stl`), PLY (`*.ply`), 3DS (`*.3ds`), Collada (`*.dae`): load and export
+* OFF (`*.off`), AC3D (`*.ac`): load only
+
+<b>Export options:</b>
+* Export Surface: surface mesh as OBJ, STL, Collada, 3DS or PLY, chosen by the file extension
+* Export GMSH: tetrahedral mesh as `*.msh` file
+* Export Tetgen: tetrahedral mesh as `*.node` and `*.ele` pair with the same base name
 
 History + usage instructions: https://qtm.dennis2society.de
 
-<b>Build instructions:</b> https://qtm.dennis2society.de/#Build
+<b>Build instructions (Linux):</b> https://qtm.dennis2society.de/#Build
 
 
 ## Changelog
