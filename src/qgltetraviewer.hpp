@@ -11,6 +11,7 @@
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QtmGLViewer/QtmGLViewer.hpp>
+#include <deque>
 #include <map>
 
 #include "QGLTetraMesh.hpp"
@@ -36,6 +37,12 @@ class QGLTetraViewer : public QtmGLViewer {
   /// of the viewer for the given time.
   void showNotice(const QString &text, const QString &detail = QString(),
                   int durationMs = 5000);
+  /// Console output of a running job, shown in the lower right corner.
+  /// beginJobOutput() clears it, endJobOutput() hides it after hideDelayMs.
+  void beginJobOutput();
+  void appendJobOutput(const QString &line, bool isError, bool replaceLast);
+  void endJobOutput(int hideDelayMs = 5000);
+  void setJobOutputEnabled(bool enabled_);
   /// repair defects of surface meshes when loading them (default: on)
   void setRepairOnLoad(bool repair_) { repairOnLoad = repair_; }
   float getMaxBBox() const;
@@ -96,6 +103,16 @@ class QGLTetraViewer : public QtmGLViewer {
   QString noticeText;
   QString noticeDetail;
   QTimer noticeTimer;  // hides the notice
+
+  struct OutputLine {
+    QString text;
+    bool isError;
+  };
+  void drawJobOutputOverlay(QPainter &painter);
+  std::deque<OutputLine> jobOutput;
+  bool jobOutputEnabled = true;
+  bool jobOutputVisible = false;
+  QTimer jobOutputTimer;  // hides the output after the job
 
   bool repairOnLoad = true;
   QString currentFileName;

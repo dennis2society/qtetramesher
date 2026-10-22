@@ -87,6 +87,9 @@ class TetraJob : public QObject {
 
  signals:
   void finished();
+  /// A line of the worker's console output. replaceLast is set if the
+  /// previous line of this channel ended with a lone '\r' (progress output).
+  void outputLine(const QString &line, bool isError, bool replaceLast);
 
  private slots:
   void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -102,7 +105,17 @@ class TetraJob : public QObject {
               const std::vector<Triangle> &triangles_, QString *error_);
   void finish(std::unique_ptr<Result> result_);
 
+  struct OutputChannel {
+    QByteArray pending;  // bytes after the last line end
+    bool replaceNext = false;
+  };
+  /// echoes data to our console and emits the complete lines in it
+  void forwardOutput(const QByteArray &data, bool isError, bool flush);
+  void readProcessOutput(bool flush);
+
   State state = State::Idle;
+  OutputChannel stdoutChannel;
+  OutputChannel stderrChannel;
   bool cancelRequested = false;
   QString currentMethodId;
   QString currentMethodName;

@@ -107,6 +107,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionShowAxis;
   QAction actionShowGrid;
   QAction actionShowBBox;
+  QAction actionShowJobOutput;
   QAction actionAbout;
   QAction actionHelp;
   // Visualization options and task widgets

@@ -15,6 +15,7 @@
 #include <QColorDialog>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QFontDatabase>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -37,6 +38,11 @@ QGLTetraViewer::QGLTetraViewer(QWidget *parent) : QtmGLViewer(parent) {
   connect(&noticeTimer, &QTimer::timeout, this, [this]() {
     noticeText.clear();
     noticeDetail.clear();
+    update();
+  });
+  jobOutputTimer.setSingleShot(true);
+  connect(&jobOutputTimer, &QTimer::timeout, this, [this]() {
+    jobOutputVisible = false;
     update();
   });
 }
@@ -159,6 +165,70 @@ void QGLTetraViewer::showNotice(const QString &text, const QString &detail,
 void QGLTetraViewer::drawOverlay(QPainter &painter) {
   drawTaskOverlay(painter);
   drawNoticeOverlay(painter);
+  drawJobOutputOverlay(painter);
+}
+
+namespace {
+const std::size_t kJobOutputLines = 10;
+}
+
+void QGLTetraViewer::beginJobOutput() {
+  jobOutputTimer.stop();
+  jobOutput.clear();
+  jobOutputVisible = true;
+  update();
+}
+
+void QGLTetraViewer::appendJobOutput(const QString &line, bool isError,
+                                     bool replaceLast) {
+  if (replaceLast && !jobOutput.empty())
+    jobOutput.back() = {line, isError};
+  else
+    jobOutput.push_back({line, isError});
+  while (jobOutput.size() > kJobOutputLines) jobOutput.pop_front();
+  if (jobOutputEnabled && jobOutputVisible) update();
+}
+
+void QGLTetraViewer::endJobOutput(int hideDelayMs) {
+  jobOutputTimer.start(hideDelayMs);
+}
+
+void QGLTetraViewer::setJobOutputEnabled(bool enabled_) {
+  jobOutputEnabled = enabled_;
+  update();
+}
+
+void QGLTetraViewer::drawJobOutputOverlay(QPainter &painter) {
+  if (!jobOutputEnabled || !jobOutputVisible || jobOutput.empty()) return;
+  painter.save();
+  QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  font.setPointSizeF(painter.font().pointSizeF() * 0.85);
+  const QFontMetrics metrics(font);
+  const int padding = 8;
+  const int maxWidth = std::max(100, this->width() / 2 - 2 * padding);
+  std::vector<QString> lines;
+  int width = 0;
+  for (const OutputLine &l : jobOutput) {
+    lines.push_back(metrics.elidedText(l.text, Qt::ElideRight, maxWidth));
+    width = std::max(width, metrics.horizontalAdvance(lines.back()));
+  }
+  width += 2 * padding;
+  const int height = int(lines.size()) * metrics.height() + 2 * padding;
+  const QRect box(this->width() - width - 10, this->height() - height - 10,
+                  width, height);
+  painter.setRenderHint(QPainter::Antialiasing);
+  painter.setPen(Qt::NoPen);
+  painter.setBrush(QColor(0, 0, 0, 170));
+  painter.drawRoundedRect(box, 6, 6);
+  painter.setFont(font);
+  int y = box.top() + padding;
+  for (std::size_t i = 0; i < lines.size(); ++i) {
+    painter.setPen(jobOutput[i].isError ? QColor(240, 130, 130)
+                                        : QColor(210, 210, 210));
+    painter.drawText(box.left() + padding, y + metrics.ascent(), lines[i]);
+    y += metrics.height();
+  }
+  painter.restore();
 }
 
 void QGLTetraViewer::drawNoticeOverlay(QPainter &painter) {
@@ -363,8 +433,9 @@ QString QGLTetraViewer::helpHtml() const {
       "to look inside a mesh.</li>"
       "<li><b>Octree</b>: generate an octree from the surface with the given "
       "depth and show all cells or only the leaves.</li>"
-      "<li><b>View menu</b>: show or hide the axes, the grid and the bounding "
-      "box.</li>"
+      "<li><b>View menu</b>: show or hide the axes, the grid, the bounding "
+      "box and the console output of a running tetra mesh generation (lower "
+      "right corner).</li>"
       "</ul>"
       "<h3>Viewer controls</h3>"
       "<table cellspacing=\"4\">"

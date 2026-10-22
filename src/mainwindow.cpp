@@ -82,6 +82,10 @@ void QTetraMesherMainWindow::setupUI() {
   viewMenu.addAction(&actionShowAxis);
   viewMenu.addAction(&actionShowGrid);
   viewMenu.addAction(&actionShowBBox);
+  actionShowJobOutput.setText("Show Mesher Output");
+  actionShowJobOutput.setCheckable(true);
+  actionShowJobOutput.setChecked(true);
+  viewMenu.addAction(&actionShowJobOutput);
   helpMenu.setTitle("Help");
   menuBar()->addMenu(&helpMenu);
   actionAbout.setText("About");
@@ -250,6 +254,8 @@ void QTetraMesherMainWindow::connectSlots() {
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));
   connect(&actionShowBBox, SIGNAL(changed()), this, SLOT(setBBoxVisibleSlot()));
+  connect(&actionShowJobOutput, &QAction::toggled, viewer,
+          &QGLTetraViewer::setJobOutputEnabled);
   connect(&octreeVisWidget.octreeGenerateButton, SIGNAL(clicked()), this,
           SLOT(generateOctreeSlot()));
   connect(&octreeVisWidget.octreeVisComboBox, SIGNAL(currentIndexChanged(int)),
@@ -259,6 +265,11 @@ void QTetraMesherMainWindow::connectSlots() {
   // background tasks
   connect(&tetraJob, &TetraJob::finished, this,
           &QTetraMesherMainWindow::tetraJobFinished);
+  connect(&tetraJob, &TetraJob::outputLine, this,
+          [this](const QString &line, bool isError, bool replaceLast) {
+            if (loadingGMSHFile.isEmpty())
+              viewer->appendJobOutput(line, isError, replaceLast);
+          });
   connect(&octreeWatcher, &QFutureWatcher<Octree *>::finished, this,
           &QTetraMesherMainWindow::octreeFinished);
   connect(&surfaceCheckWatcher,
@@ -692,6 +703,7 @@ void QTetraMesherMainWindow::startOrCancelTetraJob(TetraMethodWidget &widget) {
     return;
   }
   runningTetraWidget = &widget;
+  viewer->beginJobOutput();
   viewer->beginTask("tetra",
                     QString("Generating tetrahedra (%1)").arg(widget.methodName()),
                     "Press 'Cancel Generation' to stop");
@@ -710,6 +722,7 @@ void QTetraMesherMainWindow::tetraJobFinished() {
     gmshLoadFinished(std::move(r), loadedGMSHFile);
     return;
   }
+  viewer->endJobOutput(5000);
   if (!r) return;
   if (r->canceled) {
     viewer->displayMessage("Tetrahedralization canceled.", 5000);
@@ -838,6 +851,8 @@ void QTetraMesherMainWindow::loadSettings() {
   actionShowAxis.setChecked(settings.value("showAxis", true).toBool());
   actionShowGrid.setChecked(settings.value("showGrid", true).toBool());
   actionShowBBox.setChecked(settings.value("showBBox", false).toBool());
+  actionShowJobOutput.setChecked(
+      settings.value("showJobOutput", true).toBool());
   settings.endGroup();
   repairOnLoadCheckBox.setChecked(
       settings.value("loading/repairOnLoad", true).toBool());
@@ -872,6 +887,7 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("showAxis", actionShowAxis.isChecked());
   settings.setValue("showGrid", actionShowGrid.isChecked());
   settings.setValue("showBBox", actionShowBBox.isChecked());
+  settings.setValue("showJobOutput", actionShowJobOutput.isChecked());
   settings.endGroup();
   settings.setValue("loading/repairOnLoad", repairOnLoadCheckBox.isChecked());
 }

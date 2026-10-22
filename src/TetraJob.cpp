@@ -22,8 +22,10 @@
 #include <QCoreApplication>
 #include <QDataStream>
 #include <QFile>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QtConcurrent/QtConcurrent>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -298,6 +300,9 @@ int TetraWorker::run(int argc, char *argv[]) {
   }
   const QString inputFile = args.at(2);
   const QString outputFile = args.at(3);
+  // stdout is a pipe here, which stdio would buffer in large blocks; the
+  // main program shows the output live
+  std::setvbuf(stdout, nullptr, _IONBF, 0);
   startParentWatchdog();
 
   qint32 status = 1;
@@ -400,9 +405,16 @@ bool TetraJob::launch(const QString &methodId_, const QString &methodName_,
   }
 
   process = new QProcess(this);
-  // the worker's console output (Tetgen, GMSH, ...) goes to our console;
-  // its stdin stays an open pipe, the worker exits when the pipe closes
-  process->setProcessChannelMode(QProcess::ForwardedChannels);
+  // the worker's console output (Tetgen, GMSH, ...) is read and echoed to
+  // our console; its stdin stays an open pipe, the worker exits when the
+  // pipe closes
+  process->setProcessChannelMode(QProcess::SeparateChannels);
+  stdoutChannel = OutputChannel();
+  stderrChannel = OutputChannel();
+  connect(process, &QProcess::readyReadStandardOutput, this,
+          [this]() { readProcessOutput(false); });
+  connect(process, &QProcess::readyReadStandardError, this,
+          [this]() { readProcessOutput(false); });
   connect(process, &QProcess::finished, this, &TetraJob::processFinished);
   connect(process, &QProcess::errorOccurred, this, &TetraJob::processError);
 
@@ -436,6 +448,7 @@ void TetraJob::processError(QProcess::ProcessError error) {
 void TetraJob::processFinished(int exitCode,
                                QProcess::ExitStatus exitStatus) {
   const qint64 elapsed = timer.elapsed();
+  readProcessOutput(true);
   process->deleteLater();
   process = nullptr;
   if (cancelRequested) {
@@ -513,6 +526,49 @@ void TetraJob::collected() {
     r->surface.reset();
   }
   finish(std::move(r));
+}
+
+void TetraJob::readProcessOutput(bool flush) {
+  if (!process) return;
+  forwardOutput(process->readAllStandardOutput(), false, flush);
+  forwardOutput(process->readAllStandardError(), true, flush);
+}
+
+void TetraJob::forwardOutput(const QByteArray &data, bool isError,
+                             bool flush) {
+  if (!data.isEmpty()) {
+    std::FILE *console = isError ? stderr : stdout;
+    std::fwrite(data.constData(), 1, size_t(data.size()), console);
+    std::fflush(console);
+  }
+  static const QRegularExpression ansiEscape("\x1b\\[[0-9;?]*[A-Za-z]");
+  OutputChannel &channel = isError ? stderrChannel : stdoutChannel;
+  channel.pending += data;
+  auto emitLine = [&](const QByteArray &bytes, bool endedWithCR) {
+    QString line = QString::fromLocal8Bit(bytes);
+    line.remove(ansiEscape);
+    line.replace('\t', "    ");
+    if (!line.trimmed().isEmpty() || endedWithCR)
+      emit outputLine(line, isError, channel.replaceNext);
+    channel.replaceNext = endedWithCR;
+  };
+  qsizetype start = 0;
+  for (qsizetype i = 0; i < channel.pending.size(); ++i) {
+    const char c = channel.pending.at(i);
+    if (c != '\n' && c != '\r') continue;
+    // a '\r' as the last byte may be the first half of "\r\n"
+    if (c == '\r' && i + 1 == channel.pending.size() && !flush) break;
+    const bool crlf = c == '\r' && i + 1 < channel.pending.size() &&
+                      channel.pending.at(i + 1) == '\n';
+    emitLine(channel.pending.mid(start, i - start), c == '\r' && !crlf);
+    if (crlf) ++i;
+    start = i + 1;
+  }
+  channel.pending.remove(0, start);
+  if (flush && !channel.pending.isEmpty()) {
+    emitLine(channel.pending, false);
+    channel.pending.clear();
+  }
 }
 
 void TetraJob::finish(std::unique_ptr<Result> result_) {
