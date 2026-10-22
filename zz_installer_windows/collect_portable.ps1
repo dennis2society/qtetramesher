@@ -77,15 +77,21 @@ if ($gmshLib) {
   Add-SearchDir (Join-Path (Get-ParentDir $gmshLib 2) 'bin')
 }
 
+# <prefix>\share\assimp -> <prefix>\bin (vcpkg: assimp, GMP, MPFR, zlib, ...)
 $assimpDir = Get-CacheValue 'assimp_DIR'
-if ($assimpDir) { Add-SearchDir (Join-Path (Get-ParentDir $assimpDir 3) 'bin') }
+if ($assimpDir) { Add-SearchDir (Join-Path (Get-ParentDir $assimpDir 2) 'bin') }
 
-$gmpLib = Get-CacheValue 'GMP_LIBRARY_RELEASE'
-if ($gmpLib) { Add-SearchDir (Join-Path (Get-ParentDir $gmpLib 2) 'bin') }
+foreach ($libVar in 'GMP_LIBRARIES', 'GMP_LIBRARY_RELEASE') {
+  $gmpLib = Get-CacheValue $libVar
+  if ($gmpLib) { Add-SearchDir (Join-Path (Get-ParentDir $gmpLib 2) 'bin') }
+}
 
-# oneTBB (fetched by fTetWild) writes tbb12.dll to build\msvc_*_<debug|release>
-$tbbSuffix = if ($Config -eq 'Debug') { 'debug' } else { 'release' }
-Get-ChildItem $BuildDir -Directory -Filter "msvc_*_$tbbSuffix" | ForEach-Object { Add-SearchDir $_.FullName }
+foreach ($prefix in ((Get-CacheValue 'CMAKE_PREFIX_PATH') -split ';')) {
+  if ($prefix) { Add-SearchDir (Join-Path $prefix 'bin') }
+}
+
+# oneTBB (fetched by fTetWild) writes tbb12.dll to build\msvc_*_<config in lower case>
+Get-ChildItem $BuildDir -Directory -Filter "msvc_*_$($Config.ToLowerInvariant())" | ForEach-Object { Add-SearchDir $_.FullName }
 
 # ------------------------------------------------------------------- VS tools
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -188,7 +194,9 @@ do {
 } while ($copied)
 
 if ($missing.Count -gt 0) {
-  Write-Warning ('Unresolved DLLs (not found in any search folder): ' + (($missing | Sort-Object) -join ', '))
+  $msg = 'Unresolved DLLs (not found in any search folder): ' + (($missing | Sort-Object) -join ', ')
+  if ($env:GITHUB_ACTIONS) { Write-Host "::warning::$msg" }
+  Write-Warning $msg
 }
 
 # ------------------------------------------------------ resources + licenses
