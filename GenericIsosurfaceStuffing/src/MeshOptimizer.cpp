@@ -224,9 +224,25 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
   };
   auto minQuality = [&]() {
     double q = std::numeric_limits<double>::max();
-    for (std::size_t ti = 0; ti < tets.size(); ++ti)
-      q = std::min(q, quality(static_cast<int>(ti)));
+    const int n = static_cast<int>(tets.size());
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) reduction(min : q)
+#endif
+    for (int ti = 0; ti < n; ++ti) q = std::min(q, quality(ti));
     return q;
+  };
+  // the tets below a quality, in index order
+  auto tetsBelow = [&](double threshold) {
+    const int n = static_cast<int>(tets.size());
+    std::vector<unsigned char> below(n, 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int ti = 0; ti < n; ++ti) below[ti] = quality(ti) < threshold;
+    std::vector<int> result;
+    for (int ti = 0; ti < n; ++ti)
+      if (below[ti]) result.push_back(ti);
+    return result;
   };
   auto minQualityAround = [&](int v, const Vec3d &p) {
     double qMin = std::numeric_limits<double>::max();
@@ -348,9 +364,8 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
   };
   auto smoothBadTets = [&]() {
     std::vector<int> verts;
-    for (std::size_t ti = 0; ti < tets.size(); ++ti)
-      if (quality(static_cast<int>(ti)) < kSmoothTarget)
-        for (int k = 0; k < 4; ++k) verts.push_back(tets[ti][k]);
+    for (int ti : tetsBelow(kSmoothTarget))
+      for (int k = 0; k < 4; ++k) verts.push_back(tets[ti][k]);
     std::sort(verts.begin(), verts.end());
     verts.erase(std::unique(verts.begin(), verts.end()), verts.end());
     std::size_t moved = 0;
@@ -393,7 +408,11 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
       double dist;
       bool hasEdge;
     };
-    std::vector<Cand> cands;
+    std::vector<Cand> slots(nv);
+    std::vector<unsigned char> isCand(nv, 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 256)
+#endif
     for (int v = 0; v < nv; ++v) {
       if (!boundary[v]) continue;
       const Vec3d p = pos[v];
@@ -425,8 +444,14 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
       if (nearest <= reach) fixed[v] = 1;
       if (c.corner < 0 && !c.hasEdge) continue;
       c.dist = c.corner >= 0 ? bestCorner : bestEdge;
-      cands.push_back(c);
+      slots[v] = c;
+      isCand[v] = 1;
     }
+    std::vector<Cand> cands;
+    for (int v = 0; v < nv; ++v)
+      if (isCand[v]) cands.push_back(slots[v]);
+    slots.clear();
+    slots.shrink_to_fit();
     st.snapCandidates = cands.size();
     // corners first, then the vertices closest to their feature
     std::sort(cands.begin(), cands.end(), [](const Cand &x, const Cand &y) {
@@ -596,13 +621,20 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
       const int n = std::max(1, static_cast<int>(std::ceil(length(b - a) / (0.25 * meanEdge))));
       for (int k = 1; k < n; ++k) targets.push_back({a + (b - a) * (double(k) / n), false});
     }
-    std::vector<std::pair<double, int>> order;
+    std::vector<double> targetDist(targets.size(), -1.0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 64)
+#endif
     for (int i = 0; i < static_cast<int>(targets.size()); ++i) {
       double d;
       const int f = nearestFace(targets[i].first, d);
-      if (f >= 0 && d > 0.1 * faceLen(f))
-        order.push_back({targets[i].second ? std::numeric_limits<double>::max() : d, i});
+      if (f >= 0 && d > 0.1 * faceLen(f)) targetDist[i] = d;
     }
+    std::vector<std::pair<double, int>> order;
+    for (int i = 0; i < static_cast<int>(targets.size()); ++i)
+      if (targetDist[i] >= 0.0)
+        order.push_back(
+            {targets[i].second ? std::numeric_limits<double>::max() : targetDist[i], i});
     // corners first, then the worst covered feature points
     std::sort(order.begin(), order.end(), std::greater<>());
 
@@ -770,11 +802,13 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
     };
 
     std::vector<unsigned char> removed(tets.size(), 0);
+    // positions do not change here, so the candidates can be found up front
+    const std::vector<int> capCandidates = tetsBelow(kCapQuality);
     bool changed = true;
     while (changed) {
       changed = false;
-      for (std::size_t ti = 0; ti < tets.size(); ++ti) {
-        if (removed[ti] || quality(static_cast<int>(ti)) >= kCapQuality) continue;
+      for (int ti : capCandidates) {
+        if (removed[ti]) continue;
         const auto &t = tets[ti];
         std::array<int, 3> f[4];
         bool onBoundary[4];

@@ -132,27 +132,52 @@ void BCCLattice::build(const Vec3d &bbMin, const Vec3d &bbMax, double h,
       }
       return true;
     };
-    std::vector<Pending> stack{Pending{0, 0, 0, root}};
-    while (!stack.empty()) {
-      const Pending c = stack.back();
-      stack.pop_back();
-      bool refine = c.s > 1;
-      if (refine && c.s <= maxCoarseCell) {
-        const double d = std::fabs(sdf.signedDistance(cellPoint(c, 1, 1, 1)));
-        if (d >= nearFactor * c.s * h)
-          refine = false;
-        else if (c.s <= maxSurfaceCell && flatTol > 0.0)
-          refine = !nearlyFlat(c);
+    // The refinement decisions (distance field queries) are made level by level
+    // in parallel; the leaves are then collected depth first, in the same order
+    // as a sequential traversal, so the result does not depend on threading.
+    auto refineCell = [&](const Pending &c) {
+      if (c.s <= 1) return false;
+      if (c.s > maxCoarseCell) return true;
+      const double d = std::fabs(sdf.signedDistance(cellPoint(c, 1, 1, 1)));
+      if (d >= nearFactor * c.s * h) return false;
+      if (c.s <= maxSurfaceCell && flatTol > 0.0) return !nearlyFlat(c);
+      return true;
+    };
+    std::vector<std::vector<Pending>> levels{{Pending{0, 0, 0, root}}};
+    std::vector<std::vector<int>> firstChild;  // per level, -1 for a leaf
+    while (!levels.back().empty()) {
+      const std::vector<Pending> &cells = levels.back();
+      const int n = static_cast<int>(cells.size());
+      std::vector<unsigned char> refine(n, 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 64)
+#endif
+      for (int i = 0; i < n; ++i) refine[i] = refineCell(cells[i]) ? 1 : 0;
+      std::vector<int> first(n, -1);
+      std::vector<Pending> next;
+      for (int i = 0; i < n; ++i) {
+        if (!refine[i]) continue;
+        first[i] = static_cast<int>(next.size());
+        const Pending &c = cells[i];
+        const int hs = c.s / 2;
+        for (int o = 0; o < 8; ++o)
+          next.push_back(Pending{c.x + ((o & 1) ? hs : 0), c.y + ((o & 2) ? hs : 0),
+                                 c.z + ((o & 4) ? hs : 0), hs});
       }
-      if (!refine) {
+      firstChild.push_back(std::move(first));
+      levels.push_back(std::move(next));
+    }
+    std::vector<std::pair<int, int>> stack{{0, 0}};  // level, index
+    while (!stack.empty()) {
+      const auto [lvl, idx] = stack.back();
+      stack.pop_back();
+      const Pending &c = levels[lvl][idx];
+      const int fc = firstChild[lvl][idx];
+      if (fc < 0) {
         addLeaf(c.x, c.y, c.z, c.s);
         continue;
       }
-      const int hs = c.s / 2;
-      for (int o = 0; o < 8; ++o) {
-        stack.push_back(Pending{c.x + ((o & 1) ? hs : 0), c.y + ((o & 2) ? hs : 0),
-                                c.z + ((o & 4) ? hs : 0), hs});
-      }
+      for (int o = 0; o < 8; ++o) stack.push_back({lvl + 1, fc + o});
     }
   }
 
@@ -196,25 +221,22 @@ void BCCLattice::build(const Vec3d &bbMin, const Vec3d &bbMax, double h,
     // Strong 2:1 balance: cells meeting at a face, an edge or a corner differ
     // by at most one level. That bounds a cell edge to a single split point,
     // which is what keeps the face patches below conforming.
-    bool changed = true;
-    while (changed) {
-      changed = false;
-      for (std::size_t li = 0; li < leaves.size(); ++li) {
-        if (!alive[li]) continue;
-        const Leaf F = leaves[li];
-        for (int dz = -1; dz <= 1; ++dz) {
-          for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-              if (!dx && !dy && !dz) continue;
-              const int px = F.x + (dx < 0 ? -1 : (dx > 0 ? F.s : 0));
-              const int py = F.y + (dy < 0 ? -1 : (dy > 0 ? F.s : 0));
-              const int pz = F.z + (dz < 0 ? -1 : (dz > 0 ? F.s : 0));
-              const int ni = leafAt(px, py, pz);
-              if (ni < 0 || !alive[ni]) continue;
-              if (leaves[ni].s <= 2 * F.s) continue;
-              splitLeaf(ni);
-              changed = true;
-            }
+    // One pass suffices: split cells append their children to the list, and
+    // those check (and split) their own neighbours when the pass reaches them.
+    for (std::size_t li = 0; li < leaves.size(); ++li) {
+      if (!alive[li]) continue;
+      const Leaf F = leaves[li];
+      for (int dz = -1; dz <= 1; ++dz) {
+        for (int dy = -1; dy <= 1; ++dy) {
+          for (int dx = -1; dx <= 1; ++dx) {
+            if (!dx && !dy && !dz) continue;
+            const int px = F.x + (dx < 0 ? -1 : (dx > 0 ? F.s : 0));
+            const int py = F.y + (dy < 0 ? -1 : (dy > 0 ? F.s : 0));
+            const int pz = F.z + (dz < 0 ? -1 : (dz > 0 ? F.s : 0));
+            const int ni = leafAt(px, py, pz);
+            if (ni < 0 || !alive[ni]) continue;
+            if (leaves[ni].s <= 2 * F.s) continue;
+            splitLeaf(ni);
           }
         }
       }

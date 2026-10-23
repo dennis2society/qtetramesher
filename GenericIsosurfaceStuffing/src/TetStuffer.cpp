@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -73,6 +74,17 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
                        std::vector<Tetrahedron> &outTets) {
   outVerts.clear();
   outTets.clear();
+  using Clock = std::chrono::steady_clock;
+  Clock::time_point lapStart = Clock::now();
+  std::string timings;
+  auto lap = [&](const char *stage) {
+    const Clock::time_point now = Clock::now();
+    const long ms = static_cast<long>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - lapStart).count());
+    timings += std::string(timings.empty() ? "" : ", ") + stage + " " +
+               std::to_string(ms) + " ms";
+    lapStart = now;
+  };
   if (surfVerts.empty() || surfTris.empty()) {
     std::cout << "IsosurfaceStuffing: empty input." << std::endl;
     return;
@@ -114,9 +126,11 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     std::cout << "IsosurfaceStuffing: no usable triangles." << std::endl;
     return;
   }
+  lap("distance field");
 
   BCCLattice lattice;
   lattice.build(bbMin, bbMax, h, graded ? grading : 0.0, sdf);
+  lap("lattice");
   const std::vector<Vec3d> &latticePos = lattice.positions();
   const std::vector<BccTet> &latticeTets = lattice.tets();
   if (latticeTets.empty()) {
@@ -136,6 +150,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
 #pragma omp parallel for schedule(static)
 #endif
   for (int i = 0; i < nv; ++i) phi[i] = sdf.signedDistance(latticePos[i]);
+  lap("labels");
 
   // +1 inside, -1 outside, 0 on the surface. Lattice points that already lie
   // on the surface must get the zero label here: treating them as inside would
@@ -170,6 +185,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   for (const BccTet &t : latticeTets)
     for (int i = 0; i < 4; ++i)
       for (int j = i + 1; j < 4; ++j) edgeIndex(t.v[i], t.v[j]);
+  lap("edges");
 
   // Cut points on sign-changing edges.
   const int ne = static_cast<int>(edgeA.size());
@@ -186,6 +202,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     cutT[e] = t;
     cutP[e] = pos[u] + (pos[w] - pos[u]) * t;
   }
+  lap("cut points");
 
   // Warping: every lattice point moves onto the nearest cut point that lies
   // within alpha of it, which is what keeps the stencils free of slivers.
@@ -209,17 +226,29 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   // neighbours become inside edges. Where two surface sheets nearly touch
   // (closer than the lattice resolves), the nearest cut point may lie on the
   // other sheet; warping onto it would glue both parts together.
-  std::vector<std::vector<int>> latticeNbrs(nv);
+  std::vector<int> nbrStart(nv + 1, 0), nbrList(2 * static_cast<std::size_t>(ne));
   for (int e = 0; e < ne; ++e) {
-    latticeNbrs[edgeA[e]].push_back(edgeB[e]);
-    latticeNbrs[edgeB[e]].push_back(edgeA[e]);
+    ++nbrStart[edgeA[e] + 1];
+    ++nbrStart[edgeB[e] + 1];
+  }
+  for (int i = 0; i < nv; ++i) nbrStart[i + 1] += nbrStart[i];
+  {
+    std::vector<int> fill(nbrStart.begin(), nbrStart.end() - 1);
+    for (int e = 0; e < ne; ++e) {
+      nbrList[fill[edgeA[e]]++] = edgeB[e];
+      nbrList[fill[edgeB[e]]++] = edgeA[e];
+    }
   }
   auto warpKeepsSides = [&](int u, const Vec3d &target, double snapDist) {
     if (snapDist < snapEps) return true;
-    for (int v : latticeNbrs[u]) {
+    for (int i = nbrStart[u]; i < nbrStart[u + 1]; ++i) {
+      const int v = nbrList[i];
       if (lab[v] != 1) continue;
       const double len = length(pos[v] - target);
-      if (sdf.segmentCrossesGap(target, pos[v], 0.01 * len)) return false;
+      const double tol = 0.01 * len;
+      // 1-Lipschitz bound from the ends (target is on the surface)
+      if (0.5 * (phi[v] + len) <= tol) continue;
+      if (sdf.segmentCrossesGap(target, pos[v], tol)) return false;
     }
     return true;
   };
@@ -241,7 +270,8 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     }
   }
   warpCands.clear();
-  latticeNbrs.clear();
+  nbrStart.clear();
+  nbrList.clear();
   std::size_t numWarped = 0;
   for (int i = 0; i < nv; ++i) {
     if (bestEdge[i] < 0) continue;
@@ -264,6 +294,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
             << numWarpRejected << " warps rejected across thin gaps), "
             << numOnSurface << " already on the surface, " << numCuts
             << " cut points." << std::endl;
+  lap("warping");
 
   // Output vertices are allocated lazily so unused lattice points are skipped.
   std::vector<Vec3d> outPos;
@@ -384,45 +415,52 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     fanFaces();
   }
 
+  lap("stencils");
+
   // Where two parts (or the two sides of a hole) come closer than the lattice
   // resolves, a stuffed tet can have corners in both and glue them together.
   // Such tets have an edge that leaves the solid and re-enters it through the
   // opposite sheet; they are removed.
   {
-    std::unordered_map<std::uint64_t, int> outEdgeIndex;
-    std::vector<std::pair<int, int>> outEdges;
-    for (const auto &t : rawTets)
-      for (int i = 0; i < 4; ++i)
-        for (int j = i + 1; j < 4; ++j) {
-          const std::uint64_t k = edgeKey(t[i], t[j]);
-          if (outEdgeIndex.emplace(k, static_cast<int>(outEdges.size())).second)
-            outEdges.push_back({t[i], t[j]});
-        }
     std::vector<double> outPhi(outPos.size());
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
     for (int i = 0; i < static_cast<int>(outPos.size()); ++i)
       outPhi[i] = sdf.signedDistance(outPos[i]);
-    std::vector<unsigned char> bridging(outEdges.size(), 0);
+    // Only edges that can reach the outside at all (1-Lipschitz bound from
+    // their ends) need the trace; that skips the whole interior.
+    auto mayLeave = [&](int a, int b) {
+      const double len = length(outPos[b] - outPos[a]);
+      return 0.5 * (outPhi[a] + outPhi[b] + len) > 0.01 * len;
+    };
+    std::vector<std::uint64_t> candidates;
+    for (const auto &t : rawTets)
+      for (int i = 0; i < 4; ++i)
+        for (int j = i + 1; j < 4; ++j)
+          if (mayLeave(t[i], t[j])) candidates.push_back(edgeKey(t[i], t[j]));
+    std::sort(candidates.begin(), candidates.end());
+    candidates.erase(std::unique(candidates.begin(), candidates.end()), candidates.end());
+    std::vector<unsigned char> bridging(candidates.size(), 0);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 256)
 #endif
-    for (int e = 0; e < static_cast<int>(outEdges.size()); ++e) {
-      const Vec3d &a = outPos[outEdges[e].first];
-      const Vec3d &b = outPos[outEdges[e].second];
-      const double len = length(b - a);
-      // 1-Lipschitz bound: the segment cannot reach the outside
-      if (outPhi[outEdges[e].first] + outPhi[outEdges[e].second] + len <= 0.0) continue;
-      if (sdf.segmentCrossesGap(a, b, 0.01 * len)) bridging[e] = 1;
+    for (int e = 0; e < static_cast<int>(candidates.size()); ++e) {
+      const Vec3d &a = outPos[static_cast<int>(candidates[e] >> 32)];
+      const Vec3d &b = outPos[static_cast<int>(candidates[e] & 0xFFFFFFFFull)];
+      if (sdf.segmentCrossesGap(a, b, 0.01 * length(b - a))) bridging[e] = 1;
     }
+    std::vector<std::uint64_t> bridgeEdges;
+    for (std::size_t e = 0; e < candidates.size(); ++e)
+      if (bridging[e]) bridgeEdges.push_back(candidates[e]);
     std::size_t numBridges = 0;
     std::size_t n = 0;
     for (const auto &t : rawTets) {
       bool bridge = false;
-      for (int i = 0; i < 4 && !bridge; ++i)
+      for (int i = 0; i < 4 && !bridge && !bridgeEdges.empty(); ++i)
         for (int j = i + 1; j < 4 && !bridge; ++j)
-          bridge = bridging[outEdgeIndex[edgeKey(t[i], t[j])]] != 0;
+          bridge = std::binary_search(bridgeEdges.begin(), bridgeEdges.end(),
+                                      edgeKey(t[i], t[j]));
       if (bridge)
         ++numBridges;
       else
@@ -435,6 +473,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
                    "cell size."
                 << std::endl;
   }
+  lap("gap check");
 
   {
     const MeshOptimizerStats os = optimizeStuffedMesh(
@@ -451,6 +490,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
               << os.minQualityBefore << " -> " << os.minQualityAfter << "."
               << std::endl;
   }
+  lap("optimization");
 
   // Drop the output vertices that no surviving tetrahedron refers to.
   std::vector<int> remap(outPos.size(), -1);
@@ -470,6 +510,8 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     outTets.push_back(tet);
   }
 
+  lap("output");
   std::cout << "IsosurfaceStuffing: " << outVerts.size() << " vertices, "
             << outTets.size() << " tetrahedra." << std::endl;
+  std::cout << "IsosurfaceStuffing: timings: " << timings << "." << std::endl;
 }

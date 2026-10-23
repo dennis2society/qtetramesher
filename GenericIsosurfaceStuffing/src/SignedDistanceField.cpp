@@ -260,18 +260,20 @@ Vec3d SignedDistanceField::surfaceNormal(const Vec3d &p) const {
   return normalized(pseudoNormal(best.tri, best.feature));
 }
 
-// Sphere tracing: the field is 1-Lipschitz, so a step of |d| cannot jump over
-// the surface, and even gaps much thinner than the segment are found.
+// The field is 1-Lipschitz: from a point with value v <= tol, no point closer
+// than tol - v can exceed tol, so that is a safe step. Segments running along
+// the surface (v ~ 0) take about len / tol steps instead of crawling.
 bool SignedDistanceField::segmentOnSide(const Vec3d &a, const Vec3d &b, int side,
                                         double tol) const {
   const double len = length(b - a);
   if (!(len > 0.0)) return true;
-  const double minStep = 2e-3 * len;
-  double s = minStep;
-  for (int it = 0; it < 600 && s < len - minStep; ++it) {
-    const double d = signedDistance(a + (b - a) * (s / len));
-    if ((side > 0 ? d : -d) > tol) return false;
-    s += std::max(std::fabs(d), minStep);
+  const Vec3d dir = (b - a) * (1.0 / len);
+  const double minStep = 1e-3 * len;
+  for (double s = 0.0; s <= len;) {
+    const double d = signedDistance(a + dir * s);
+    const double v = side > 0 ? d : -d;
+    if (v > tol) return false;
+    s += std::max(tol - v, minStep);
   }
   return true;
 }
@@ -281,15 +283,19 @@ bool SignedDistanceField::segmentCrossesGap(const Vec3d &a, const Vec3d &b,
   const double len = length(b - a);
   if (!(len > 0.0)) return false;
   const Vec3d dir = (b - a) * (1.0 / len);
-  const double minStep = 2e-3 * len;
-  double s = 0.0, exitS = -1.0, entryS = -1.0;
-  for (int it = 0; it < 1000 && s <= len; ++it) {
+  const double minStep = 1e-3 * len;
+  double exitS = -1.0, entryS = -1.0;
+  for (double s = 0.0; s <= len;) {
     const double d = signedDistance(a + dir * s);
     if (d > tol) {
       if (exitS < 0.0) exitS = s;
       entryS = s;
+      // sphere tracing outside: approaches the entry sheet without passing it,
+      // so the last outside sample is near the sheet it re-enters through
+      s += std::max(d, minStep);
+    } else {
+      s += std::max(tol - d, minStep);
     }
-    s += std::max(std::fabs(d), minStep);
   }
   if (exitS < 0.0 || entryS <= exitS) return false;
   // Leaving through one sheet and coming back through a sheet facing it, as

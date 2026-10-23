@@ -1031,6 +1031,11 @@ void QTetraMesherMainWindow::loadSettings() {
   settings.endGroup();
   repairOnLoadCheckBox.setChecked(
       settings.value("loading/repairOnLoad", true).toBool());
+  // by id, the list of methods depends on the build (e.g. fTetWild)
+  const QString methodId = settings.value("meshing/method").toString();
+  const std::vector<TetraMethodWidget *> methods = tetraMethodWidgets();
+  for (int i = 0; i < tetraMeshMethodComboBox.count() && i < int(methods.size()); ++i)
+    if (methods[i]->methodId() == methodId) tetraMeshMethodComboBox.setCurrentIndex(i);
   viewer->update();
 
   // restoreGeometry() keeps the window on a connected screen
@@ -1066,4 +1071,8 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("showMeshQuality", actionShowMeshQuality.isChecked());
   settings.endGroup();
   settings.setValue("loading/repairOnLoad", repairOnLoadCheckBox.isChecked());
+  const int method = tetraMeshMethodComboBox.currentIndex();
+  const std::vector<TetraMethodWidget *> methods = tetraMethodWidgets();
+  if (method >= 0 && method < int(methods.size()))
+    settings.setValue("meshing/method", methods[method]->methodId());
 }

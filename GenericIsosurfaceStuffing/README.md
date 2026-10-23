@@ -39,11 +39,15 @@ Computes exact signed distance to the triangle surface.
 - **Double precision**: All distance and sign computations use double precision
   to ensure robustness on meshes with small features.
 - **Segment queries**: `segmentOnSide()` and `segmentCrossesGap()` walk along a
-  segment by sphere tracing (the distance field is 1-Lipschitz, so a step of
-  |d| cannot jump over the surface). A segment crosses a gap if it leaves the
-  solid and re-enters it through a surface whose pseudo-normal faces the one
-  it left; a chord that only bulges out of a concave surface does not count.
-  This finds gaps much thinner than the lattice cells.
+  segment using the 1-Lipschitz property of the distance field: from a point
+  with value v below the tolerance, no point closer than (tol - v) can exceed
+  it, so that is a safe step (outside the solid, the gap test steps by the
+  distance itself and cannot pass the re-entry surface). A segment running
+  along the surface therefore takes about len/tol steps instead of crawling.
+  A segment crosses a gap if it leaves the solid and re-enters it through a
+  surface whose pseudo-normal faces the one it left; a chord that only bulges
+  out of a concave surface does not count. This finds gaps much thinner than
+  the lattice cells.
 
 ### BCCLattice (BCCLattice.cpp)
 
@@ -184,6 +188,32 @@ narrower than the cell size):
   from 1% to 0.05%.
 - Interlocked tori: the parts stay separate at all tested cell sizes (before:
   glued together by a few bridging tetrahedra).
+
+## Performance
+
+The log ends with the time spent in each stage (distance field, lattice,
+labels, edges, cut points, warping, stencils, gap check, optimization).
+
+- Distance evaluations run in parallel with OpenMP: lattice labels, cut
+  points, warp checks, the gap check and the read-only scans of the
+  optimizer (quality checks, snap candidates, feature point coverage).
+- The octree refinement decisions are made level by level in parallel; the
+  leaves are collected depth first afterwards, so the result is the same as
+  with a sequential traversal and does not depend on the number of threads.
+- The 2:1 balance needs a single pass: split cells append their children to
+  the list being processed, and those check their own neighbours.
+- The gap check skips edges that cannot reach the outside (Lipschitz bound
+  from their ends) before deduplication, so only edges near the surface are
+  traced.
+- Vertex moves in the optimizer stay sequential because each one depends on
+  the previous ones.
+
+Compared to the first version with gap handling and feature snapping, this
+made the method 2.5-9x faster with the same output in all test cases but one
+(the double torus at 2% cell size got 8 more of 65k tetrahedra, as the gap
+test samples slightly different points), e.g. the fan model at
+2% cell size 4.1 s -> 0.45 s and the elephant at 1% cell size
+4.8 s -> 0.78 s (20 threads).
 
 ## Known Limitations
 
