@@ -49,7 +49,7 @@ void MeshData::setColor(const QVector3D &color) {
 
 namespace primitives {
 
-MeshData mobiusStrip(float radius, float halfWidth, int segments) {
+MeshData mobiusStrip(float radius, float vMin, float vMax, int segments) {
   MeshData mesh;
   segments = std::max(segments, 3);
   for (int i = 0; i <= segments; ++i) {
@@ -60,7 +60,7 @@ MeshData mobiusStrip(float radius, float halfWidth, int segments) {
     const QColor hue = QColor::fromHsvF(t * 0.999f, 1.0f, 1.0f);
     const QVector3D color(hue.redF(), hue.greenF(), hue.blueF());
     // the last ring coincides with the first one, but with the sides swapped
-    for (float v : {-halfWidth, halfWidth}) {
+    for (float v : {vMin, vMax}) {
       const float r = radius + v * ch;
       const QVector3D du(-r * s - 0.5f * v * sh * c, r * c - 0.5f * v * sh * s,
                          0.5f * v * ch);

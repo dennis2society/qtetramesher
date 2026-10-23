@@ -19,7 +19,6 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
-#include <QOpenGLExtraFunctions>
 #include <QSettings>
 #include <QPainter>
 #include <algorithm>
@@ -66,12 +65,14 @@ void QGLTetraViewer::initializeScene() {
   tilt.rotate(-45.0f, 1.0f, 0.0f, 0.0f);
   tilt.rotate(35.0f, 0.0f, 1.0f, 0.0f);
   qtm::MeshData m;
-  m.append(qtm::primitives::mobiusStrip(0.8f, 0.35f, 400), tilt);
+  m.append(qtm::primitives::mobiusStrip(0.8f, -0.35f, 0.35f, 400), tilt);
   mobius.upload(m, GL_TRIANGLES);
 
-  // slightly wider black copy drawn behind: shows up as an outline
+  // black ribbons along the edges, next to the strip so nothing z-fights
   qtm::MeshData outline;
-  outline.append(qtm::primitives::mobiusStrip(0.8f, 0.37f, 400), tilt);
+  outline.append(qtm::primitives::mobiusStrip(0.8f, 0.35f, 0.37f, 400), tilt);
+  outline.append(qtm::primitives::mobiusStrip(0.8f, -0.37f, -0.35f, 400),
+                 tilt);
   outline.normals.clear();
   outline.colors.clear();
   mobiusOutline.upload(outline, GL_TRIANGLES);
@@ -125,11 +126,7 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
       drawText(10, 75, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
-    QOpenGLExtraFunctions *gl = context.gl();
-    gl->glEnable(GL_POLYGON_OFFSET_FILL);
-    gl->glPolygonOffset(2.0f, 2.0f);
     context.drawLines(mobiusOutline, Qt::black);
-    gl->glDisable(GL_POLYGON_OFFSET_FILL);
     context.drawSolid(mobius, QColor());
   }
 }

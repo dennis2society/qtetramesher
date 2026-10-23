@@ -45,7 +45,8 @@ void MobiusViewer::rebuildStrip() {
   tilt.rotate(-45.0f, 1.0f, 0.0f, 0.0f);
   tilt.rotate(35.0f, 0.0f, 1.0f, 0.0f);
   qtm::MeshData mesh;
-  mesh.append(qtm::primitives::mobiusStrip(radius_, 0.4375f * radius_, 400),
+  const float halfWidth = 0.4375f * radius_;
+  mesh.append(qtm::primitives::mobiusStrip(radius_, -halfWidth, halfWidth, 400),
               tilt);
   vertexCount_ = int(mesh.positions.size());
   triangleCount_ = int(mesh.indices.size() / 3);
