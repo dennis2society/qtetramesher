@@ -71,8 +71,8 @@ void QTetraMesherMainWindow::setupUI() {
   fileMenu.addAction(&actionQuit);
   viewMenu.setTitle("View");
   menuBar()->addMenu(&viewMenu);
-  actionShowAxis.setText("Show Axis");
-  actionShowGrid.setText("Show Grid");
+  actionShowAxis.setText("Show Axis [A]");
+  actionShowGrid.setText("Show Grid [G]");
   actionShowBBox.setText("Show BBox");
   actionShowAxis.setCheckable(true);
   actionShowGrid.setCheckable(true);
