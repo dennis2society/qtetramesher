@@ -252,3 +252,47 @@ double SignedDistanceField::signedDistance(const Vec3d &p) const {
   const Vec3d d = p - best.point;
   return dot(d, pseudoNormal(best.tri, best.feature)) >= 0.0 ? dist : -dist;
 }
+
+Vec3d SignedDistanceField::surfaceNormal(const Vec3d &p) const {
+  if (tris_.empty()) return Vec3d{0.0, 0.0, 0.0};
+  Hit best{std::numeric_limits<double>::max(), p, 0, FACE};
+  query(0, p, best);
+  return normalized(pseudoNormal(best.tri, best.feature));
+}
+
+// Sphere tracing: the field is 1-Lipschitz, so a step of |d| cannot jump over
+// the surface, and even gaps much thinner than the segment are found.
+bool SignedDistanceField::segmentOnSide(const Vec3d &a, const Vec3d &b, int side,
+                                        double tol) const {
+  const double len = length(b - a);
+  if (!(len > 0.0)) return true;
+  const double minStep = 2e-3 * len;
+  double s = minStep;
+  for (int it = 0; it < 600 && s < len - minStep; ++it) {
+    const double d = signedDistance(a + (b - a) * (s / len));
+    if ((side > 0 ? d : -d) > tol) return false;
+    s += std::max(std::fabs(d), minStep);
+  }
+  return true;
+}
+
+bool SignedDistanceField::segmentCrossesGap(const Vec3d &a, const Vec3d &b,
+                                            double tol) const {
+  const double len = length(b - a);
+  if (!(len > 0.0)) return false;
+  const Vec3d dir = (b - a) * (1.0 / len);
+  const double minStep = 2e-3 * len;
+  double s = 0.0, exitS = -1.0, entryS = -1.0;
+  for (int it = 0; it < 1000 && s <= len; ++it) {
+    const double d = signedDistance(a + dir * s);
+    if (d > tol) {
+      if (exitS < 0.0) exitS = s;
+      entryS = s;
+    }
+    s += std::max(std::fabs(d), minStep);
+  }
+  if (exitS < 0.0 || entryS <= exitS) return false;
+  // Leaving through one sheet and coming back through a sheet facing it, as
+  // opposed to a chord that just bulges out of a concave surface.
+  return dot(surfaceNormal(a + dir * exitS), surfaceNormal(a + dir * entryS)) < -0.3;
+}

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <limits>
 #include <set>
 #include <unordered_map>
@@ -24,6 +25,47 @@ const int kSmoothPasses = 4;
 const int kSnapRounds = 3;
 /// Flat tetrahedra on the surface below this quality are removed.
 const double kCapQuality = 0.1;
+/// Tetrahedra created to fill notches at sharp features must reach this.
+const double kInsertQuality = 0.05;
+
+Vec3d closestOnTriangle(const Vec3d &p, const Vec3d &a, const Vec3d &b, const Vec3d &c) {
+  const Vec3d ab = b - a, ac = c - a, ap = p - a;
+  const double d1 = dot(ab, ap), d2 = dot(ac, ap);
+  if (d1 <= 0.0 && d2 <= 0.0) return a;
+  const Vec3d bp = p - b;
+  const double d3 = dot(ab, bp), d4 = dot(ac, bp);
+  if (d3 >= 0.0 && d4 <= d3) return b;
+  const double vc = d1 * d4 - d3 * d2;
+  if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0) return a + ab * (d1 / (d1 - d3));
+  const Vec3d cp = p - c;
+  const double d5 = dot(ab, cp), d6 = dot(ac, cp);
+  if (d6 >= 0.0 && d5 <= d6) return c;
+  const double vb = d5 * d2 - d1 * d6;
+  if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) return a + ac * (d2 / (d2 - d6));
+  const double va = d3 * d6 - d5 * d4;
+  if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0)
+    return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)));
+  const double denom = 1.0 / (va + vb + vc);
+  return a + ab * (vb * denom) + ac * (vc * denom);
+}
+
+/// True if the open segment pq crosses the interior of triangle abc.
+bool segmentHitsTriangle(const Vec3d &p, const Vec3d &q, const Vec3d &a, const Vec3d &b,
+                         const Vec3d &c) {
+  const Vec3d d = q - p, e1 = b - a, e2 = c - a;
+  const Vec3d h = cross(d, e2);
+  const double det = dot(e1, h);
+  if (std::fabs(det) < 1e-14 * dot(e1, e1) * length(d)) return false;
+  const double inv = 1.0 / det;
+  const Vec3d s = p - a;
+  const double u = dot(s, h) * inv;
+  if (u <= 1e-9 || u >= 1.0 - 1e-9) return false;
+  const Vec3d qv = cross(s, e1);
+  const double v = dot(d, qv) * inv;
+  if (v <= 1e-9 || u + v >= 1.0 - 1e-9) return false;
+  const double t = dot(e2, qv) * inv;
+  return t > 1e-9 && t < 1.0 - 1e-9;
+}
 
 double tetVolume(const Vec3d &a, const Vec3d &b, const Vec3d &c, const Vec3d &d) {
   return dot(b - a, cross(c - a, d - a)) / 6.0;
@@ -292,7 +334,10 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
       Vec3d target = pos[v] + (c - pos[v]) * w;
       if (boundary[v]) {
         target = sdf.closestPoint(target);
-        if (length(target - pos[v]) > 0.5 * meanLen[v]) continue;
+        const double move = length(target - pos[v]);
+        if (move > 0.5 * meanLen[v]) continue;
+        // the closest point may be on another part across a thin gap
+        if (!sdf.segmentOnSide(pos[v], target, 1, 0.1 * move)) continue;
       }
       if (minQualityAround(v, target) > before + 1e-9) {
         pos[v] = target;
@@ -393,6 +438,9 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
     HashGrid snappedGrid(origin, maxRadius);
     // every tetrahedron stays positive and above the floor (or no worse)
     auto snapIsValid = [&](int v, const Vec3d &target) {
+      // the feature may belong to another part across a thin gap
+      if (!sdf.segmentOnSide(pos[v], target, 1, 0.1 * length(target - pos[v])))
+        return false;
       for (int i = tetStart[v]; i < tetStart[v + 1]; ++i) {
         const auto &t = tets[tetList[i]];
         Vec3d q[4];
@@ -441,6 +489,238 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
 
   for (int pass = 0; pass < kSmoothPasses; ++pass)
     if (smoothBadTets() == 0) break;
+
+  // How far a boundary triangle is from the input surface.
+  auto faceError = [&](const Vec3d &a, const Vec3d &b, const Vec3d &c) {
+    const Vec3d s[4] = {(a + b + c) * (1.0 / 3.0), (a + b) * 0.5, (b + c) * 0.5,
+                        (c + a) * 0.5};
+    double e = 0.0;
+    for (const Vec3d &p : s) e = std::max(e, std::fabs(sdf.signedDistance(p)));
+    return e;
+  };
+
+  // --- feature point insertion ---
+  // Where no boundary vertex was close enough to a sharp edge or corner to be
+  // snapped onto it, the boundary cuts the feature off (saw-tooth notches,
+  // truncated corners). A new vertex on the feature is connected to the
+  // boundary triangles it sees, filling the notch with a fan of tetrahedra.
+  if (!segs.empty() && snapStrength > 0.0) {
+    auto edgeKey = [](int a, int b) {
+      if (a > b) std::swap(a, b);
+      return (static_cast<std::uint64_t>(static_cast<std::uint32_t>(a)) << 32) |
+             static_cast<std::uint32_t>(b);
+    };
+    // outward oriented boundary faces
+    std::vector<std::array<int, 3>> bf;
+    {
+      std::vector<std::pair<std::array<int, 3>, std::array<int, 3>>> recs;
+      recs.reserve(tets.size() * 4);
+      for (const auto &t : tets) {
+        const std::array<int, 3> o[4] = {{t[1], t[2], t[3]},
+                                         {t[0], t[3], t[2]},
+                                         {t[0], t[1], t[3]},
+                                         {t[0], t[2], t[1]}};
+        for (const auto &f : o) {
+          std::array<int, 3> k = f;
+          std::sort(k.begin(), k.end());
+          recs.push_back({k, f});
+        }
+      }
+      std::sort(recs.begin(), recs.end(),
+                [](const auto &x, const auto &y) { return x.first < y.first; });
+      for (std::size_t i = 0; i < recs.size();) {
+        std::size_t j = i + 1;
+        while (j < recs.size() && recs[j].first == recs[i].first) ++j;
+        if (j - i == 1) bf.push_back(recs[i].second);
+        i = j;
+      }
+    }
+    double maxEdge = 0.0, sumEdge = 0.0;
+    Vec3d lo = pos[bf[0][0]];
+    for (const auto &f : bf)
+      for (int k = 0; k < 3; ++k) {
+        const double l = length(pos[f[(k + 1) % 3]] - pos[f[k]]);
+        maxEdge = std::max(maxEdge, l);
+        sumEdge += l;
+        const Vec3d &p = pos[f[k]];
+        lo = {std::min(lo.x, p.x), std::min(lo.y, p.y), std::min(lo.z, p.z)};
+      }
+    const double meanEdge = sumEdge / (3.0 * bf.size());
+    std::vector<unsigned char> alive(bf.size(), 1);
+    HashGrid faceGrid(lo, maxEdge);
+    std::unordered_map<std::uint64_t, std::vector<int>> edgeFaces;
+    auto registerFace = [&](int id) {
+      const auto &f = bf[id];
+      Vec3d mn = pos[f[0]], mx = pos[f[0]];
+      for (int k = 1; k < 3; ++k) {
+        const Vec3d &p = pos[f[k]];
+        mn = {std::min(mn.x, p.x), std::min(mn.y, p.y), std::min(mn.z, p.z)};
+        mx = {std::max(mx.x, p.x), std::max(mx.y, p.y), std::max(mx.z, p.z)};
+      }
+      faceGrid.insert(mn, mx, id);
+      for (int k = 0; k < 3; ++k) edgeFaces[edgeKey(f[k], f[(k + 1) % 3])].push_back(id);
+    };
+    for (int id = 0; id < static_cast<int>(bf.size()); ++id) registerFace(id);
+    auto faceUnitNormal = [&](int id) {
+      const auto &f = bf[id];
+      return normalized(cross(pos[f[1]] - pos[f[0]], pos[f[2]] - pos[f[0]]));
+    };
+    auto faceDist = [&](const Vec3d &p, int id) {
+      const auto &f = bf[id];
+      return length(p - closestOnTriangle(p, pos[f[0]], pos[f[1]], pos[f[2]]));
+    };
+    auto faceLen = [&](int id) {
+      const auto &f = bf[id];
+      return (length(pos[f[1]] - pos[f[0]]) + length(pos[f[2]] - pos[f[1]]) +
+              length(pos[f[0]] - pos[f[2]])) /
+             3.0;
+    };
+    auto nearestFace = [&](const Vec3d &p, double &dist) {
+      int best = -1;
+      dist = std::numeric_limits<double>::max();
+      faceGrid.forNear(p, [&](int id) {
+        if (!alive[id]) return;
+        const double d = faceDist(p, id);
+        if (d < dist) {
+          dist = d;
+          best = id;
+        }
+      });
+      return best;
+    };
+
+    std::vector<std::pair<Vec3d, bool>> targets;  // point, is corner
+    for (int c : corners) targets.push_back({sv[c], true});
+    for (const auto &s : segs) {
+      const Vec3d a = sv[s.first], b = sv[s.second];
+      const int n = std::max(1, static_cast<int>(std::ceil(length(b - a) / (0.25 * meanEdge))));
+      for (int k = 1; k < n; ++k) targets.push_back({a + (b - a) * (double(k) / n), false});
+    }
+    std::vector<std::pair<double, int>> order;
+    for (int i = 0; i < static_cast<int>(targets.size()); ++i) {
+      double d;
+      const int f = nearestFace(targets[i].first, d);
+      if (f >= 0 && d > 0.1 * faceLen(f))
+        order.push_back({targets[i].second ? std::numeric_limits<double>::max() : d, i});
+    }
+    // corners first, then the worst covered feature points
+    std::sort(order.begin(), order.end(), std::greater<>());
+
+
+    for (const auto &o : order) {
+      const Vec3d P = targets[o.second].first;
+      double d;
+      const int nearest = nearestFace(P, d);
+      if (nearest < 0) continue;
+      const double L = faceLen(nearest);
+      if (d <= 0.1 * L) continue;  // covered by an earlier insertion
+      const double reach = std::min(2.0 * L, maxEdge);
+      const double visEps = 0.02 * L;
+      auto visible = [&](int id) {
+        if (!alive[id] || faceDist(P, id) > reach) return false;
+        return dot(P - pos[bf[id][0]], faceUnitNormal(id)) > visEps;
+      };
+      // the nearest face may lie in the plane of a feature face; start from
+      // the nearest one that P sees
+      int seed = -1;
+      double seedDist = std::numeric_limits<double>::max();
+      faceGrid.forNear(P, [&](int id) {
+        if (!visible(id)) return;
+        const double fd = faceDist(P, id);
+        if (fd < seedDist) {
+          seedDist = fd;
+          seed = id;
+        }
+      });
+      if (seed < 0) continue;
+      // the connected patch of boundary faces that P sees
+      std::vector<int> patch{seed};
+      std::set<int> inPatch{seed};
+      for (std::size_t i = 0; i < patch.size(); ++i) {
+        const auto &f = bf[patch[i]];
+        for (int k = 0; k < 3; ++k)
+          for (int nb : edgeFaces[edgeKey(f[k], f[(k + 1) % 3])])
+            if (!inPatch.count(nb) && visible(nb)) {
+              inPatch.insert(nb);
+              patch.push_back(nb);
+            }
+      }
+      // it must be a disk with a single boundary loop
+      std::unordered_map<std::uint64_t, int> edgeUse;
+      std::set<int> patchVerts;
+      for (int id : patch)
+        for (int k = 0; k < 3; ++k) {
+          ++edgeUse[edgeKey(bf[id][k], bf[id][(k + 1) % 3])];
+          patchVerts.insert(bf[id][k]);
+        }
+      std::vector<std::pair<int, int>> rim;  // directed as in the faces
+      for (int id : patch)
+        for (int k = 0; k < 3; ++k) {
+          const int a = bf[id][k], b = bf[id][(k + 1) % 3];
+          if (edgeUse[edgeKey(a, b)] == 1) rim.push_back({a, b});
+        }
+      if (static_cast<long>(patchVerts.size()) - static_cast<long>(edgeUse.size()) +
+              static_cast<long>(patch.size()) != 1)
+        continue;
+      std::unordered_map<int, int> next;
+      bool simple = true;
+      for (const auto &e : rim)
+        if (!next.emplace(e.first, e.second).second) simple = false;
+      if (!simple || rim.empty()) continue;
+      std::size_t loopLen = 0;
+      for (int v = rim[0].first;;) {
+        const auto it = next.find(v);
+        if (it == next.end()) break;
+        v = it->second;
+        if (++loopLen > rim.size() || v == rim[0].first) break;
+      }
+      if (loopLen != rim.size()) continue;
+
+      // the fan must be valid, closer to the surface and not cut the mesh
+      bool ok = true;
+      for (int id : patch) {
+        const auto &f = bf[id];
+        if (tetQuality(pos[f[0]], pos[f[1]], pos[f[2]], P) < kInsertQuality) ok = false;
+      }
+      if (!ok) continue;
+      double errOld = 0.0, errNew = 0.0;
+      for (int id : patch)
+        errOld = std::max(errOld, faceError(pos[bf[id][0]], pos[bf[id][1]], pos[bf[id][2]]));
+      for (const auto &e : rim) errNew = std::max(errNew, faceError(pos[e.first], pos[e.second], P));
+      if (!(errNew < 0.5 * errOld)) continue;
+      for (int v : patchVerts) {
+        faceGrid.forNear((P + pos[v]) * 0.5, [&](int id) {
+          if (!ok || !alive[id] || inPatch.count(id)) return;
+          const auto &f = bf[id];
+          if (f[0] == v || f[1] == v || f[2] == v) return;
+          if (segmentHitsTriangle(P, pos[v], pos[f[0]], pos[f[1]], pos[f[2]])) ok = false;
+        });
+        if (!ok) break;
+      }
+      if (!ok) continue;
+
+      const int pi = static_cast<int>(pos.size());
+      pos.push_back(P);
+      for (int id : patch) {
+        const auto &f = bf[id];
+        tets.push_back({f[0], f[1], f[2], pi});
+        alive[id] = 0;
+      }
+      for (const auto &e : rim) {
+        bf.push_back({e.first, e.second, pi});
+        alive.push_back(1);
+        registerFace(static_cast<int>(bf.size()) - 1);
+      }
+      ++st.featurePointsInserted;
+    }
+  }
+  if (st.featurePointsInserted > 0) {
+    const int n = static_cast<int>(pos.size());
+    tetStart.assign(n + 1, 0);
+    for (const auto &t : tets)
+      for (int k = 0; k < 4; ++k) ++tetStart[t[k] + 1];
+    for (int v = 0; v < n; ++v) tetStart[v + 1] += tetStart[v];
+  }
 
   // --- cap removal ---
   // Removing a tet with two boundary faces abc, abd swaps them for acd, bcd
@@ -510,17 +790,31 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
           for (int k = 0; k < 4; ++k)
             if (onBoundary[k]) (c < 0 ? c : d) = k;
           if (edgeIsBoundary(t[c], t[d])) continue;
-          for (int k = 0; k < 4; ++k) addFace(f[k], onBoundary[k] ? -1 : 1);
         } else if (nb == 3) {
           int apex = -1;
           for (int k = 0; k < 4; ++k)
             if (!onBoundary[k]) apex = k;
           // the apex would otherwise be left as a non-manifold vertex
           if (tetStart[t[apex] + 1] - tetStart[t[apex]] != 1) continue;
-          for (int k = 0; k < 4; ++k) addFace(f[k], onBoundary[k] ? -1 : 1);
         } else {
           continue;
         }
+        // only flat caps: a tet filling a sharp edge or corner is thin, too,
+        // but removing it would cut the feature off
+        double errOld = 0.0, errNew = 0.0;
+        double lrms = 0.0;
+        for (int i = 0; i < 4; ++i)
+          for (int j = i + 1; j < 4; ++j) lrms += dot(pos[t[j]] - pos[t[i]], pos[t[j]] - pos[t[i]]);
+        lrms = std::sqrt(lrms / 6.0);
+        for (int k = 0; k < 4; ++k) {
+          const double e = faceError(pos[f[k][0]], pos[f[k][1]], pos[f[k][2]]);
+          if (onBoundary[k])
+            errOld = std::max(errOld, e);
+          else
+            errNew = std::max(errNew, e);
+        }
+        if (errNew > errOld + 0.02 * lrms) continue;
+        for (int k = 0; k < 4; ++k) addFace(f[k], onBoundary[k] ? -1 : 1);
         removed[ti] = 1;
         ++st.capsRemoved;
         changed = true;

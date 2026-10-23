@@ -109,6 +109,8 @@ class QTetraMesherMainWindow : public QMainWindow {
   QAction actionShowGrid;
   QAction actionShowBBox;
   QAction actionShowJobOutput;
+  QAction actionShowMeshQuality;
+  QMenu recentSurfacesMenu;
   QAction actionAbout;
   QAction actionHelp;
   // Visualization options and task widgets
@@ -129,8 +131,18 @@ class QTetraMesherMainWindow : public QMainWindow {
 
   void setupUI();
   void connectSlots();
+  /// narrowest sidebar width that shows the options without clipping
+  void updateOptionsWidth();
 
   void updateCutplaneSliders();
+  /// common steps after a surface mesh was loaded
+  void surfaceLoaded();
+  /// recent surface meshes, newest first, stored in the settings
+  void addRecentSurface(const QString &fileName);
+  void updateRecentSurfacesMenu();
+  void openRecentSurface(const QString &fileName);
+  /// measures the current tetra mesh for the viewer's quality overlay
+  void showMeshQuality(const QString &source, qint64 elapsedMs);
   /// sets the default sizes of the methods from the mesh bounding box
   void suggestMethodParameters();
   /// shows the name of the loaded file in the title bar
@@ -168,6 +180,7 @@ class QTetraMesherMainWindow : public QMainWindow {
  protected:
   // override main window close event to close all child dialogs
   void closeEvent(QCloseEvent *event);
+  bool eventFilter(QObject *watched, QEvent *event) override;
 
  private slots:
   void tetraJobFinished();

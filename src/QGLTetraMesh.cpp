@@ -187,6 +187,22 @@ bool TetraIndicesValid(const std::vector<Vec3f> &verts,
   return true;
 }
 
+/// Some mesh generators (e.g. fTetWild) use the opposite vertex order, so all
+/// tetrahedra have negative volume; a single inverted tet does not count.
+bool HasNegativeOrientation(const std::vector<Vec3f> &verts,
+                            const std::vector<Tetrahedron> &tetras) {
+  double volume = 0.0;
+  for (const Tetrahedron &t : tetras) {
+    const Vec3f &a = verts[t.index[0]];
+    volume += (verts[t.index[1]] - a).dot((verts[t.index[2]] - a).cross(verts[t.index[3]] - a));
+  }
+  return volume < 0.0;
+}
+
+void FlipOrientation(std::vector<Tetrahedron> &tetras) {
+  for (Tetrahedron &t : tetras) std::swap(t.index[2], t.index[3]);
+}
+
 }  // namespace
 
 QGLTetraMesh::QGLTetraMesh()
@@ -490,7 +506,13 @@ QGLTetraMesh::BuildTetraTopology(const std::vector<Vec3f> &verts_,
       new TetraTools::TetrahedronTopology());
   // complete = false: the per-vertex maps, tetra edges etc. are not used by
   // the viewer; they are generated on first access if ever needed
-  t->Init(verts_, tetras_, false);
+  if (HasNegativeOrientation(verts_, tetras_)) {
+    std::vector<Tetrahedron> flipped = tetras_;
+    FlipOrientation(flipped);
+    t->Init(verts_, flipped, false);
+  } else {
+    t->Init(verts_, tetras_, false);
+  }
   return t;
 }
 
@@ -593,6 +615,11 @@ bool QGLTetraMesh::LoadTetgen(const std::string &fileName_) {
   std::unique_ptr<TetraTools::TetrahedronTopology> newTop(
       new TetraTools::TetrahedronTopology());
   newTop->Init(tloader.GetTetraVertices(), tloader.GetTetras(), false);
+  if (HasNegativeOrientation(newTop->GetVertices(), newTop->GetTetrahedra())) {
+    std::vector<Tetrahedron> flipped = newTop->GetTetrahedra();
+    FlipOrientation(flipped);
+    newTop->Init(tloader.GetTetraVertices(), flipped, false);
+  }
   std::unique_ptr<TetraTools::TriangleTopology> newSurf(
       new TetraTools::TriangleTopology());
   newSurf->Init(newTop->GetVertices(), newTop->GetSurfaceTriangles(), true);

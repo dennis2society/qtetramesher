@@ -16,8 +16,10 @@
 #include <QFileInfo>
 #include <QFrame>
 #include <QMessageBox>
+#include <QScrollBar>
 #include <QUrl>
 #include <TetraMeshTools/SurfaceChecker.h>
+#include <TetraMeshTools/TetraMeshQuality.h>
 #include <iostream>
 #include <sstream>
 
@@ -39,9 +41,11 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
   updateWindowTitle();
   // after connectSlots() so that restored options are applied to the viewer
   loadSettings();
+  updateRecentSurfacesMenu();
 }
 
 QTetraMesherMainWindow::~QTetraMesherMainWindow() {
+  optionsContainer.removeEventFilter(this);
   // the background threads read the mesh owned by the viewer
   stopBackgroundTasks();
 }
@@ -56,6 +60,8 @@ void QTetraMesherMainWindow::setupUI() {
   this->menuBar()->addMenu(&fileMenu);
   actionLoadSurface.setText("Load Surface Mesh (obj, stl, dae, 3ds, off)");
   fileMenu.addAction(&actionLoadSurface);
+  recentSurfacesMenu.setTitle("Recent Surface Meshes");
+  fileMenu.addMenu(&recentSurfacesMenu);
   actionLoadGMSH.setText("Load GMSH");
   fileMenu.addAction(&actionLoadGMSH);
   actionLoadTetgen.setText("Load Tetgen (.node/.ele)");
@@ -87,6 +93,10 @@ void QTetraMesherMainWindow::setupUI() {
   actionShowJobOutput.setCheckable(true);
   actionShowJobOutput.setChecked(true);
   viewMenu.addAction(&actionShowJobOutput);
+  actionShowMeshQuality.setText("Show Tetra Mesh Quality");
+  actionShowMeshQuality.setCheckable(true);
+  actionShowMeshQuality.setChecked(true);
+  viewMenu.addAction(&actionShowMeshQuality);
   helpMenu.setTitle("Help");
   menuBar()->addMenu(&helpMenu);
   actionAbout.setText("About");
@@ -182,12 +192,30 @@ void QTetraMesherMainWindow::setupUI() {
   optionsScrollArea.setWidget(&optionsContainer);
   optionsScrollArea.setWidgetResizable(true);
   optionsScrollArea.setFrameShape(QFrame::NoFrame);
-  optionsScrollArea.setSizePolicy(QSizePolicy::Minimum,
-                                  QSizePolicy::Expanding);
+  optionsScrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  optionsScrollArea.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+  // the width follows the content, e.g. when another method is selected
+  optionsContainer.installEventFilter(this);
+  updateOptionsWidth();
   mainLayout.addLayout(&viewerLayout);
   mainLayout.addWidget(&optionsScrollArea);
   centralLayout.addLayout(&mainLayout, 0, 0);
   updateColorButtons();
+}
+
+void QTetraMesherMainWindow::updateOptionsWidth() {
+  // room for the vertical scroll bar is always kept, so showing it never
+  // squeezes the content
+  const int width = optionsContainer.minimumSizeHint().width() +
+                    optionsScrollArea.verticalScrollBar()->sizeHint().width() +
+                    2 * optionsScrollArea.frameWidth();
+  if (optionsScrollArea.width() != width) optionsScrollArea.setFixedWidth(width);
+}
+
+bool QTetraMesherMainWindow::eventFilter(QObject *watched, QEvent *event) {
+  if (watched == &optionsContainer && event->type() == QEvent::LayoutRequest)
+    updateOptionsWidth();
+  return QMainWindow::eventFilter(watched, event);
 }
 
 void QTetraMesherMainWindow::connectSlots() {
@@ -282,6 +310,8 @@ void QTetraMesherMainWindow::connectSlots() {
   connect(&actionShowBBox, SIGNAL(changed()), this, SLOT(setBBoxVisibleSlot()));
   connect(&actionShowJobOutput, &QAction::toggled, viewer,
           &QGLTetraViewer::setJobOutputEnabled);
+  connect(&actionShowMeshQuality, &QAction::toggled, viewer,
+          &QGLTetraViewer::setMeshQualityEnabled);
   connect(&octreeVisWidget.octreeGenerateButton, SIGNAL(clicked()), this,
           SLOT(generateOctreeSlot()));
   connect(&octreeVisWidget.octreeVisComboBox, SIGNAL(currentIndexChanged(int)),
@@ -514,10 +544,86 @@ void QTetraMesherMainWindow::updateWindowTitle() {
 
 void QTetraMesherMainWindow::loadSurfaceSlot() {
   if (!viewer->loadSurface()) return;
+  surfaceLoaded();
+}
+
+void QTetraMesherMainWindow::surfaceLoaded() {
   resetSurfaceTransformWidget();
   updateCutplaneSliders();
   suggestMethodParameters();
   updateWindowTitle();
+  addRecentSurface(viewer->loadedFileName());
+}
+
+namespace {
+const char *kRecentSurfacesKey = "paths/recentSurfaces";
+const int kMaxRecentSurfaces = 5;
+}  // namespace
+
+void QTetraMesherMainWindow::addRecentSurface(const QString &fileName) {
+  if (fileName.isEmpty()) return;
+  const QString path = QFileInfo(fileName).absoluteFilePath();
+  QSettings settings;
+  QStringList files = settings.value(kRecentSurfacesKey).toStringList();
+  files.removeAll(path);
+  files.prepend(path);
+  while (files.size() > kMaxRecentSurfaces) files.removeLast();
+  settings.setValue(kRecentSurfacesKey, files);
+  updateRecentSurfacesMenu();
+}
+
+void QTetraMesherMainWindow::updateRecentSurfacesMenu() {
+  recentSurfacesMenu.clear();
+  const QStringList files = QSettings().value(kRecentSurfacesKey).toStringList();
+  for (int i = 0; i < files.size(); ++i) {
+    const QString &file = files[i];
+    QAction *action = recentSurfacesMenu.addAction(
+        QString("&%1 %2").arg(i + 1).arg(QFileInfo(file).fileName()));
+    action->setToolTip(file);
+    action->setStatusTip(file);
+    connect(action, &QAction::triggered, this,
+            [this, file]() { openRecentSurface(file); });
+  }
+  if (files.isEmpty()) {
+    recentSurfacesMenu.addAction("(none)")->setEnabled(false);
+    return;
+  }
+  recentSurfacesMenu.addSeparator();
+  connect(recentSurfacesMenu.addAction("Clear List"), &QAction::triggered, this,
+          [this]() {
+            QSettings().remove(kRecentSurfacesKey);
+            updateRecentSurfacesMenu();
+          });
+}
+
+void QTetraMesherMainWindow::openRecentSurface(const QString &fileName) {
+  if (!QFileInfo::exists(fileName)) {
+    QMessageBox::warning(this, "Recent Surface Meshes",
+                         QString("The file\n%1\ndoes not exist anymore and is "
+                                 "removed from the list.")
+                             .arg(fileName));
+    QSettings settings;
+    QStringList files = settings.value(kRecentSurfacesKey).toStringList();
+    files.removeAll(fileName);
+    settings.setValue(kRecentSurfacesKey, files);
+    updateRecentSurfacesMenu();
+    return;
+  }
+  if (!viewer->loadSurfaceFile(fileName)) return;
+  surfaceLoaded();
+}
+
+void QTetraMesherMainWindow::showMeshQuality(const QString &source,
+                                             qint64 elapsedMs) {
+  TetraTools::TetrahedronTopology *top = viewer->tMesh->GetTetraMesh();
+  if (top == NULL) return;
+  static const std::vector<Vec3f> noVerts;
+  static const std::vector<Triangle> noTris;
+  TetraTools::TriangleTopology *surf = viewer->tMesh->GetSurface();
+  const TetraTools::TetraMeshQuality q = TetraTools::ComputeTetraMeshQuality(
+      top->GetVertices(), top->GetTetrahedra(), surf ? surf->GetVertices() : noVerts,
+      surf ? surf->GetTriangles() : noTris);
+  viewer->setMeshQuality(q, source, elapsedMs);
 }
 
 void QTetraMesherMainWindow::resetSurfaceTransformWidget() {
@@ -555,6 +661,8 @@ void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
 
 void QTetraMesherMainWindow::loadTetgenSlot() {
   if (!viewer->loadTetgen()) return;
+  showMeshQuality(QString("Loaded %1").arg(QFileInfo(viewer->loadedFileName()).fileName()),
+                  viewer->lastLoadMs());
   resetSurfaceTransformWidget();
   suggestMethodParameters();
   updateCutplaneSliders();
@@ -614,6 +722,8 @@ void QTetraMesherMainWindow::gmshLoadFinished(
                              .arg(r->elapsedMs)
                              .arg(numTetras)
                              .arg(numVertices));
+  showMeshQuality(QString("Loaded %1").arg(QFileInfo(fileName).fileName()),
+                  r->elapsedMs);
   resetSurfaceTransformWidget();
   suggestMethodParameters();
   updateCutplaneSliders();
@@ -802,6 +912,7 @@ void QTetraMesherMainWindow::tetraJobFinished() {
   const size_t numTetras = r->topology->GetTetrahedra().size();
   const size_t numVertices = r->topology->GetVertices().size();
   viewer->tMesh->SetTetraTopology(std::move(r->topology));
+  showMeshQuality(widget ? widget->methodName() : QString("Generated"), r->elapsedMs);
   viewer->update();
   viewer->displayMessage(
       QString("Generated tetrahedral mesh (%1) in %2 ms. Tetras: %3; "
@@ -824,6 +935,7 @@ void QTetraMesherMainWindow::updateBusyState() {
   actionLoadSurface.setEnabled(!busy);
   actionLoadGMSH.setEnabled(!busy);
   actionLoadTetgen.setEnabled(!busy);
+  recentSurfacesMenu.setEnabled(!busy);
   // keep the widget with the cancel button visible while a job runs
   tetraMeshMethodComboBox.setEnabled(!tetraRunning);
   for (TetraMethodWidget *w : tetraMethodWidgets())
@@ -914,6 +1026,8 @@ void QTetraMesherMainWindow::loadSettings() {
   actionShowBBox.setChecked(settings.value("showBBox", false).toBool());
   actionShowJobOutput.setChecked(
       settings.value("showJobOutput", true).toBool());
+  actionShowMeshQuality.setChecked(
+      settings.value("showMeshQuality", true).toBool());
   settings.endGroup();
   repairOnLoadCheckBox.setChecked(
       settings.value("loading/repairOnLoad", true).toBool());
@@ -949,6 +1063,7 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("showGrid", actionShowGrid.isChecked());
   settings.setValue("showBBox", actionShowBBox.isChecked());
   settings.setValue("showJobOutput", actionShowJobOutput.isChecked());
+  settings.setValue("showMeshQuality", actionShowMeshQuality.isChecked());
   settings.endGroup();
   settings.setValue("loading/repairOnLoad", repairOnLoadCheckBox.isChecked());
 }

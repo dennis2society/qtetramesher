@@ -18,6 +18,7 @@ add_library(
   include/TetraMeshTools/SATriangleBoxIntersection.h
   include/TetraMeshTools/SurfaceChecker.h
   include/TetraMeshTools/TetrahedronTopology.h
+  include/TetraMeshTools/TetraMeshQuality.h
   include/TetraMeshTools/TriMeshLoader.h
   include/TetraMeshTools/Vec3f.h
   include/TetraMeshTools/Vec3d.h
@@ -40,6 +41,7 @@ add_library(
   src/SATriangleBoxIntersection.cpp
   src/SurfaceChecker.cpp
   src/TetrahedronTopology.cpp
+  src/TetraMeshQuality.cpp
   src/TriangleTopology.cpp
   src/TriMeshLoader.cpp
   src/TriMeshWriter.cpp

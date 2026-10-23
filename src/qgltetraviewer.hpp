@@ -15,6 +15,7 @@
 #include <map>
 
 #include "QGLTetraMesh.hpp"
+#include "TetraMeshTools/TetraMeshQuality.h"
 
 class QGLTetraViewer : public QtmGLViewer {
   Q_OBJECT
@@ -54,6 +55,15 @@ class QGLTetraViewer : public QtmGLViewer {
   /// Call after a mesh was loaded from fileName_ into tMesh: fits the view
   /// to the new mesh and shows message_ in the status line.
   void showLoadedMesh(const QString &fileName_, const QString &message_);
+  /// Loads a surface mesh without asking for the file (e.g. a recent file).
+  bool loadSurfaceFile(const QString &fileName_);
+  /// duration of the last successful Tetgen load
+  qint64 lastLoadMs() const { return lastLoadMs_; }
+  /// Shows the measurements in the upper right corner while the current
+  /// tetra mesh is shown; elapsedMs_ < 0 hides the time.
+  void setMeshQuality(const TetraTools::TetraMeshQuality &q, const QString &source,
+                      qint64 elapsedMs_);
+  void setMeshQualityEnabled(bool enabled_);
   /// Scales/rotates the loaded surface mesh (see
   /// QGLTetraMesh::SetSurfaceTransform()). fitView_ refits the camera.
   bool transformSurface(float scale_, float xDeg_, float yDeg_, float zDeg_,
@@ -123,6 +133,14 @@ class QGLTetraViewer : public QtmGLViewer {
 
   bool repairOnLoad = true;
   QString currentFileName;
+  qint64 lastLoadMs_ = -1;
+
+  void drawQualityOverlay(QPainter &painter);
+  TetraTools::TetraMeshQuality meshQuality;
+  QString meshQualitySource;
+  qint64 meshQualityElapsedMs = -1;
+  const void *meshQualityMesh = nullptr;  // tetra mesh the values belong to
+  bool meshQualityEnabled = true;
 
   void updateSceneFromMesh();  // sets _maxBBox, scene center and radius
 

@@ -18,6 +18,7 @@
 #include <QFontDatabase>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QLocale>
 #include <QMessageBox>
 #include <QSettings>
 #include <QPainter>
@@ -184,6 +185,8 @@ void QGLTetraViewer::showNotice(const QString &text, const QString &detail,
 }
 
 void QGLTetraViewer::drawOverlay(QPainter &painter) {
+  // the task indicator shares the corner and is drawn on top
+  drawQualityOverlay(painter);
   drawTaskOverlay(painter);
   drawNoticeOverlay(painter);
   drawJobOutputOverlay(painter);
@@ -247,6 +250,115 @@ void QGLTetraViewer::drawJobOutputOverlay(QPainter &painter) {
     painter.setPen(jobOutput[i].isError ? QColor(240, 130, 130)
                                         : QColor(210, 210, 210));
     painter.drawText(box.left() + padding, y + metrics.ascent(), lines[i]);
+    y += metrics.height();
+  }
+  painter.restore();
+}
+
+void QGLTetraViewer::setMeshQuality(const TetraTools::TetraMeshQuality &q,
+                                    const QString &source, qint64 elapsedMs) {
+  meshQuality = q;
+  meshQualitySource = source;
+  meshQualityElapsedMs = elapsedMs;
+  meshQualityMesh = tMesh->GetTetraMesh();
+  update();
+}
+
+void QGLTetraViewer::setMeshQualityEnabled(bool enabled_) {
+  meshQualityEnabled = enabled_;
+  update();
+}
+
+void QGLTetraViewer::drawQualityOverlay(QPainter &painter) {
+  // only for the mesh the measurements were taken from
+  if (!meshQualityEnabled || meshQualityMesh == nullptr ||
+      meshQualityMesh != tMesh->GetTetraMesh())
+    return;
+  const TetraTools::TetraMeshQuality &q = meshQuality;
+  const QColor normal(220, 220, 220), good(130, 210, 130), warn(235, 200, 90),
+      bad(240, 120, 120);
+  struct Line {
+    QString text;
+    QColor color;
+  };
+  std::vector<Line> lines;
+  const QLocale locale;
+  auto count = [&locale](std::size_t n) {
+    return locale.toString(static_cast<qulonglong>(n));
+  };
+  auto percent = [](double part, double whole) {
+    return whole > 0.0 ? 100.0 * part / whole : 0.0;
+  };
+  lines.push_back({meshQualitySource, normal});
+  if (meshQualityElapsedMs >= 0)
+    lines.push_back({QString("Time: %1 s").arg(meshQualityElapsedMs / 1000.0, 0, 'f', 2),
+                     normal});
+  lines.push_back({QString("Tetras: %1  Vertices: %2")
+                       .arg(count(q.numTetras), count(q.numVertices)),
+                   normal});
+  if (q.surfaceVolume > 0.0) {
+    const double ratio = percent(q.tetraVolume, q.surfaceVolume);
+    const double diff = ratio - 100.0;
+    const QString cmp =
+        std::fabs(diff) < 0.005
+            ? QString("equal")
+            : QString("%1% %2").arg(std::fabs(diff), 0, 'f', 2)
+                  .arg(diff < 0.0 ? "smaller" : "larger");
+    lines.push_back({QString("Volume: %1% of surface (%2)").arg(ratio, 0, 'f', 2).arg(cmp),
+                     std::fabs(diff) < 1.0 ? good : (std::fabs(diff) < 5.0 ? warn : bad)});
+    lines.push_back({QString("  tetras %1, surface %2")
+                         .arg(q.tetraVolume, 0, 'g', 6)
+                         .arg(q.surfaceVolume, 0, 'g', 6),
+                     normal});
+  } else {
+    lines.push_back({QString("Volume: %1").arg(q.tetraVolume, 0, 'g', 6), normal});
+  }
+  lines.push_back({QString("Quality (1 = regular): min %1, mean %2")
+                       .arg(q.minQuality, 0, 'f', 3)
+                       .arg(q.meanQuality, 0, 'f', 3),
+                   q.minQuality < 0.02 ? bad : (q.minQuality < 0.1 ? warn : good)});
+  lines.push_back({QString("Poor tetras (q < %1): %2 (%3%)")
+                       .arg(TetraTools::TetraMeshQuality::kPoorQuality)
+                       .arg(count(q.numPoorTetras))
+                       .arg(percent(double(q.numPoorTetras), double(q.numTetras)), 0, 'f', 2),
+                   q.numPoorTetras == 0 ? good : warn});
+  lines.push_back({QString("Inverted tetras: %1").arg(count(q.numInvertedTetras)),
+                   q.numInvertedTetras == 0 ? good : bad});
+  lines.push_back({QString::fromUtf8("Dihedral angles: %1\u00b0 \u2013 %2\u00b0")
+                       .arg(q.minDihedralDeg, 0, 'f', 1)
+                       .arg(q.maxDihedralDeg, 0, 'f', 1),
+                   q.minDihedralDeg < 5.0 ? warn : normal});
+  lines.push_back({QString::fromUtf8("Edge lengths: %1 \u2013 %2")
+                       .arg(q.minEdgeLength, 0, 'g', 4)
+                       .arg(q.maxEdgeLength, 0, 'g', 4),
+                   normal});
+
+  painter.save();
+  QFont titleFont = painter.font();
+  titleFont.setBold(true);
+  QFont font = painter.font();
+  font.setPointSizeF(font.pointSizeF() * 0.9);
+  const QFontMetrics titleMetrics(titleFont), metrics(font);
+  const QString title("Tetra Mesh Quality");
+  const int padding = 8;
+  int width = titleMetrics.horizontalAdvance(title);
+  for (const Line &l : lines) width = std::max(width, metrics.horizontalAdvance(l.text));
+  width += 2 * padding;
+  const int height = titleMetrics.height() + int(lines.size()) * metrics.height() + 2 * padding;
+  const QRect box(this->width() - width - 10, 10, width, height);
+  painter.setRenderHint(QPainter::Antialiasing);
+  painter.setPen(Qt::NoPen);
+  painter.setBrush(QColor(0, 0, 0, 170));
+  painter.drawRoundedRect(box, 6, 6);
+  int y = box.top() + padding;
+  painter.setFont(titleFont);
+  painter.setPen(QColor(235, 235, 235));
+  painter.drawText(box.left() + padding, y + titleMetrics.ascent(), title);
+  y += titleMetrics.height();
+  painter.setFont(font);
+  for (const Line &l : lines) {
+    painter.setPen(l.color);
+    painter.drawText(box.left() + padding, y + metrics.ascent(), l.text);
     y += metrics.height();
   }
   painter.restore();
@@ -645,9 +757,13 @@ bool QGLTetraViewer::loadSurface() {
       this, "Select mesh File", lastLoadDir(),
       tr("Supported Files (OBJ, STL, OFF, Collada, 3DS, PLY, AC) (*.obj *.stl "
          "*.off *.dae *.3ds *.ply *.ac)"));
-  std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   if (s.isEmpty()) return false;
   rememberLoadDir(s);
+  return loadSurfaceFile(s);
+}
+
+bool QGLTetraViewer::loadSurfaceFile(const QString &s) {
+  std::cout << "Loading Surface Mesh... " << s.toStdString() << std::endl;
   ShowStatusMessage("Loading Surface...");
   if (!tMesh->LoadSurface(s.toStdString(), repairOnLoad)) {
     ShowStatusMessage("Loading the surface mesh failed...", 10000);
@@ -696,6 +812,8 @@ bool QGLTetraViewer::loadTetgen() {
   QString basePath = fi.dir().filePath(fi.completeBaseName());
   std::cout << "Loading Tetgen Mesh... " << basePath.toStdString() << std::endl;
   ShowStatusMessage("Loading Tetgen...");
+  QElapsedTimer loadTimer;
+  loadTimer.start();
   if (!tMesh->LoadTetgen(basePath.toStdString())) {
     ShowStatusMessage("Loading the Tetgen mesh failed...", 10000);
     QMessageBox::warning(
@@ -705,6 +823,7 @@ bool QGLTetraViewer::loadTetgen() {
             .arg(s));
     return false;
   }
+  lastLoadMs_ = loadTimer.elapsed();
   showLoadedMesh(s, "Tetgen mesh successfully loaded...");
   return true;
 }

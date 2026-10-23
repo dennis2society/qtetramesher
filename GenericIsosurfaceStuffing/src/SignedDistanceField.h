@@ -30,6 +30,18 @@ public:
   /// Closest point on the surface; undefined if the mesh is empty.
   Vec3d closestPoint(const Vec3d &p) const;
 
+  /// Outward normal of the surface feature closest to p.
+  Vec3d surfaceNormal(const Vec3d &p) const;
+
+  /// True if the segment ab stays inside (side = +1) or outside (side = -1)
+  /// of the surface, allowing a deviation of tol.
+  bool segmentOnSide(const Vec3d &a, const Vec3d &b, int side, double tol) const;
+
+  /// True if the segment leaves the solid by more than tol and re-enters it
+  /// through a surface facing the one it left, i.e. it spans a gap between
+  /// two parts (or across a hole).
+  bool segmentCrossesGap(const Vec3d &a, const Vec3d &b, double tol) const;
+
   bool empty() const { return tris_.empty(); }
 
 private:

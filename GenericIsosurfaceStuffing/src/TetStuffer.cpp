@@ -193,8 +193,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   // snapped, otherwise they would become a second vertex at the same place and
   // tear the two tetrahedra sharing that face apart.
   const double snapEps = 1e-4 * h;
-  std::vector<double> bestDist(nv, std::numeric_limits<double>::max());
-  std::vector<int> bestEdge(nv, -1);
+  std::vector<std::vector<std::pair<double, int>>> warpCands(nv);
   for (int e = 0; e < ne; ++e) {
     if (cutT[e] < 0.0) continue;
     const int u = edgeA[e], w = edgeB[e];
@@ -202,15 +201,47 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     const double alpha = isLong ? aLong : aShort;
     const double len = length(pos[w] - pos[u]);
     const double tu = cutT[e], tw = 1.0 - cutT[e];
-    if ((tu < alpha || tu * len < snapEps) && tu * len < bestDist[u]) {
-      bestDist[u] = tu * len;
-      bestEdge[u] = e;
+    if (tu < alpha || tu * len < snapEps) warpCands[u].push_back({tu * len, e});
+    if (tw < alpha || tw * len < snapEps) warpCands[w].push_back({tw * len, e});
+  }
+
+  // A warped point drops the cuts on all its edges, so its edges to inside
+  // neighbours become inside edges. Where two surface sheets nearly touch
+  // (closer than the lattice resolves), the nearest cut point may lie on the
+  // other sheet; warping onto it would glue both parts together.
+  std::vector<std::vector<int>> latticeNbrs(nv);
+  for (int e = 0; e < ne; ++e) {
+    latticeNbrs[edgeA[e]].push_back(edgeB[e]);
+    latticeNbrs[edgeB[e]].push_back(edgeA[e]);
+  }
+  auto warpKeepsSides = [&](int u, const Vec3d &target, double snapDist) {
+    if (snapDist < snapEps) return true;
+    for (int v : latticeNbrs[u]) {
+      if (lab[v] != 1) continue;
+      const double len = length(pos[v] - target);
+      if (sdf.segmentCrossesGap(target, pos[v], 0.01 * len)) return false;
     }
-    if ((tw < alpha || tw * len < snapEps) && tw * len < bestDist[w]) {
-      bestDist[w] = tw * len;
-      bestEdge[w] = e;
+    return true;
+  };
+  std::vector<int> bestEdge(nv, -1);
+  std::size_t numWarpRejected = 0;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 64) reduction(+ : numWarpRejected)
+#endif
+  for (int i = 0; i < nv; ++i) {
+    auto &c = warpCands[i];
+    if (c.empty()) continue;
+    std::sort(c.begin(), c.end());
+    for (const auto &cand : c) {
+      if (warpKeepsSides(i, cutP[cand.second], cand.first)) {
+        bestEdge[i] = cand.second;
+        break;
+      }
+      ++numWarpRejected;
     }
   }
+  warpCands.clear();
+  latticeNbrs.clear();
   std::size_t numWarped = 0;
   for (int i = 0; i < nv; ++i) {
     if (bestEdge[i] < 0) continue;
@@ -229,7 +260,8 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     }
     ++numCuts;
   }
-  std::cout << "IsosurfaceStuffing: " << numWarped << " lattice points warped, "
+  std::cout << "IsosurfaceStuffing: " << numWarped << " lattice points warped ("
+            << numWarpRejected << " warps rejected across thin gaps), "
             << numOnSurface << " already on the surface, " << numCuts
             << " cut points." << std::endl;
 
@@ -352,13 +384,66 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     fanFaces();
   }
 
+  // Where two parts (or the two sides of a hole) come closer than the lattice
+  // resolves, a stuffed tet can have corners in both and glue them together.
+  // Such tets have an edge that leaves the solid and re-enters it through the
+  // opposite sheet; they are removed.
+  {
+    std::unordered_map<std::uint64_t, int> outEdgeIndex;
+    std::vector<std::pair<int, int>> outEdges;
+    for (const auto &t : rawTets)
+      for (int i = 0; i < 4; ++i)
+        for (int j = i + 1; j < 4; ++j) {
+          const std::uint64_t k = edgeKey(t[i], t[j]);
+          if (outEdgeIndex.emplace(k, static_cast<int>(outEdges.size())).second)
+            outEdges.push_back({t[i], t[j]});
+        }
+    std::vector<double> outPhi(outPos.size());
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int i = 0; i < static_cast<int>(outPos.size()); ++i)
+      outPhi[i] = sdf.signedDistance(outPos[i]);
+    std::vector<unsigned char> bridging(outEdges.size(), 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 256)
+#endif
+    for (int e = 0; e < static_cast<int>(outEdges.size()); ++e) {
+      const Vec3d &a = outPos[outEdges[e].first];
+      const Vec3d &b = outPos[outEdges[e].second];
+      const double len = length(b - a);
+      // 1-Lipschitz bound: the segment cannot reach the outside
+      if (outPhi[outEdges[e].first] + outPhi[outEdges[e].second] + len <= 0.0) continue;
+      if (sdf.segmentCrossesGap(a, b, 0.01 * len)) bridging[e] = 1;
+    }
+    std::size_t numBridges = 0;
+    std::size_t n = 0;
+    for (const auto &t : rawTets) {
+      bool bridge = false;
+      for (int i = 0; i < 4 && !bridge; ++i)
+        for (int j = i + 1; j < 4 && !bridge; ++j)
+          bridge = bridging[outEdgeIndex[edgeKey(t[i], t[j])]] != 0;
+      if (bridge)
+        ++numBridges;
+      else
+        rawTets[n++] = t;
+    }
+    rawTets.resize(n);
+    if (numBridges > 0)
+      std::cout << "IsosurfaceStuffing: " << numBridges
+                << " tetrahedra removed that bridged a gap narrower than the "
+                   "cell size."
+                << std::endl;
+  }
+
   {
     const MeshOptimizerStats os = optimizeStuffedMesh(
         surfVerts, surfTris, sdf, featureAngle, featureSnap, outPos, rawTets);
     if (os.featureEdges > 0)
       std::cout << "IsosurfaceStuffing: " << os.featureEdges << " sharp edges, "
                 << os.featureCorners << " corners; " << os.snapped << " of "
-                << os.snapCandidates << " nearby boundary vertices snapped onto them."
+                << os.snapCandidates << " nearby boundary vertices snapped onto them, "
+                << os.featurePointsInserted << " vertices inserted to fill notches."
                 << std::endl;
     std::cout << "IsosurfaceStuffing: " << os.smoothed
               << " vertex moves to improve quality, " << os.capsRemoved
