@@ -417,6 +417,11 @@ QString QGLTetraViewer::helpHtml() const {
       "<ul>"
       "<li><b>Surface</b>: solid, wireframe or hidden. Surface and wireframe "
       "colors can be changed with the color buttons.</li>"
+      "<li><b>Surface Transform</b>: scale (logarithmic slider, 0.0001 to "
+      "10000) and rotate a loaded surface mesh around its center. The "
+      "original is kept, <i>Reset Transform</i> restores it. A generated "
+      "tetra mesh is removed when the surface changes. Export Surface saves "
+      "the transformed mesh.</li>"
       "<li><b>TetraMesh</b>: draw the wireframe and/or the solid tetrahedra, "
       "with their own colors. Tetrahedra on the surface share one color; with "
       "<i>Color Interior by Depth</i> the inner ones fade from the outer to "
@@ -558,24 +563,13 @@ void QGLTetraViewer::updateSceneFromMesh() {
   this->setSceneRadius(_maxBBox);
 }
 
-void QGLTetraViewer::scale10() {
-  if (tMesh == NULL) {
-    std::cerr << "Error! No mesh available..." << std::endl;
-    return;
-  }
-  tMesh->scalex10();
+bool QGLTetraViewer::transformSurface(float scale_, float xDeg_, float yDeg_,
+                                      float zDeg_, bool fitView_) {
+  if (!tMesh->SetSurfaceTransform(scale_, xDeg_, yDeg_, zDeg_)) return false;
   updateSceneFromMesh();
+  if (fitView_) showEntireScene();
   update();
-}
-
-void QGLTetraViewer::scale01() {
-  if (tMesh == NULL) {
-    std::cerr << "Error! No mesh available..." << std::endl;
-    return;
-  }
-  tMesh->scalex01();
-  updateSceneFromMesh();
-  update();
+  return true;
 }
 
 void QGLTetraViewer::generateOctree(int d) {
@@ -628,6 +622,7 @@ bool QGLTetraViewer::loadSurface() {
   BoundingBox bb = tMesh->GetBoundingBox();
   Vec3f bboxCenter = bb.min + ((bb.max - bb.min) / 2.0f);
   tMesh->translateSurfaceMesh(bboxCenter * -1.0);
+  tMesh->BeginSurfaceTransform();
   if (tMesh->WasSurfaceRepaired())
     showNotice("Surface mesh was repaired on load",
                QString::fromStdString(tMesh->GetSurfaceRepairSummary()));

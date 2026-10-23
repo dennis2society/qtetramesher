@@ -54,6 +54,10 @@ class QGLTetraViewer : public QtmGLViewer {
   /// Call after a mesh was loaded from fileName_ into tMesh: fits the view
   /// to the new mesh and shows message_ in the status line.
   void showLoadedMesh(const QString &fileName_, const QString &message_);
+  /// Scales/rotates the loaded surface mesh (see
+  /// QGLTetraMesh::SetSurfaceTransform()). fitView_ refits the camera.
+  bool transformSurface(float scale_, float xDeg_, float yDeg_, float zDeg_,
+                        bool fitView_);
 
  public slots:
   void ToggleTetraVis(bool drawWireframe_, bool drawSolid_);
@@ -72,8 +76,6 @@ class QGLTetraViewer : public QtmGLViewer {
   void selectTetraOuterColor();
   void selectTetraInnerColor();
   void selectTetraColorWireframe();
-  void scale10();
-  void scale01();
   void showAbout();
   void showHelp();
 

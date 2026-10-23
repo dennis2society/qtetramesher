@@ -23,6 +23,7 @@ add_library(
   include/TetraMeshTools/Vec3d.h
   include/TetraMeshTools/GeometryTypes.h
   include/TetraMeshTools/MeshRepair.h
+  include/TetraMeshTools/MeshTransform.h
   include/TetraMeshTools/Octree.h
   include/TetraMeshTools/TetraToolsExports.h
   include/TetraMeshTools/TriMeshWriter.h
@@ -33,6 +34,7 @@ add_library(
   src/BaseMeshLoader.cpp
   src/TopologyUtils.h
   src/MeshRepair.cpp
+  src/MeshTransform.cpp
   src/Octree.cpp
   src/OctreeNode.cpp
   src/SATriangleBoxIntersection.cpp

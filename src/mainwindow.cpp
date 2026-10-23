@@ -24,6 +24,7 @@
 QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
     : QMainWindow(parent),
       surfaceVisWidget(this),
+      surfaceTransformWidget(this),
       tetraVisWidget(this),
       octreeVisWidget(this),
       sofaTetraStuffingWidget(this),
@@ -138,6 +139,12 @@ void QTetraMesherMainWindow::setupUI() {
   repairOnLoadCheckBox.setChecked(true);
   optionsLayout.addWidget(&repairOnLoadCheckBox);
   optionsLayout.addWidget(&surfaceVisWidget);
+  QFrame *f0 = new QFrame(this);
+  f0->setFrameShape(QFrame::HLine);
+  f0->setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(f0);
+  optionsLayout.addWidget(&surfaceTransformWidget);
+  surfaceTransformWidget.setEnabled(false);
   // owned by this window (a local QFrame would be destroyed on return)
   QFrame *f1 = new QFrame(this);
   f1->setFrameShape(QFrame::HLine);
@@ -211,6 +218,10 @@ void QTetraMesherMainWindow::connectSlots() {
           &QGLTetraViewer::setRepairOnLoad);
   connect(&surfaceVisWidget.checkSurfaceButton, SIGNAL(clicked()), this,
           SLOT(checkSurfaceSlot()));
+  connect(&surfaceTransformWidget, &SurfaceTransformWidget::transformChanged,
+          this, &QTetraMesherMainWindow::surfaceTransformChanged);
+  connect(&surfaceTransformWidget.resetButton, &QPushButton::clicked, this,
+          &QTetraMesherMainWindow::resetSurfaceTransform);
   connect(&tetraVisWidget.drawWireframeCheckbox, SIGNAL(toggled(bool)), this,
           SLOT(tetraVisChangedSlot()));
   connect(&tetraVisWidget.drawSolidCheckbox, SIGNAL(toggled(bool)), this,
@@ -503,8 +514,35 @@ void QTetraMesherMainWindow::updateWindowTitle() {
 
 void QTetraMesherMainWindow::loadSurfaceSlot() {
   if (!viewer->loadSurface()) return;
+  resetSurfaceTransformWidget();
   suggestMethodParameters();
   updateWindowTitle();
+}
+
+void QTetraMesherMainWindow::resetSurfaceTransformWidget() {
+  surfaceTransformWidget.resetValues();
+  updateBusyState();
+}
+
+void QTetraMesherMainWindow::surfaceTransformChanged(bool scaleChanged_,
+                                                     bool settled_) {
+  const bool hadTetras = viewer->tMesh->GetTetraMesh() != NULL;
+  // refit only when done, so the size change stays visible while dragging
+  const bool fitView = scaleChanged_ && settled_;
+  if (!viewer->transformSurface(surfaceTransformWidget.scale(),
+                                surfaceTransformWidget.rotationX(),
+                                surfaceTransformWidget.rotationY(),
+                                surfaceTransformWidget.rotationZ(), fitView))
+    return;
+  if (fitView) suggestMethodParameters();
+  if (hadTetras)
+    viewer->displayMessage(
+        "Tetra mesh removed: the surface mesh was transformed.", 5000);
+}
+
+void QTetraMesherMainWindow::resetSurfaceTransform() {
+  surfaceTransformWidget.resetValues();
+  surfaceTransformChanged(true, true);
 }
 
 void QTetraMesherMainWindow::exportSurfaceSlot() { viewer->saveSurface(); }
@@ -513,6 +551,7 @@ void QTetraMesherMainWindow::exportGMSHSlot() { viewer->saveGMSH(); }
 
 void QTetraMesherMainWindow::loadTetgenSlot() {
   if (!viewer->loadTetgen()) return;
+  resetSurfaceTransformWidget();
   suggestMethodParameters();
   updateCutplaneSliders();
   updateWindowTitle();
@@ -571,6 +610,7 @@ void QTetraMesherMainWindow::gmshLoadFinished(
                              .arg(r->elapsedMs)
                              .arg(numTetras)
                              .arg(numVertices));
+  resetSurfaceTransformWidget();
   suggestMethodParameters();
   updateCutplaneSliders();
   updateWindowTitle();
@@ -788,6 +828,9 @@ void QTetraMesherMainWindow::updateBusyState() {
                   loading ? "Cancel Loading" : "Cancel Generation");
   octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning && !loading);
   surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning && !loading);
+  // the background tasks read the surface mesh
+  surfaceTransformWidget.setEnabled(!busy &&
+                                    viewer->tMesh->CanTransformSurface());
 }
 
 void QTetraMesherMainWindow::stopBackgroundTasks() {

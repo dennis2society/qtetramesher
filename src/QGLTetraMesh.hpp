@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+#include "TetraMeshTools/MeshTransform.h"
 #include "TetraMeshTools/Octree.h"
 #include "TetraMeshTools/TetrahedronTopology.h"
 
@@ -63,7 +64,6 @@ class QGLTetraMesh {
 
   /// uploads all geometry marked as dirty to the GPU
   void ClearAll();  // deletes octree, tetra mesh and surface
-  void ScaleMesh(const float factor_);
   void UpdateBuffers();
   void UpdateSurfaceBuffers();
   void UpdateTetraBuffers();
@@ -130,15 +130,25 @@ class QGLTetraMesh {
   bool SaveSurface(const std::string &fileName_, const std::string extension_);
   bool SaveTetgen(const std::string &fileName_);
 
-  void scalex10();
+  /// Takes the current surface as the original for SetSurfaceTransform().
+  /// Only loaded surface meshes are transformable, not the surfaces of
+  /// loaded tetra meshes.
+  void BeginSurfaceTransform();
+  bool CanTransformSurface() const { return surfaceTransform.HasOriginal(); }
+  const TetraTools::MeshTransform &GetSurfaceTransform() const {
+    return surfaceTransform;
+  }
+  /// Replaces the surface by the scaled/rotated original. Removes the tetra
+  /// mesh and the octree, which were built from the previous surface.
+  bool SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
+                           float zDeg_);
 
  private:
   std::string surfaceRepairSummary;
   bool surfaceRepaired = false;
+  TetraTools::MeshTransform surfaceTransform;
 
  public:
-
-  void scalex01();
 
   /// Returns false (and drops the tetra mesh) if the data is empty or invalid.
   bool UpdateTetraMesh(std::vector<Vec3f> &verts_,

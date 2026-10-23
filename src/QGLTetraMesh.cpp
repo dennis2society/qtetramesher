@@ -238,6 +238,7 @@ void QGLTetraMesh::ClearAll() {
   top = NULL;
   delete surf;
   surf = NULL;
+  surfaceTransform.Clear();
   MarkGeometryDirty();
 }
 
@@ -513,6 +514,7 @@ void QGLTetraMesh::ClearSurface() {
   oct = NULL;
   delete surf;
   surf = NULL;
+  surfaceTransform.Clear();
   MarkGeometryDirty();
   isReady = (top != NULL);
 }
@@ -636,34 +638,31 @@ bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
   return success;
 }
 
-void QGLTetraMesh::ScaleMesh(const float factor_) {
+void QGLTetraMesh::BeginSurfaceTransform() {
   if (surf == NULL) {
-    std::cerr << "Error on scale! Surface mesh is empty..." << std::endl;
+    surfaceTransform.Clear();
     return;
   }
-  isReady = false;
-  for (Vec3f &v : surf->GetVertices()) {
-    v *= factor_;
-  }
-  surf->GenerateBoundingBox();
-  // the octree was built from the unscaled surface
-  delete oct;
-  oct = NULL;
-  if (top != NULL) {
-    std::vector<Vec3f> tv = top->GetVertices();
-    std::vector<Tetrahedron> tt = top->GetTetrahedra();
-    for (Vec3f &v : tv) {
-      v *= factor_;
-    }
-    UpdateTetraMesh(tv, tt);
-  }
-  MarkGeometryDirty();
-  isReady = true;
+  surfaceTransform.SetOriginal(surf->GetVertices());
 }
 
-void QGLTetraMesh::scalex10() { ScaleMesh(10.0f); }
-
-void QGLTetraMesh::scalex01() { ScaleMesh(0.1f); }
+bool QGLTetraMesh::SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
+                                       float zDeg_) {
+  if (surf == NULL || !surfaceTransform.HasOriginal()) return false;
+  isReady = false;
+  surfaceTransform.SetScale(scale_);
+  surfaceTransform.SetRotation(xDeg_, yDeg_, zDeg_);
+  surfaceTransform.Apply(surf->GetVertices());
+  surf->GenerateBoundingBox();
+  surf->GenerateNormals();
+  delete oct;
+  oct = NULL;
+  delete top;
+  top = NULL;
+  MarkGeometryDirty();
+  isReady = true;
+  return true;
+}
 
 void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   if (oct != NULL) {

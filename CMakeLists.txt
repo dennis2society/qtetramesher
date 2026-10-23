@@ -95,6 +95,8 @@ add_executable(
   src/BaseOptionsWidget.cpp
   src/SurfaceVisWidget.hpp
   src/SurfaceVisWidget.cpp
+  src/SurfaceTransformWidget.hpp
+  src/SurfaceTransformWidget.cpp
   src/TetraVisWidget.hpp
   src/TetraVisWidget.cpp
   src/OctreeVisWidget.hpp

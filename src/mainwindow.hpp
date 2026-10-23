@@ -28,6 +28,7 @@
 #include <QWidget>
 #include <GenericIsosurfaceStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
+#include <SurfaceTransformWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetgenWidget.hpp>
 #include <TetraVisWidget.hpp>
@@ -113,6 +114,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   // Visualization options and task widgets
   QCheckBox repairOnLoadCheckBox;
   SurfaceVisWidget surfaceVisWidget;
+  SurfaceTransformWidget surfaceTransformWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;
   // Tetra mesh methods widgets
@@ -141,6 +143,10 @@ class QTetraMesherMainWindow : public QMainWindow {
   // them runs, loading another mesh is disabled because the tasks read the
   // current surface mesh.
   void startOrCancelTetraJob(TetraMethodWidget &widget);
+  void surfaceTransformChanged(bool scaleChanged_, bool settled_);
+  void resetSurfaceTransform();
+  /// identity values; enabled only for a loaded surface mesh
+  void resetSurfaceTransformWidget();
   void updateBusyState();
   void stopBackgroundTasks();
   void showSurfaceCheckResult(const SurfaceCheckResult &r);
