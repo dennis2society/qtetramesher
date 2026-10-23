@@ -39,18 +39,28 @@ std::uint64_t vertexKey(int x, int y, int z) {
          ((static_cast<std::uint64_t>(static_cast<std::uint32_t>(z)) & 0x1FFFFFull) << 42);
 }
 
-/// Coarsest cell edge, in units of the finest cell size.
-const int kMaxCoarseCell = 8;
+/// Coarsest cell edge at the lowest grading, in units of the finest cell size.
+const int kMinCoarseCell = 8;
 
 }  // namespace
 
 void BCCLattice::build(const Vec3d &bbMin, const Vec3d &bbMax, double h,
-                       bool graded, const SignedDistanceField &sdf) {
+                       double grading, const SignedDistanceField &sdf) {
   positions_.clear();
   isCenter_.clear();
   tets_.clear();
   cellCount_ = 0;
   if (h <= 0.0) return;
+  const bool graded = grading > 0.0;
+  const double g = std::min(std::max(grading, 0.0), 1.0);
+  // Interior cells may grow up to 8h .. 128h.
+  const int maxCoarseCell = kMinCoarseCell << static_cast<int>(std::lround(g * 4.0));
+  // Cells cut by the surface may stay coarse where the surface is flat.
+  const int maxSurfaceCell = g < 0.5 ? 2 : 4;
+  // Allowed deviation of the distance field from linear inside such a cell.
+  const double flatTol = 0.3 * g * h;
+  // A cell farther than half its diagonal (0.866 s h) cannot meet the surface.
+  const double nearFactor = 1.0 - 0.1 * g;
 
   // Pad so that the outermost cells are safely outside the surface; the
   // pyramids over domain-boundary faces are not generated.
@@ -94,16 +104,45 @@ void BCCLattice::build(const Vec3d &bbMin, const Vec3d &bbMax, double h,
     struct Pending {
       int x, y, z, s;
     };
+    auto cellPoint = [&](const Pending &c, int i, int j, int k) {
+      return origin + Vec3d{(c.x + c.s * 0.5 * i) * h, (c.y + c.s * 0.5 * j) * h,
+                            (c.z + c.s * 0.5 * k) * h};
+    };
+    // True if the distance field is close to trilinear over the cell, i.e. the
+    // surface inside is nearly planar and has no edge, corner or thin part.
+    auto nearlyFlat = [&](const Pending &c) {
+      double f[3][3][3];
+      for (int k = 0; k < 3; ++k)
+        for (int j = 0; j < 3; ++j)
+          for (int i = 0; i < 3; ++i)
+            f[i][j][k] = sdf.signedDistance(cellPoint(c, i, j, k));
+      for (int k = 0; k < 3; ++k) {
+        for (int j = 0; j < 3; ++j) {
+          for (int i = 0; i < 3; ++i) {
+            if (!((i | j | k) & 1)) continue;  // corners interpolate exactly
+            double interp = 0.0;
+            for (int o = 0; o < 8; ++o) {
+              const int a = o & 1, b = (o >> 1) & 1, d = (o >> 2) & 1;
+              const double w = (a ? i : 2 - i) * (b ? j : 2 - j) * (d ? k : 2 - k) / 8.0;
+              interp += w * f[2 * a][2 * b][2 * d];
+            }
+            if (std::fabs(interp - f[i][j][k]) > flatTol) return false;
+          }
+        }
+      }
+      return true;
+    };
     std::vector<Pending> stack{Pending{0, 0, 0, root}};
     while (!stack.empty()) {
       const Pending c = stack.back();
       stack.pop_back();
       bool refine = c.s > 1;
-      if (refine && c.s <= kMaxCoarseCell) {
-        const Vec3d centre = origin + Vec3d{(c.x + c.s * 0.5) * h, (c.y + c.s * 0.5) * h,
-                                            (c.z + c.s * 0.5) * h};
-        // A cell meeting the surface is within one cell width of it.
-        refine = std::fabs(sdf.signedDistance(centre)) < c.s * h;
+      if (refine && c.s <= maxCoarseCell) {
+        const double d = std::fabs(sdf.signedDistance(cellPoint(c, 1, 1, 1)));
+        if (d >= nearFactor * c.s * h)
+          refine = false;
+        else if (c.s <= maxSurfaceCell && flatTol > 0.0)
+          refine = !nearlyFlat(c);
       }
       if (!refine) {
         addLeaf(c.x, c.y, c.z, c.s);

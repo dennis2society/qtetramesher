@@ -515,6 +515,7 @@ void QTetraMesherMainWindow::updateWindowTitle() {
 void QTetraMesherMainWindow::loadSurfaceSlot() {
   if (!viewer->loadSurface()) return;
   resetSurfaceTransformWidget();
+  updateCutplaneSliders();
   suggestMethodParameters();
   updateWindowTitle();
 }
@@ -801,7 +802,6 @@ void QTetraMesherMainWindow::tetraJobFinished() {
   const size_t numTetras = r->topology->GetTetrahedra().size();
   const size_t numVertices = r->topology->GetVertices().size();
   viewer->tMesh->SetTetraTopology(std::move(r->topology));
-  updateCutplaneSliders();
   viewer->update();
   viewer->displayMessage(
       QString("Generated tetrahedral mesh (%1) in %2 ms. Tetras: %3; "

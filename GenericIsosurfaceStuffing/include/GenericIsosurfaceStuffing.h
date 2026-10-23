@@ -36,14 +36,20 @@ public:
    * @param gridSpacing Size of the BCC lattice cell
    * @param alphaShort  Short-edge warp threshold (Shewchuk's alpha_s, default ~0.4)
    * @param alphaLong   Long-edge warp threshold (Shewchuk's alpha_l, default ~0.27)
-   * @param graded      Enable graded meshing (large tets in deep interior)
+   * @param grading     0 = uniform lattice, (0, 1] = graded: the higher, the
+   *                    larger the interior and flat-surface tetrahedra
+   * @param featureAngle  Sharp edge angle in degrees (0 = off)
+   * @param featureSnap   0..1, how strongly boundary vertices are snapped
+   *                      onto sharp edges and corners
    */
   void GenerateFromSurface(const std::vector<Triangle> &tris,
                            const std::vector<Vec3f> &verts,
                            float gridSpacing,
                            float alphaShort = 0.4f,
                            float alphaLong = 0.27f,
-                           bool graded = false);
+                           float grading = 0.0f,
+                           float featureAngle = 0.0f,
+                           float featureSnap = 0.0f);
 
   std::vector<Vec3f> &GetTetraVertices();
   std::vector<Tetrahedron> &GetTetras();

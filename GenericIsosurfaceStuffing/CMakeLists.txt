@@ -14,6 +14,8 @@ add_library(
   src/GenericIsosurfaceStuffing.cpp
   src/BCCLattice.h
   src/BCCLattice.cpp
+  src/MeshOptimizer.h
+  src/MeshOptimizer.cpp
   src/SignedDistanceField.h
   src/SignedDistanceField.cpp
   src/TetStuffer.h

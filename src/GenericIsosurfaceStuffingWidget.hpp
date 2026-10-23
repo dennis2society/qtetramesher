@@ -11,8 +11,8 @@
 
 #include <TetraMethodWidget.hpp>
 #include <QDoubleSpinBox>
-#include <QCheckBox>
 #include <QPushButton>
+#include <QSlider>
 
 class GenericIsosurfaceStuffingWidget : public TetraMethodWidget {
   Q_OBJECT
@@ -37,7 +37,17 @@ class GenericIsosurfaceStuffingWidget : public TetraMethodWidget {
   QDoubleSpinBox alphaShortSpinBox;
   QLabel alphaLongLabel;
   QDoubleSpinBox alphaLongSpinBox;
-  QCheckBox gradedCheckBox;
+  QHBoxLayout gradingLayout;
+  QLabel gradingLabel;
+  QSlider gradingSlider;
+  QLabel gradingValueLabel;
+  QHBoxLayout featureAngleLayout;
+  QLabel featureAngleLabel;
+  QDoubleSpinBox featureAngleSpinBox;
+  QHBoxLayout featureSnapLayout;
+  QLabel featureSnapLabel;
+  QSlider featureSnapSlider;
+  QLabel featureSnapValueLabel;
   QPushButton generateTetrahedraButton;
 };
 

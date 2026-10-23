@@ -14,6 +14,7 @@
 #include "TetStuffer.h"
 
 #include "BCCLattice.h"
+#include "MeshOptimizer.h"
 #include "SignedDistanceField.h"
 
 #include <TetraMeshTools/Vec3d.h>
@@ -24,6 +25,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -65,7 +67,8 @@ double findCrossing(const SignedDistanceField &sdf, const Vec3d &a, const Vec3d 
 
 void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
                        const std::vector<Triangle> &surfTris, float gridSpacing,
-                       float alphaShort, float alphaLong, bool graded,
+                       float alphaShort, float alphaLong, float grading,
+                       float featureAngle, float featureSnap,
                        std::vector<Vec3f> &outVerts,
                        std::vector<Tetrahedron> &outTets) {
   outVerts.clear();
@@ -85,10 +88,12 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   }
 
   double h = gridSpacing;
+  const bool graded = grading > 0.0f;
   const double diag = length(bbMax - bbMin);
   if (!(h > 0.0)) h = diag / 20.0;
-  // Keep the lattice from exploding on a badly scaled cell size.
-  const double hMin = diag / 400.0;
+  // Keep the lattice from exploding on a badly scaled cell size; a graded
+  // lattice only uses the finest cells near the surface.
+  const double hMin = diag / (graded ? 800.0 : 400.0);
   if (h < hMin) {
     std::cout << "IsosurfaceStuffing: cell size " << h << " too small, clamped to "
               << hMin << "." << std::endl;
@@ -111,7 +116,7 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
   }
 
   BCCLattice lattice;
-  lattice.build(bbMin, bbMax, h, graded, sdf);
+  lattice.build(bbMin, bbMax, h, graded ? grading : 0.0, sdf);
   const std::vector<Vec3d> &latticePos = lattice.positions();
   const std::vector<BccTet> &latticeTets = lattice.tets();
   if (latticeTets.empty()) {
@@ -119,7 +124,8 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
     return;
   }
   std::cout << "IsosurfaceStuffing: cell size " << h
-            << (graded ? " (graded)" : " (uniform)") << ", " << lattice.cellCount()
+            << (graded ? " (graded " + std::to_string(grading) + ")" : " (uniform)")
+            << ", " << lattice.cellCount()
             << " cells, " << latticePos.size() << " lattice points, "
             << latticeTets.size() << " background tetrahedra." << std::endl;
 
@@ -344,6 +350,21 @@ void TetStuffer::stuff(const std::vector<Vec3f> &surfVerts,
       faces.push_back({a, p2, p0});
     }
     fanFaces();
+  }
+
+  {
+    const MeshOptimizerStats os = optimizeStuffedMesh(
+        surfVerts, surfTris, sdf, featureAngle, featureSnap, outPos, rawTets);
+    if (os.featureEdges > 0)
+      std::cout << "IsosurfaceStuffing: " << os.featureEdges << " sharp edges, "
+                << os.featureCorners << " corners; " << os.snapped << " of "
+                << os.snapCandidates << " nearby boundary vertices snapped onto them."
+                << std::endl;
+    std::cout << "IsosurfaceStuffing: " << os.smoothed
+              << " vertex moves to improve quality, " << os.capsRemoved
+              << " flat boundary tets removed, worst tet quality "
+              << os.minQualityBefore << " -> " << os.minQualityAfter << "."
+              << std::endl;
   }
 
   // Drop the output vertices that no surviving tetrahedron refers to.

@@ -30,10 +30,11 @@ public:
   /**
    * @param bbMin,bbMax  Bounding box of the surface to cover.
    * @param h            Finest cell size.
-   * @param graded       Coarsen cells away from the surface.
+   * @param grading      0 = uniform grid; (0, 1] = octree whose interior and
+   *                     flat surface regions coarsen more the higher it is.
    * @param sdf          Used to locate the surface when grading.
    */
-  void build(const Vec3d &bbMin, const Vec3d &bbMax, double h, bool graded,
+  void build(const Vec3d &bbMin, const Vec3d &bbMax, double h, double grading,
              const SignedDistanceField &sdf);
 
   const std::vector<Vec3d> &positions() const { return positions_; }

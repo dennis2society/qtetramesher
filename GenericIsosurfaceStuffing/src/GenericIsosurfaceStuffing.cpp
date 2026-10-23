@@ -22,13 +22,15 @@ void GenericIsosurfaceStuffing::GenerateFromSurface(
     float gridSpacing,
     float alphaShort,
     float alphaLong,
-    bool graded) {
+    float grading,
+    float featureAngle,
+    float featureSnap) {
 
   tetraPoints.clear();
   tetraIndices.clear();
 
-  TetStuffer::stuff(verts, tris, gridSpacing, alphaShort, alphaLong, graded,
-                    tetraPoints, tetraIndices);
+  TetStuffer::stuff(verts, tris, gridSpacing, alphaShort, alphaLong, grading,
+                    featureAngle, featureSnap, tetraPoints, tetraIndices);
 }
 
 std::vector<Vec3f> &GenericIsosurfaceStuffing::GetTetraVertices() {

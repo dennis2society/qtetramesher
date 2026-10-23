@@ -226,7 +226,8 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
     GenericIsosurfaceStuffing w;
     w.GenerateFromSurface(tris, verts, float(real("cellSize")),
                           float(real("alphaShort")), float(real("alphaLong")),
-                          flag("graded"));
+                          float(real("grading")), float(real("featureAngle")),
+                          float(real("featureSnap")));
     vertices = std::move(w.GetTetraVertices());
     tetras = std::move(w.GetTetras());
   } else if (in.methodId == "tetgen") {
