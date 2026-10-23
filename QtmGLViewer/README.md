@@ -43,7 +43,8 @@ It can also be used with `add_subdirectory(QtmGLViewer)` and linked with
 only built if `QTMGLVIEWER_BUILD_TEST` is ON (default). When used as a
 subdirectory you may want to set it to OFF.
 
-The test application (`QtmGLViewerTest`) shows an icosphere with the grid and
+The test application (`QtmGLViewerTest`) shows a Moebius strip with a color
+gradient (hue running through the full spectrum) with the grid and
 axes. All options can be toggled in a side panel. It also accepts
 `--screenshot <file>` which saves an image of the viewer and exits.
 
@@ -243,10 +244,10 @@ upper left corner and the y value being the text baseline.
 ### Procedural geometry
 
 `MeshData` and the functions in `qtm::primitives` produce geometry on the CPU:
-`icosphere()`, `truncatedCone()`, `arrow()` (same proportions as
+`mobiusStrip()`, `truncatedCone()`, `arrow()` (same proportions as
 `QGLViewer::drawArrow()`), `grid()`, `axisLetters()`, `appendBoxLines()` and
 `triangleEdges()` (unique edge list of an indexed triangle mesh). Grid, axes and
-the test sphere are built with these.
+the test strip are built with these.
 
 ## Differences to libQGLViewer
 

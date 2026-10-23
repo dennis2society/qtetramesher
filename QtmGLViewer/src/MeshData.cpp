@@ -4,10 +4,10 @@
 
 #include "QtmGLViewer/MeshData.hpp"
 
+#include <QColor>
 #include <QtMath>
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <set>
 #include <utility>
 
@@ -49,48 +49,31 @@ void MeshData::setColor(const QVector3D &color) {
 
 namespace primitives {
 
-MeshData icosphere(float radius, int subdivisions) {
+MeshData mobiusStrip(float radius, float halfWidth, int segments) {
   MeshData mesh;
-  const float t = (1.0f + std::sqrt(5.0f)) / 2.0f;
-  std::vector<QVector3D> verts = {
-      {-1, t, 0}, {1, t, 0}, {-1, -t, 0}, {1, -t, 0},
-      {0, -1, t}, {0, 1, t}, {0, -1, -t}, {0, 1, -t},
-      {t, 0, -1}, {t, 0, 1}, {-t, 0, -1}, {-t, 0, 1}};
-  for (QVector3D &v : verts) v.normalize();
-  std::vector<uint32_t> tris = {0, 11, 5,  0, 5,  1, 0,  1,  7, 0,  7,  10,
-                                0, 10, 11, 1, 5,  9, 5,  11, 4, 11, 10, 2,
-                                10, 7, 6,  7, 1,  8, 3,  9,  4, 3,  4,  2,
-                                3, 2,  6,  3, 6,  8, 3,  8,  9, 4,  9,  5,
-                                2, 4,  11, 6, 2,  10, 8, 6,  7, 9,  8,  1};
-
-  for (int s = 0; s < subdivisions; ++s) {
-    std::map<std::pair<uint32_t, uint32_t>, uint32_t> midpoints;
-    auto midpoint = [&](uint32_t a, uint32_t b) {
-      const auto key = std::make_pair(std::min(a, b), std::max(a, b));
-      const auto it = midpoints.find(key);
-      if (it != midpoints.end()) return it->second;
-      verts.push_back(((verts[a] + verts[b]) * 0.5f).normalized());
-      const uint32_t index = uint32_t(verts.size() - 1);
-      midpoints[key] = index;
-      return index;
-    };
-    std::vector<uint32_t> newTris;
-    newTris.reserve(tris.size() * 4);
-    for (size_t i = 0; i < tris.size(); i += 3) {
-      const uint32_t a = tris[i], b = tris[i + 1], c = tris[i + 2];
-      const uint32_t ab = midpoint(a, b);
-      const uint32_t bc = midpoint(b, c);
-      const uint32_t ca = midpoint(c, a);
-      newTris.insert(newTris.end(),
-                     {a, ab, ca, b, bc, ab, c, ca, bc, ab, bc, ca});
+  segments = std::max(segments, 3);
+  for (int i = 0; i <= segments; ++i) {
+    const float t = float(i) / float(segments);
+    const float u = 2.0f * float(M_PI) * t;
+    const float c = std::cos(u), s = std::sin(u);
+    const float ch = std::cos(0.5f * u), sh = std::sin(0.5f * u);
+    const QColor hue = QColor::fromHsvF(t * 0.999f, 1.0f, 1.0f);
+    const QVector3D color(hue.redF(), hue.greenF(), hue.blueF());
+    // the last ring coincides with the first one, but with the sides swapped
+    for (float v : {-halfWidth, halfWidth}) {
+      const float r = radius + v * ch;
+      const QVector3D du(-r * s - 0.5f * v * sh * c, r * c - 0.5f * v * sh * s,
+                         0.5f * v * ch);
+      const QVector3D dv(ch * c, ch * s, sh);
+      mesh.positions.push_back(QVector3D(r * c, r * s, v * sh));
+      mesh.normals.push_back(QVector3D::crossProduct(du, dv).normalized());
+      mesh.colors.push_back(color);
     }
-    tris.swap(newTris);
   }
-
-  mesh.normals = verts;
-  mesh.positions.reserve(verts.size());
-  for (const QVector3D &v : verts) mesh.positions.push_back(v * radius);
-  mesh.indices = std::move(tris);
+  for (int i = 0; i < segments; ++i) {
+    const uint32_t a = uint32_t(2 * i), b = a + 1, c = a + 2, d = a + 3;
+    mesh.indices.insert(mesh.indices.end(), {a, c, b, b, c, d});
+  }
   return mesh;
 }
 

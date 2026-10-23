@@ -19,6 +19,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QOpenGLExtraFunctions>
 #include <QSettings>
 #include <QPainter>
 #include <algorithm>
@@ -60,36 +61,26 @@ float QGLTetraViewer::getMaxBBox() const { return _maxBBox; }
 
 void QGLTetraViewer::initializeScene() {
   tMesh->InitGL();
-  //// The spiral from the QGLViewer examples, as a tribute
-  const int nb = 200;
-  const float nbSteps = 200.0f;
+  // tilted so the strip is not seen edge-on or from straight above
+  QMatrix4x4 tilt;
+  tilt.rotate(-45.0f, 1.0f, 0.0f, 0.0f);
+  tilt.rotate(35.0f, 0.0f, 1.0f, 0.0f);
   qtm::MeshData m;
-  for (int i = 0; i < nb; ++i) {
-    float ratio = i / nbSteps;
-    float angle = 21.0f * ratio;
-    float c = cos(angle);
-    float s = sin(angle);
-    float r1 = 1.0f - 0.8f * ratio;
-    float r2 = 0.8f - 0.8f * ratio;
-    float alt = ratio - 0.5f;
-    const float nor = 0.5f;
-    const float up = sqrt(1.0f - nor * nor);
-    const QVector3D color(1.0f - ratio, 0.2f, ratio);
-    const QVector3D normal(nor * c, up, nor * s);
-    m.positions.push_back(QVector3D(r1 * c, alt, r1 * s));
-    m.positions.push_back(QVector3D(r2 * c, alt + 0.05f, r2 * s));
-    m.normals.push_back(normal);
-    m.normals.push_back(normal);
-    m.colors.push_back(color);
-    m.colors.push_back(color);
-  }
-  // a triangle strip with the vertex order of the former GL_QUAD_STRIP
-  spiral.upload(m, GL_TRIANGLE_STRIP);
+  m.append(qtm::primitives::mobiusStrip(0.8f, 0.35f, 400), tilt);
+  mobius.upload(m, GL_TRIANGLES);
+
+  // slightly wider black copy drawn behind: shows up as an outline
+  qtm::MeshData outline;
+  outline.append(qtm::primitives::mobiusStrip(0.8f, 0.37f, 400), tilt);
+  outline.normals.clear();
+  outline.colors.clear();
+  mobiusOutline.upload(outline, GL_TRIANGLES);
 }
 
 void QGLTetraViewer::cleanupScene() {
   if (tMesh != NULL) tMesh->CleanupGL();
-  spiral.destroy();
+  mobius.destroy();
+  mobiusOutline.destroy();
 }
 
 void QGLTetraViewer::draw(const qtm::RenderContext &context) {
@@ -134,7 +125,12 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
       drawText(10, 75, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
-    context.drawSolid(spiral, QColor());
+    QOpenGLExtraFunctions *gl = context.gl();
+    gl->glEnable(GL_POLYGON_OFFSET_FILL);
+    gl->glPolygonOffset(2.0f, 2.0f);
+    context.drawLines(mobiusOutline, Qt::black);
+    gl->glDisable(GL_POLYGON_OFFSET_FILL);
+    context.drawSolid(mobius, QColor());
   }
 }
 

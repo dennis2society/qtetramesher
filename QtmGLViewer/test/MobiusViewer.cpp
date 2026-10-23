@@ -1,83 +1,77 @@
 /*
- * SphereViewer.cpp
+ * MobiusViewer.cpp
  */
 
-#include "SphereViewer.hpp"
+#include "MobiusViewer.hpp"
 
 #include <QOpenGLExtraFunctions>
 #include <QtmGLViewer/MeshData.hpp>
 
-SphereViewer::SphereViewer(QWidget *parent) : QtmGLViewer(parent) {
-  // the grid extends a bit beyond the sphere
-  setSceneRadius(1.5f * radius_);
+MobiusViewer::MobiusViewer(QWidget *parent) : QtmGLViewer(parent) {
+  // the grid extends a bit beyond the strip
+  setSceneRadius(2.0f * radius_);
   showEntireScene();
 }
 
-SphereViewer::~SphereViewer() {
+MobiusViewer::~MobiusViewer() {
   makeCurrent();
   cleanupScene();
   doneCurrent();
 }
 
-void SphereViewer::setSphereRadius(double radius) {
+void MobiusViewer::setStripRadius(double radius) {
   radius_ = float(radius);
   dirty_ = true;
-  setSceneRadius(1.5f * radius_);
+  setSceneRadius(2.0f * radius_);
   showEntireScene();
 }
 
-void SphereViewer::setSubdivisions(int subdivisions) {
-  subdivisions_ = subdivisions;
-  dirty_ = true;
-  update();
-}
-
-void SphereViewer::setWireframeDrawn(bool drawn) {
+void MobiusViewer::setWireframeDrawn(bool drawn) {
   wireframeDrawn_ = drawn;
   update();
 }
 
-void SphereViewer::setSphereColor(const QColor &color) {
-  color_ = color;
-  update();
-}
+void MobiusViewer::initializeScene() { dirty_ = true; }
 
-void SphereViewer::initializeScene() { dirty_ = true; }
-
-void SphereViewer::cleanupScene() {
-  sphere_.destroy();
+void MobiusViewer::cleanupScene() {
+  strip_.destroy();
   edges_.destroy();
   dirty_ = true;
 }
 
-void SphereViewer::rebuildSphere() {
-  qtm::MeshData mesh = qtm::primitives::icosphere(radius_, subdivisions_);
+void MobiusViewer::rebuildStrip() {
+  // tilted so the strip is not seen edge-on or from straight above
+  QMatrix4x4 tilt;
+  tilt.rotate(-45.0f, 1.0f, 0.0f, 0.0f);
+  tilt.rotate(35.0f, 0.0f, 1.0f, 0.0f);
+  qtm::MeshData mesh;
+  mesh.append(qtm::primitives::mobiusStrip(radius_, 0.4375f * radius_, 400),
+              tilt);
   vertexCount_ = int(mesh.positions.size());
   triangleCount_ = int(mesh.indices.size() / 3);
-  sphere_.upload(mesh, GL_TRIANGLES);
+  strip_.upload(mesh, GL_TRIANGLES);
 
   // edges share the vertex positions, only the indices differ
   mesh.normals.clear();
+  mesh.colors.clear();
   mesh.indices = qtm::primitives::triangleEdges(mesh.indices);
   edges_.upload(mesh, GL_LINES);
   dirty_ = false;
 }
 
-void SphereViewer::draw(const qtm::RenderContext &context) {
-  if (dirty_) rebuildSphere();
+void MobiusViewer::draw(const qtm::RenderContext &context) {
+  if (dirty_) rebuildStrip();
 
   QOpenGLExtraFunctions *gl = context.gl();
-  gl->glEnable(GL_CULL_FACE);
   // push the faces back a little so the wireframe is not z-fighting
   gl->glEnable(GL_POLYGON_OFFSET_FILL);
   gl->glPolygonOffset(1.0f, 1.0f);
-  context.drawSolid(sphere_, color_);
+  context.drawSolid(strip_, QColor());
   gl->glDisable(GL_POLYGON_OFFSET_FILL);
-  gl->glDisable(GL_CULL_FACE);
   if (wireframeDrawn_) context.drawLines(edges_, QColor(230, 230, 30));
 
   drawText(10, 45,
-           tr("Sphere: radius %1, %2 vertices, %3 triangles")
+           tr("Moebius strip: radius %1, %2 vertices, %3 triangles")
                .arg(double(radius_))
                .arg(vertexCount_)
                .arg(triangleCount_),

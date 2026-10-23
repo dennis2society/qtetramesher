@@ -88,7 +88,8 @@ class QGLTetraViewer : public QtmGLViewer {
   QString helpString() const;
   QString helpHtml() const;
 
-  qtm::MeshBuffer spiral;  // shown while no mesh is loaded
+  qtm::MeshBuffer mobius;  // shown while no mesh is loaded
+  qtm::MeshBuffer mobiusOutline;
 
   struct RunningTask {
     QString text;

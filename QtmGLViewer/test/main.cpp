@@ -9,7 +9,7 @@
 #include <QTimer>
 #include <QtmGLViewer/QtmGLViewer.hpp>
 
-#include "SphereViewer.hpp"
+#include "MobiusViewer.hpp"
 #include "TestMainWindow.hpp"
 
 int main(int argc, char *argv[]) {

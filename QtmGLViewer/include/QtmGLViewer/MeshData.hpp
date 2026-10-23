@@ -31,8 +31,10 @@ struct MeshData {
 
 namespace primitives {
 
-// Solid icosphere (indexed triangles with normals).
-MeshData icosphere(float radius, int subdivisions);
+// Moebius strip in the XY plane with the given center circle radius and
+// strip half width. Indexed triangles with normals and vertex colors running
+// through the full hue spectrum along the strip.
+MeshData mobiusStrip(float radius, float halfWidth, int segments);
 // Open truncated cone along +Z from z0 (radius r0) to z1 (radius r1),
 // indexed triangles with normals.
 MeshData truncatedCone(float r0, float r1, float z0, float z1, int slices);

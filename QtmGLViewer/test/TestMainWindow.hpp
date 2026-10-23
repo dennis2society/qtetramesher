@@ -9,7 +9,7 @@
 
 #include <QMainWindow>
 
-class SphereViewer;
+class MobiusViewer;
 
 class TestMainWindow : public QMainWindow {
   Q_OBJECT
@@ -17,10 +17,10 @@ class TestMainWindow : public QMainWindow {
  public:
   explicit TestMainWindow(QWidget *parent = nullptr);
 
-  SphereViewer *viewer() const { return viewer_; }
+  MobiusViewer *viewer() const { return viewer_; }
 
  private:
-  SphereViewer *viewer_;
+  MobiusViewer *viewer_;
 };
 
 #endif /* QTMGLVIEWER_TEST_TESTMAINWINDOW_HPP_ */

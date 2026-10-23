@@ -5,22 +5,20 @@
 #include "TestMainWindow.hpp"
 
 #include <QCheckBox>
-#include <QColorDialog>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QSpinBox>
 #include <QVBoxLayout>
 
-#include "SphereViewer.hpp"
+#include "MobiusViewer.hpp"
 
 TestMainWindow::TestMainWindow(QWidget *parent) : QMainWindow(parent) {
   setWindowTitle(tr("QtmGLViewer Test"));
   resize(1100, 750);
 
-  viewer_ = new SphereViewer(this);
+  viewer_ = new MobiusViewer(this);
   viewer_->setAxisIsDrawn(true);
   viewer_->setGridIsDrawn(true);
   viewer_->setFPSIsDisplayed(true);
@@ -58,9 +56,9 @@ TestMainWindow::TestMainWindow(QWidget *parent) : QMainWindow(parent) {
   connect(spinBox, &QCheckBox::toggled, viewer_,
           &QtmGLViewer::setSpinningEnabled);
 
-  auto *wireBox = new QCheckBox(tr("Sphere wireframe"));
+  auto *wireBox = new QCheckBox(tr("Strip wireframe"));
   connect(wireBox, &QCheckBox::toggled, viewer_,
-          &SphereViewer::setWireframeDrawn);
+          &MobiusViewer::setWireframeDrawn);
 
   for (QCheckBox *box :
        {axisBox, gridBox, fpsBox, orthoBox, spinBox, wireBox})
@@ -70,26 +68,12 @@ TestMainWindow::TestMainWindow(QWidget *parent) : QMainWindow(parent) {
   auto *radiusEdit = new QDoubleSpinBox;
   radiusEdit->setDecimals(3);
   radiusEdit->setRange(0.001, 10000.0);
-  radiusEdit->setValue(viewer_->sphereRadius());
+  radiusEdit->setValue(viewer_->stripRadius());
   radiusEdit->setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
   connect(radiusEdit, &QDoubleSpinBox::valueChanged, viewer_,
-          &SphereViewer::setSphereRadius);
+          &MobiusViewer::setStripRadius);
   form->addRow(tr("Radius:"), radiusEdit);
-
-  auto *subdivEdit = new QSpinBox;
-  subdivEdit->setRange(0, 7);
-  subdivEdit->setValue(3);
-  connect(subdivEdit, &QSpinBox::valueChanged, viewer_,
-          &SphereViewer::setSubdivisions);
-  form->addRow(tr("Subdivisions:"), subdivEdit);
   layout->addLayout(form);
-
-  auto *colorButton = new QPushButton(tr("Sphere color..."));
-  connect(colorButton, &QPushButton::clicked, this, [this]() {
-    const QColor c = QColorDialog::getColor(Qt::lightGray, this);
-    if (c.isValid()) viewer_->setSphereColor(c);
-  });
-  layout->addWidget(colorButton);
 
   auto *fitButton = new QPushButton(tr("Show entire scene"));
   connect(fitButton, &QPushButton::clicked, viewer_,

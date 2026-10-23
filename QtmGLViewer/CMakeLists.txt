@@ -53,8 +53,8 @@ if(QTMGLVIEWER_BUILD_TEST)
     test/main.cpp
     test/TestMainWindow.hpp
     test/TestMainWindow.cpp
-    test/SphereViewer.hpp
-    test/SphereViewer.cpp
+    test/MobiusViewer.hpp
+    test/MobiusViewer.cpp
   )
   target_link_libraries(QtmGLViewerTest PRIVATE QtmGLViewer)
   set_target_properties(QtmGLViewerTest PROPERTIES AUTOMOC ON)
