@@ -226,9 +226,19 @@ MeshOptimizerStats optimizeStuffedMesh(const std::vector<Vec3f> &surfVerts,
     double q = std::numeric_limits<double>::max();
     const int n = static_cast<int>(tets.size());
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) reduction(min : q)
+#pragma omp parallel
 #endif
-    for (int ti = 0; ti < n; ++ti) q = std::min(q, quality(ti));
+    {
+      double localMin = std::numeric_limits<double>::max();
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for (int ti = 0; ti < n; ++ti) localMin = std::min(localMin, quality(ti));
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+      q = std::min(q, localMin);
+    }
     return q;
   };
   // the tets below a quality, in index order
