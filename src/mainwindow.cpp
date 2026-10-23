@@ -167,7 +167,6 @@ void QTetraMesherMainWindow::setupUI() {
   gmshWidget.hide();
   ftetwildWidget.hide();
   optionsLayout.addStretch();
-  surfaceVisWidget.setMinimumSize(230, 190);
 
   // centralLayout is the layout of centralWidget, mainLayout goes into it
   // Minimum size policy: scroll instead of squeezing the options widgets
@@ -250,6 +249,22 @@ void QTetraMesherMainWindow::connectSlots() {
           SLOT(generateGMSHSlot()));
   connect(&ftetwildWidget.generateTetrahedraButton, SIGNAL(clicked()), this,
           SLOT(generateFTetWildSlot()));
+  // distinct look so the generate buttons stand out
+  const QString generateButtonStyle =
+      "QPushButton { background-color: #2e8b57; color: white; "
+      "font-weight: bold; border: 1px solid #1f5e3a; border-radius: 4px; "
+      "padding: 6px 10px; }"
+      "QPushButton:hover { background-color: #3aa76a; }"
+      "QPushButton:pressed { background-color: #226b43; }"
+      "QPushButton:disabled { background-color: #8fae9c; color: #e8e8e8; }";
+  for (TetraMethodWidget *w :
+       {static_cast<TetraMethodWidget *>(&sofaTetraStuffingWidget),
+        static_cast<TetraMethodWidget *>(&cgalTetrahedralizeWidget),
+        static_cast<TetraMethodWidget *>(&genericIsosurfaceStuffingWidget),
+        static_cast<TetraMethodWidget *>(&tetgenWidget),
+        static_cast<TetraMethodWidget *>(&gmshWidget),
+        static_cast<TetraMethodWidget *>(&ftetwildWidget)})
+    w->generateButton().setStyleSheet(generateButtonStyle);
   // View Menu
   connect(&actionShowAxis, SIGNAL(changed()), this, SLOT(setAxisShownSlot()));
   connect(&actionShowGrid, SIGNAL(changed()), this, SLOT(setGridShownSlot()));

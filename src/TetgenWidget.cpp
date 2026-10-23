@@ -49,7 +49,6 @@ TetgenWidget::TetgenWidget(QWidget *parent) : TetraMethodWidget(parent) {
   layout.addLayout(&cellSizeLayout);
   layout.addWidget(&usePLCCheckBox);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap TetgenWidget::parameters() const {

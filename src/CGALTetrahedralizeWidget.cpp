@@ -60,7 +60,6 @@ CGALTetrahedralizeWidget::CGALTetrahedralizeWidget(QWidget *parent)
   layout.addLayout(&facetAngleLayout);
   layout.addLayout(&facetDistanceLayout);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap CGALTetrahedralizeWidget::parameters() const {

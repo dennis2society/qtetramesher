@@ -34,5 +34,4 @@ SurfaceVisWidget::SurfaceVisWidget(QWidget *parent)
   layout.addWidget(&surfaceColorButton);
   layout.addWidget(&surfaceWireframeColorButton);
   layout.addWidget(&checkSurfaceButton);
-  layout.addStretch();
 }

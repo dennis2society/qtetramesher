@@ -54,7 +54,6 @@ GenericIsosurfaceStuffingWidget::GenericIsosurfaceStuffingWidget(QWidget *parent
   layout.addLayout(&alphaLayout);
   layout.addWidget(&gradedCheckBox);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap GenericIsosurfaceStuffingWidget::parameters() const {

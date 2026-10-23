@@ -67,7 +67,6 @@ FTetWildWidget::FTetWildWidget(QWidget *parent) : TetraMethodWidget(parent) {
   layout.addLayout(&stopEnergyLayout);
   layout.addWidget(&coarsenCheckBox);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap FTetWildWidget::parameters() const {

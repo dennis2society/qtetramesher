@@ -53,7 +53,6 @@ SofaTetraStuffingWidget::SofaTetraStuffingWidget(QWidget *parent)
   layout.addLayout(&alphaOptionsLayout);
   layout.addLayout(&additionalOptionsLayout);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap SofaTetraStuffingWidget::parameters() const {

@@ -57,7 +57,6 @@ GMSHWidget::GMSHWidget(QWidget *parent) : TetraMethodWidget(parent) {
   layout.addLayout(&meshSizeMaxLayout);
   layout.addLayout(&algorithmLayout);
   layout.addWidget(&generateTetrahedraButton);
-  layout.addStretch();
 }
 
 QVariantMap GMSHWidget::parameters() const {

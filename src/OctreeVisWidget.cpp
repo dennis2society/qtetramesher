@@ -37,5 +37,4 @@ OctreeVisWidget::OctreeVisWidget(QWidget *parent) : BaseOptionsWidget(parent) {
   layout.addWidget(&octreeVisOptionsLabel);
   layout.addLayout(&innerLayout);
   layout.addWidget(&octreeGenerateButton);
-  layout.addStretch();
 }

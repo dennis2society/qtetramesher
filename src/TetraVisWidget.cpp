@@ -97,5 +97,4 @@ TetraVisWidget::TetraVisWidget(QWidget *parent)
   layout.addWidget(&tetraYCutplaneSlider);
   layout.addWidget(&tetraZCutplaneLabel);
   layout.addWidget(&tetraZCutplaneSlider);
-  layout.addStretch();
 }
