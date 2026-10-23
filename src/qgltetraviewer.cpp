@@ -65,13 +65,13 @@ void QGLTetraViewer::initializeScene() {
   tilt.rotate(-45.0f, 1.0f, 0.0f, 0.0f);
   tilt.rotate(35.0f, 0.0f, 1.0f, 0.0f);
   qtm::MeshData m;
-  m.append(qtm::primitives::mobiusStrip(0.8f, -0.35f, 0.35f, 400), tilt);
+  m.append(qtm::primitives::mobiusStrip(0.8f, -0.25f, 0.25f, 400), tilt);
   mobius.upload(m, GL_TRIANGLES);
 
   // black ribbons along the edges, next to the strip so nothing z-fights
   qtm::MeshData outline;
-  outline.append(qtm::primitives::mobiusStrip(0.8f, 0.35f, 0.37f, 400), tilt);
-  outline.append(qtm::primitives::mobiusStrip(0.8f, -0.37f, -0.35f, 400),
+  outline.append(qtm::primitives::mobiusStrip(0.8f, 0.25f, 0.27f, 400), tilt);
+  outline.append(qtm::primitives::mobiusStrip(0.8f, -0.27f, -0.25f, 400),
                  tilt);
   outline.normals.clear();
   outline.colors.clear();
