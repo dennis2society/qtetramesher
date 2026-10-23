@@ -527,13 +527,16 @@ void QTetraMesherMainWindow::resetSurfaceTransformWidget() {
 void QTetraMesherMainWindow::surfaceTransformChanged(bool scaleChanged_,
                                                      bool settled_) {
   const bool hadTetras = viewer->tMesh->GetTetraMesh() != NULL;
+  const float s = surfaceTransformWidget.scale();
+  const float rx = surfaceTransformWidget.rotationX();
+  const float ry = surfaceTransformWidget.rotationY();
+  const float rz = surfaceTransformWidget.rotationZ();
   // refit only when done, so the size change stays visible while dragging
   const bool fitView = scaleChanged_ && settled_;
-  if (!viewer->transformSurface(surfaceTransformWidget.scale(),
-                                surfaceTransformWidget.rotationX(),
-                                surfaceTransformWidget.rotationY(),
-                                surfaceTransformWidget.rotationZ(), fitView))
-    return;
+  const bool ok = settled_
+                      ? viewer->transformSurface(s, rx, ry, rz, fitView)
+                      : viewer->previewSurfaceTransform(s, rx, ry, rz);
+  if (!ok) return;
   if (fitView) suggestMethodParameters();
   if (hadTetras)
     viewer->displayMessage(

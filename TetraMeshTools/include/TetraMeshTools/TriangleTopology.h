@@ -26,6 +26,7 @@
 #define TETRAMESHTOOLS_TRIANGLETOPOLOGY_H_
 
 #include "GeometryTypes.h"
+#include <utility>
 #include <vector>
 
 #include "TetraToolsExports.h"
@@ -110,7 +111,8 @@ protected:
 
   void GenerateTriangleMap();
 
-  void GenerateBoundingBox(const std::vector<Vec3f> &vertices_);
+  void GenerateBoundingBox(const std::vector<Vec3f> &vertices_,
+                           bool verbose_ = true);
 
 public:
   /// Constructors
@@ -206,6 +208,11 @@ public:
 
   void GenerateNormals();
 
+  /// Replaces the per-vertex normals (one per vertex).
+  void SetNormals(std::vector<Vec3f> &&normals_) {
+    _normals = std::move(normals_);
+  }
+
   /**
    * Find the Edge that is constructed by indices i0 and i1
    */
@@ -227,7 +234,7 @@ public:
    */
   BoundingCube GetLargeBoundingCube() { return lbc; }
 
-  void GenerateBoundingBox();
+  void GenerateBoundingBox(bool verbose_ = true);
 };
 } // namespace TetraTools
 

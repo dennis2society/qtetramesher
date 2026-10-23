@@ -91,6 +91,7 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
     std::stringstream ss;
     std::string stdMSG;
     QString msg;
+    int textY = 30;
     if (tMesh->GetSurface() != NULL) {
       ss << "Surface Mesh: "
          << "Vertices: " << tMesh->GetSurface()->GetVertices().size()
@@ -109,6 +110,33 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
       msg = QString::fromStdString(stdMSG);
       drawText(10, 45, msg, QColor::fromRgbF(0.1f, 0.8f, 0.1f));
       ss.str("");
+      textY = 60;
+      const TetraTools::MeshTransform &t = tMesh->GetSurfaceTransform();
+      if (t.HasOriginal() &&
+          (tMesh->IsPreviewingSurfaceTransform() || !t.IsIdentity())) {
+        const Vec3f r = t.GetRotation();
+        const BoundingBox &ob = t.GetOriginalBoundingBox();
+        const Vec3f os = ob.max - ob.min;
+        const Vec3f s = bb.max - bb.min;
+        const QColor c = QColor::fromRgbF(0.6f, 0.6f, 0.6f);
+        drawText(10, textY,
+                 QString("Transform: Scale %1; Rotation X/Y/Z: %2/%3/%4 deg")
+                     .arg(t.GetScale(), 0, 'g', 4)
+                     .arg(r.x)
+                     .arg(r.y)
+                     .arg(r.z),
+                 c);
+        drawText(10, textY + 15,
+                 QString("Size: %1 x %2 x %3 (original: %4 x %5 x %6)")
+                     .arg(s.x, 0, 'g', 4)
+                     .arg(s.y, 0, 'g', 4)
+                     .arg(s.z, 0, 'g', 4)
+                     .arg(os.x, 0, 'g', 4)
+                     .arg(os.y, 0, 'g', 4)
+                     .arg(os.z, 0, 'g', 4),
+                 c);
+        textY += 30;
+      }
     }
     if (tMesh->GetTetraMesh() != NULL) {
       ss << "Tetra Mesh: "
@@ -116,14 +144,14 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
          << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      drawText(10, 60, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
+      drawText(10, textY, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
       ss.str("");
       ss << "Tetra Mesh: "
          << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
          << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
       stdMSG = ss.str();
       msg = QString::fromStdString(stdMSG);
-      drawText(10, 75, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
+      drawText(10, textY + 15, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
     context.drawLines(mobiusOutline, Qt::black);
@@ -568,6 +596,15 @@ bool QGLTetraViewer::transformSurface(float scale_, float xDeg_, float yDeg_,
   if (!tMesh->SetSurfaceTransform(scale_, xDeg_, yDeg_, zDeg_)) return false;
   updateSceneFromMesh();
   if (fitView_) showEntireScene();
+  update();
+  return true;
+}
+
+bool QGLTetraViewer::previewSurfaceTransform(float scale_, float xDeg_,
+                                             float yDeg_, float zDeg_) {
+  if (!tMesh->PreviewSurfaceTransform(scale_, xDeg_, yDeg_, zDeg_))
+    return false;
+  updateSceneFromMesh();
   update();
   return true;
 }

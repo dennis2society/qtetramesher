@@ -142,11 +142,24 @@ class QGLTetraMesh {
   /// mesh and the octree, which were built from the previous surface.
   bool SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
                            float zDeg_);
+  /// Shows the transform on the GPU only (fast, for slider dragging); the
+  /// surface data is updated by the next SetSurfaceTransform(). Also removes
+  /// the tetra mesh and the octree.
+  bool PreviewSurfaceTransform(float scale_, float xDeg_, float yDeg_,
+                               float zDeg_);
+  bool IsPreviewingSurfaceTransform() const { return surfacePreviewing; }
 
  private:
   std::string surfaceRepairSummary;
   bool surfaceRepaired = false;
   TetraTools::MeshTransform surfaceTransform;
+  /// model matrix of the transform; the surface data holds committedModel
+  QMatrix4x4 TransformMatrix() const;
+  QMatrix4x4 committedModel;
+  QMatrix4x4 previewModel;  // applied to the surface data while previewing
+  BoundingBox previewBBox;
+  bool surfacePreviewing = false;
+  void DropDerivedMeshes();  // tetra mesh and octree
 
  public:
 
@@ -214,7 +227,7 @@ class QGLTetraMesh {
   bool IsReady() { return isReady; }
 
   BoundingBox GetBoundingBox() {
-    if (surf) return surf->GetBoundingBox();
+    if (surf) return surfacePreviewing ? previewBBox : surf->GetBoundingBox();
     if (top) return top->GetBoundingBox();
     BoundingBox bb;
     bb.min = Vec3f(0, 0, 0);

@@ -136,14 +136,14 @@ void TetraTools::TriangleTopology::GenerateTriangleMap() {
             << maxTriangles << " at Vertex: " << trianglesMax << std::endl;
 }
 
-void TetraTools::TriangleTopology::GenerateBoundingBox() {
-  GenerateBoundingBox(_vertices);
+void TetraTools::TriangleTopology::GenerateBoundingBox(bool verbose_) {
+  GenerateBoundingBox(_vertices, verbose_);
 }
 
 void TetraTools::TriangleTopology::GenerateBoundingBox(
-    const std::vector<Vec3f> &vertices_) {
+    const std::vector<Vec3f> &vertices_, bool verbose_) {
   /// generate Bounding Box
-  std::cout << "Generating BoundingBox ..." << std::endl;
+  if (verbose_) std::cout << "Generating BoundingBox ..." << std::endl;
   BoundingBox b;
   // b.min = Vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
   b.min = Vec3f(std::numeric_limits<float>::max(),
@@ -182,7 +182,8 @@ void TetraTools::TriangleTopology::GenerateBoundingBox(
   lbc.center = Vec3f(b.min.x + dx / 2, b.min.y + dy / 2, b.min.z + dz / 2);
   // std::cout<<"dx/dy/dz: "<<dx<<"/"<<dy<<"/"<<dz<<"; bc:
   // "<<maxDist<<std::endl;
-  std::cout << "\t BBox: " << bb.min << "; " << bb.max << std::endl;
+  if (verbose_)
+    std::cout << "\t BBox: " << bb.min << "; " << bb.max << std::endl;
 }
 
 void TetraTools::TriangleTopology::Init(const std::vector<Vec3f> &vertices_,

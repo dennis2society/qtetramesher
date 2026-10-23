@@ -239,6 +239,8 @@ void QGLTetraMesh::ClearAll() {
   delete surf;
   surf = NULL;
   surfaceTransform.Clear();
+  surfacePreviewing = false;
+  committedModel.setToIdentity();
   MarkGeometryDirty();
 }
 
@@ -365,6 +367,12 @@ void QGLTetraMesh::UpdateBoundingVolumeBuffer() {
     bb = top->GetBoundingBox();
     c = top->GetBoundingCube();
   }
+  if (surfacePreviewing) {
+    bb = previewBBox;
+    const Vec3f d = bb.max - bb.min;
+    c.size = std::max(d.x, std::max(d.y, d.z));
+    c.center = bb.min + d * 0.5f;
+  }
   if (bboxMode == 2) {  // larger bounding cube
     bb.min = Vec3f(c.center.x - c.size / 2, c.center.y - c.size / 2,
                    c.center.z - c.size / 2);
@@ -445,15 +453,18 @@ void QGLTetraMesh::Draw(const qtm::RenderContext &context_) {
     }
   }
   /// draw surface if possible
+  const QMatrix4x4 surfaceModel =
+      surfacePreviewing ? previewModel : QMatrix4x4();
   switch (surfaceMode) {
     case 1:  // wireframe
       context_.drawLines(surfaceWireframeBuffer,
-                         toQColor(surfaceColorWireframe));
+                         toQColor(surfaceColorWireframe), surfaceModel);
       break;
     case 0:  // surface with normals
       gl->glEnable(GL_CULL_FACE);
       gl->glEnable(GL_POLYGON_OFFSET_FILL);
-      context_.drawSolid(surfaceSolidBuffer, toQColor(surfaceColorSolid));
+      context_.drawSolid(surfaceSolidBuffer, toQColor(surfaceColorSolid),
+                         surfaceModel);
       break;
     default:  // 2 = hidden
       break;
@@ -515,6 +526,8 @@ void QGLTetraMesh::ClearSurface() {
   delete surf;
   surf = NULL;
   surfaceTransform.Clear();
+  surfacePreviewing = false;
+  committedModel.setToIdentity();
   MarkGeometryDirty();
   isReady = (top != NULL);
 }
@@ -639,11 +652,51 @@ bool QGLTetraMesh::SaveSurface(const std::string &fileName_,
 }
 
 void QGLTetraMesh::BeginSurfaceTransform() {
+  surfacePreviewing = false;
+  committedModel.setToIdentity();
   if (surf == NULL) {
     surfaceTransform.Clear();
     return;
   }
-  surfaceTransform.SetOriginal(surf->GetVertices());
+  surfaceTransform.SetOriginal(surf->GetVertices(), surf->GetNormals());
+}
+
+QMatrix4x4 QGLTetraMesh::TransformMatrix() const {
+  const Vec3f p = surfaceTransform.GetPivot();
+  const Vec3f r = surfaceTransform.GetRotation();
+  QMatrix4x4 m;
+  m.translate(p.x, p.y, p.z);
+  m.rotate(r.z, 0.0f, 0.0f, 1.0f);
+  m.rotate(r.y, 0.0f, 1.0f, 0.0f);
+  m.rotate(r.x, 1.0f, 0.0f, 0.0f);
+  m.scale(surfaceTransform.GetScale());
+  m.translate(-p.x, -p.y, -p.z);
+  return m;
+}
+
+void QGLTetraMesh::DropDerivedMeshes() {
+  delete oct;
+  oct = NULL;
+  if (top != NULL) {
+    delete top;
+    top = NULL;
+    tetraDirty = true;
+  }
+  octreeDirty = true;
+}
+
+bool QGLTetraMesh::PreviewSurfaceTransform(float scale_, float xDeg_,
+                                           float yDeg_, float zDeg_) {
+  if (surf == NULL || !surfaceTransform.HasOriginal()) return false;
+  surfaceTransform.SetScale(scale_);
+  surfaceTransform.SetRotation(xDeg_, yDeg_, zDeg_);
+  // the surface data still holds the committed transform
+  previewModel = TransformMatrix() * committedModel.inverted();
+  previewBBox = surfaceTransform.ComputeBoundingBox();
+  surfacePreviewing = true;
+  DropDerivedMeshes();
+  boundingVolumeDirty = true;
+  return true;
 }
 
 bool QGLTetraMesh::SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
@@ -653,13 +706,19 @@ bool QGLTetraMesh::SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
   surfaceTransform.SetScale(scale_);
   surfaceTransform.SetRotation(xDeg_, yDeg_, zDeg_);
   surfaceTransform.Apply(surf->GetVertices());
-  surf->GenerateBoundingBox();
-  surf->GenerateNormals();
-  delete oct;
-  oct = NULL;
-  delete top;
-  top = NULL;
-  MarkGeometryDirty();
+  surf->GenerateBoundingBox(false);
+  if (surfaceTransform.HasOriginalNormals()) {
+    std::vector<Vec3f> normals;
+    surfaceTransform.ApplyToNormals(normals);
+    surf->SetNormals(std::move(normals));
+  } else {
+    surf->GenerateNormals();
+  }
+  committedModel = TransformMatrix();
+  surfacePreviewing = false;
+  DropDerivedMeshes();
+  surfaceDirty = true;
+  boundingVolumeDirty = true;
   isReady = true;
   return true;
 }

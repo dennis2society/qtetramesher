@@ -58,6 +58,10 @@ class QGLTetraViewer : public QtmGLViewer {
   /// QGLTetraMesh::SetSurfaceTransform()). fitView_ refits the camera.
   bool transformSurface(float scale_, float xDeg_, float yDeg_, float zDeg_,
                         bool fitView_);
+  /// Fast GPU-only preview while a slider is dragged, see
+  /// QGLTetraMesh::PreviewSurfaceTransform().
+  bool previewSurfaceTransform(float scale_, float xDeg_, float yDeg_,
+                               float zDeg_);
 
  public slots:
   void ToggleTetraVis(bool drawWireframe_, bool drawSolid_);
