@@ -10,6 +10,12 @@ other dependencies (no GLU, GLUT, GLEW or GLM). The library is plain C++17 and
 does not use any platform specific code, so it builds the same way on Linux and
 Windows. It is built as a static library with position independent code.
 
+## Inspiration
+
+QtmGLViewer is inspired by [libQGLViewer](https://github.com/GillesDebunne/libQGLViewer)
+by Gilles Debunne. Its camera behavior, input bindings and scene look follow the
+libQGLViewer design, but the code is a new implementation on OpenGL 3.3 core.
+
 ## Features
 
 * Trackball camera with the interaction of libQGLViewer
