@@ -2,3 +2,6 @@
 *.xz
 *.gz
 *~
+zz_installer_windows/*.zip
+zz_installer_windows/*.exe
+zz_installer_windows/SHA256SUMS-windows.txt

@@ -18,16 +18,21 @@ powershell -ExecutionPolicy Bypass -File zz_installer_windows\collect_portable.p
 ```
 
 Collects `QTetraMesher.exe`, the project DLLs (including `FTetWildWrapper.dll` if the build was configured with `-DQTM_WITH_FTETWILD=ON`), Qt DLLs and plugins, SOFA, GMSH, assimp, GMP/MPFR and oneTBB (`tbb12.dll`) DLLs, the VC runtime, `data/` and the licenses into
-`QTetraMesher_Win64_VS2022_0.8.5`. The folder runs by double-clicking `QTetraMesher.exe`; copy it anywhere.
+`QTetraMesher_Win64_VS2022_<version><suffix>`. The folder runs by double-clicking `QTetraMesher.exe`; copy it anywhere.
 
 Options:
 
 | Option | Meaning |
 | --- | --- |
 | `-Config <name>` | Build configuration to package (default `MinSizeRel`). |
-| `-Destination <dir>` | Output folder (default `QTetraMesher_Win64_VS2022_0.8.5`). |
+| `-Version <text>` | Version used in the names (default: `project(QTetraMesher VERSION ...)` plus `QTM_VERSION_SUFFIX` in `CMakeLists.txt`). |
+| `-Suffix <text>` | Appended to the version in the names, e.g. `_rc1` (default empty). |
+| `-Destination <dir>` | Output folder (default `QTetraMesher_Win64_VS2022_<version><suffix>`). |
 | `-Clean` | Empty the output folder first (keeps `library_versions.txt`). |
 | `-SmokeTest` | Start the exe with a minimal `PATH` and check that its window opens. |
+| `-Zip` | Also write `zz_installer_windows\QTetraMesher_Win64_<version><suffix>_portable.zip`. |
+
+Version and suffix may only contain letters, digits, `.`, `_` and `-`.
 
 Check the output for `Unresolved DLLs` warnings; they mean a dependency was not found.
 
@@ -38,7 +43,13 @@ powershell -ExecutionPolicy Bypass -File zz_installer_windows\build_installer.ps
 ```
 
 This refreshes the portable folder (including the smoke test) and compiles [QTetraMesher.iss](QTetraMesher.iss).
-The result is `zz_installer_windows\output\QTetraMesher_Setup_<version>.exe`; the version is taken from `project(QTetraMesher VERSION ...)` in `CMakeLists.txt`.
+The result is `zz_installer_windows\QTetraMesher_Setup_<version><suffix>.exe`, next to the portable zip.
+The version is taken from `project(QTetraMesher VERSION ...)` plus `QTM_VERSION_SUFFIX` in `CMakeLists.txt` unless
+`-Version` is given; `-Suffix` is appended to the file name only. Use the same `-Version`/`-Suffix`
+as for `collect_portable.ps1`, the installer is built from the matching portable folder.
+
+To show the same version in the app's About dialog, configure the build with
+`-DQTM_VERSION_OVERRIDE=<version>`.
 
 Use `-SkipCollect` to compile the installer from the existing portable folder without refreshing it.
 

@@ -24,7 +24,7 @@ SOFA_LIBS_PATH=/opt/sofa_git/build/install/lib zz_linux_packaging/build_appimage
 
 - `SOFA_LIBS_PATH`: SOFA `lib` directory (default `/opt/sofa_git/build/install/lib`)
 - `version` (argument, or `APP_VERSION` environment variable): used in the file name,
-  defaults to the project version in `CMakeLists.txt`
+  defaults to the project version plus `QTM_VERSION_SUFFIX` in `CMakeLists.txt`
 
 Examples:
 

@@ -11,21 +11,42 @@
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File collect_portable.ps1 -SmokeTest
+
+.EXAMPLE
+  powershell -ExecutionPolicy Bypass -File collect_portable.ps1 -Version 0.8.6 -Suffix _rc1 -Zip
 #>
 [CmdletBinding()]
 param(
   [string]$Config = 'MinSizeRel',
   [string]$BuildDir,
   [string]$Destination,
+  # default: project(QTetraMesher VERSION ...) in CMakeLists.txt
+  [string]$Version,
+  # appended to the version in folder and file names, e.g. _rc1
+  [string]$Suffix = '',
   [switch]$Clean,
-  [switch]$SmokeTest
+  [switch]$SmokeTest,
+  # also writes zz_installer_windows\QTetraMesher_Win64_<version><suffix>_portable.zip
+  [switch]$Zip
 )
 
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path $PSScriptRoot -Parent
+if (-not $Version) {
+  $cmake = Get-Content (Join-Path $repoRoot 'CMakeLists.txt') -Raw
+  if ($cmake -notmatch 'project\(QTetraMesher VERSION ([\d.]+)\)') {
+    throw 'Version not found in CMakeLists.txt'
+  }
+  $Version = $Matches[1]
+  if ($cmake -match 'set\(QTM_VERSION_SUFFIX\s+"([^"]*)"\)') { $Version += $Matches[1] }
+}
+# both end up in file names
+if ($Version -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid version '$Version'" }
+if ($Suffix -and $Suffix -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid suffix '$Suffix'" }
+$name = "$Version$Suffix"
 if (-not $BuildDir)    { $BuildDir    = Join-Path $repoRoot 'build' }
-if (-not $Destination) { $Destination = Join-Path $repoRoot 'QTetraMesher_Win64_VS2022_0.8.5' }
+if (-not $Destination) { $Destination = Join-Path $repoRoot "QTetraMesher_Win64_VS2022_$name" }
 
 # ---------------------------------------------------------------- build tree
 $cacheFile = Join-Path $BuildDir 'CMakeCache.txt'
@@ -246,4 +267,12 @@ if ($SmokeTest) {
       if (-not $proc.WaitForExit(3000)) { $proc.Kill() }
     }
   }
+}
+
+# ------------------------------------------------------------------------ zip
+if ($Zip) {
+  $zipFile = Join-Path $PSScriptRoot "QTetraMesher_Win64_${name}_portable.zip"
+  if (Test-Path $zipFile) { Remove-Item $zipFile -Force }
+  Compress-Archive -Path $Destination -DestinationPath $zipFile
+  Write-Host "Portable zip: $zipFile"
 }

@@ -610,10 +610,8 @@ QString QGLTetraViewer::helpString() const {
   text += "<br>";
   text += "<br>";
   text +=
-      "This is a Qt-based program for Windows and Linux to generate "
-      "tetrahedral meshes for finite element simulation from various surface "
-      "mesh formats. It also offers a fast and easy-to-use mesh viewer and "
-      "allows basic mesh manipulation.<br />"
+      "This is a tetrahedral mesh generator for Linux and Windows that combines "
+      "multiple tetrahedra generation algorithms in a Qt6 GUI.<br />"
       "<a href=\"https://github.com/dennis2society/qtetramesher\">"
       "https://github.com/dennis2society/qtetramesher</a><br /><br />"
       "Tetrahedralization methods:<br />"

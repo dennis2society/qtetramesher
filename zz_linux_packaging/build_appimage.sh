@@ -39,6 +39,7 @@ export QMAKE="${QMAKE:-$(command -v qmake6 || command -v qmake)}"
 export NO_STRIP=1
 export EXTRA_QT_PLUGINS="svg;iconengines"
 DEFAULT_VERSION="$(grep -m1 -oP 'project\(QTetraMesher VERSION \K[0-9.]+' "$ROOT/CMakeLists.txt")"
+DEFAULT_VERSION+="$(grep -m1 -oP 'set\(QTM_VERSION_SUFFIX\s+"\K[^"]*' "$ROOT/CMakeLists.txt" || true)"
 export LINUXDEPLOY_OUTPUT_VERSION="${1:-${APP_VERSION:-$DEFAULT_VERSION}}"
 
 # Bundle the project's own shared libraries too (ldd already lists them, but be explicit).

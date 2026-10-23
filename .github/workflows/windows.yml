@@ -4,12 +4,24 @@ on:
   push:
     tags: ['v*', '[0-9]*']
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for the app and the file names, e.g. 0.8.6-rc1 (empty: from CMakeLists.txt)'
+        required: false
+        default: ''
+      suffix:
+        description: 'Appended to the version in the file names only, e.g. _test (optional)'
+        required: false
+        default: ''
 
 env:
   SOFA_VERSION: 26.06.00
   GMSH_VERSION: 4.15.2
   BUILD_CONFIG: MinSizeRel
   VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache,readwrite
+  # empty for tag builds; passed via env so they are never parsed as script code
+  QTM_VERSION: ${{ inputs.version }}
+  QTM_SUFFIX: ${{ inputs.suffix }}
 
 jobs:
   build:
@@ -89,6 +101,11 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
+          foreach ($v in $env:QTM_VERSION, $env:QTM_SUFFIX) {
+            if ($v -and $v -notmatch '^[A-Za-z0-9._-]+$') {
+              throw "Invalid version or suffix '$v' (allowed: letters, digits, . _ -)"
+            }
+          }
           $sofa = (Get-ChildItem deps/sofa -Directory | Select-Object -First 1).FullName
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
             "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR;C:/vcpkg/installed/x64-windows" `
@@ -96,33 +113,50 @@ jobs:
             "-DSOFA_INSTALL_DIR=$sofa" `
             "-DGMSH_INSTALL_PATH=$PWD/gmsh-sdk" `
             -DQTM_WITH_FTETWILD=ON `
-            "-DFTETWILD_SOURCE_DIR=$PWD/ftetwild"
+            "-DFTETWILD_SOURCE_DIR=$PWD/ftetwild" `
+            "-DQTM_VERSION_OVERRIDE=$env:QTM_VERSION"
 
       - name: Build
         run: cmake --build build --config ${{ env.BUILD_CONFIG }} --parallel
 
-      - name: Portable folder and installer
+      - name: Portable zip and installer
         shell: pwsh
         run: |
-          ./zz_installer_windows/collect_portable.ps1 -Config $env:BUILD_CONFIG -Clean
-          ./zz_installer_windows/build_installer.ps1 -Config $env:BUILD_CONFIG -SkipCollect
-          Compress-Archive QTetraMesher_Win64_VS2022_* QTetraMesher_Win64_portable.zip
-          Get-FileHash QTetraMesher_Win64_portable.zip, zz_installer_windows/output/*.exe -Algorithm SHA256 |
-            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS-windows.txt
+          $version = $env:QTM_VERSION
+          if (-not $version) {
+            if ((Get-Content CMakeLists.txt -Raw) -notmatch 'project\(QTetraMesher VERSION ([\d.]+)\)') {
+              throw 'Version not found in CMakeLists.txt'
+            }
+            $version = $Matches[1]
+            if ((Get-Content CMakeLists.txt -Raw) -match 'set\(QTM_VERSION_SUFFIX\s+"([^"]*)"\)') {
+              $version += $Matches[1]
+            }
+          }
+          ./zz_installer_windows/collect_portable.ps1 -Config $env:BUILD_CONFIG `
+            -Version $version -Suffix $env:QTM_SUFFIX -Clean -Zip
+          ./zz_installer_windows/build_installer.ps1 -Config $env:BUILD_CONFIG `
+            -Version $version -Suffix $env:QTM_SUFFIX -SkipCollect
+          $name = "$version$env:QTM_SUFFIX"
+          $files = "zz_installer_windows/QTetraMesher_Win64_${name}_portable.zip",
+                   "zz_installer_windows/QTetraMesher_Setup_$name.exe"
+          Get-FileHash $files -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content zz_installer_windows/SHA256SUMS-windows.txt
+          "QTM_NAME=$name" >> $env:GITHUB_ENV
 
       - uses: actions/upload-artifact@v4
         with:
-          name: QTetraMesher-windows
+          name: QTetraMesher-windows-${{ env.QTM_NAME }}
           path: |
-            QTetraMesher_Win64_portable.zip
-            zz_installer_windows/output/*.exe
-            SHA256SUMS-windows.txt
+            zz_installer_windows/QTetraMesher_Win64_*_portable.zip
+            zz_installer_windows/QTetraMesher_Setup_*.exe
+            zz_installer_windows/SHA256SUMS-windows.txt
 
       - name: Attach to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            QTetraMesher_Win64_portable.zip
-            zz_installer_windows/output/*.exe
-            SHA256SUMS-windows.txt
+            zz_installer_windows/QTetraMesher_Win64_*_portable.zip
+            zz_installer_windows/QTetraMesher_Setup_*.exe
+            zz_installer_windows/SHA256SUMS-windows.txt

@@ -3,21 +3,31 @@
 #ifndef AppVersion
   #define AppVersion "0.8.5"
 #endif
+; numeric part of AppVersion for the Windows file properties
+#ifndef FileVersion
+  #define FileVersion AppVersion
+#endif
+; appended to the version in the file name, e.g. _rc1
+#ifndef NameSuffix
+  #define NameSuffix ""
+#endif
 #ifndef SourceDir
-  #define SourceDir "..\QTetraMesher_Win64_VS2022_0.8.5"
+  #define SourceDir "..\QTetraMesher_Win64_VS2022_" + AppVersion + NameSuffix
 #endif
 
 [Setup]
 AppId={{7D1C0E52-4B8A-4E43-9C5F-2A6B3D8E91F4}
 AppName=QTetraMesher
 AppVersion={#AppVersion}
+VersionInfoVersion={#FileVersion}
 AppPublisher=dennis2society
 AppPublisherURL=https://qtm.dennis2society.de
 DefaultDirName={autopf}\QTetraMesher
 DisableProgramGroupPage=yes
 LicenseFile={#SourceDir}\gpl.txt
-OutputDir=output
-OutputBaseFilename=QTetraMesher_Setup_{#AppVersion}
+; next to this script, like the portable zip
+OutputDir=.
+OutputBaseFilename=QTetraMesher_Setup_{#AppVersion}{#NameSuffix}
 SetupIconFile=..\resources\qtetramesher.ico
 UninstallDisplayIcon={app}\resources\qtetramesher.ico
 Compression=lzma2

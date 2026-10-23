@@ -47,8 +47,21 @@ when a version number changes. Old caches can be deleted in Actions, **Caches**.
 2. `collect_portable.ps1` creates the portable folder (reads the dependency paths from
    `CMakeCache.txt`). The smoke test is skipped because the runner has no desktop.
 3. `build_installer.ps1 -SkipCollect` compiles the Inno Setup installer.
-4. The portable folder is zipped as `QTetraMesher_Win64_portable.zip`;
-   `SHA256SUMS-windows.txt` holds the checksums of the zip and the installer.
+4. The portable zip, the installer and `SHA256SUMS-windows.txt` (checksums of both) are
+   written to `zz_installer_windows/`:
+   `QTetraMesher_Win64_<version><suffix>_portable.zip` and
+   `QTetraMesher_Setup_<version><suffix>.exe`. The artifact is named
+   `QTetraMesher-windows-<version><suffix>`.
+
+When started manually, the Windows workflow asks for two optional inputs:
+
+| Input | Effect |
+| --- | --- |
+| `version` | Version in the file names, the installer and the app's About dialog (`QTM_VERSION_OVERRIDE`), e.g. `0.8.6-rc1`. Empty: the version from `CMakeLists.txt` (including `QTM_VERSION_SUFFIX`). |
+| `suffix` | Appended to the version in the file names only, e.g. `_test`. |
+
+Both may only contain letters, digits, `.`, `_` and `-`. Tag builds use the version from
+`CMakeLists.txt` and no suffix.
 
 ### Linux
 
@@ -63,7 +76,9 @@ glibc than the build machine.
 ## Making a release
 
 1. Update the version in `project(QTetraMesher VERSION x.y.z)` in `CMakeLists.txt` and
-   commit.
+   commit. For a pre-release, set `QTM_VERSION_SUFFIX` right below it, e.g.
+   `set(QTM_VERSION_SUFFIX "_RC1")` gives `x.y.z_RC1` in the app and all file names
+   (`project()` itself only accepts numbers). Set it back to `""` for the final release.
 2. Optionally test with a manual run of both workflows and check the artifacts.
 3. Tag and push:
    ```bash

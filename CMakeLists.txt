@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
-project(QTetraMesher VERSION 0.8.5)
+project(QTetraMesher VERSION 0.8.6)
+# Optional identifier after the version, e.g. "_RC1" for 0.8.5_RC1 (project()
+# only accepts numbers). Used in the app and the package names.
+set(QTM_VERSION_SUFFIX "_RC1")
 
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 OLD)
@@ -11,6 +14,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # This line is required to use the PROJECT_VERSION set above
 # in the code.
+# QTM_VERSION_OVERRIDE replaces the version shown in the app, e.g. 0.8.6-rc1
+set(QTM_VERSION_OVERRIDE "" CACHE STRING "Version shown in the app (empty: project version and suffix)")
+if(QTM_VERSION_OVERRIDE)
+  set(QTM_VERSION_STRING "${QTM_VERSION_OVERRIDE}")
+else()
+  set(QTM_VERSION_STRING "${PROJECT_VERSION}${QTM_VERSION_SUFFIX}")
+endif()
 configure_file("src/qtetramesher_version.h.in" "qtetramesher_version.h")
 
 if(WIN32)
