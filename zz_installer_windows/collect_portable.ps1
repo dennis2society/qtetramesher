@@ -225,8 +225,8 @@ $dataSource = Join-Path $repoRoot 'data'
 if (Test-Path $dataSource) {
   Copy-Item $dataSource $Destination -Recurse -Force
 }
-foreach ($name in 'gpl.txt', 'lgpl-2.1.txt', 'README.md') {
-  Copy-Item (Join-Path $repoRoot $name) $Destination -Force
+foreach ($resourceName in 'gpl.txt', 'lgpl-2.1.txt', 'README.md') {
+  Copy-Item (Join-Path $repoRoot $resourceName) $Destination -Force
 }
 $tetgenLicense = Join-Path $repoRoot 'TetgenWrapper\LICENSE'
 if (Test-Path $tetgenLicense) {
