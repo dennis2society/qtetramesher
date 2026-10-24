@@ -29,13 +29,38 @@ History + usage instructions: https://qtm.dennis2society.de
 
 <b>Build instructions (Linux):</b> https://qtm.dennis2society.de/#Build
 
+## Disclaimer
+As of version 0.8.5 this project contains at least some AI generated code (Github Copilot, Claude Haiku/Sonnet/Opus 5.5).<br />
+This includes the windows CI workflow, packaging (portable + setup for Windows, AppImage for Linux), improvements to GenericIsosurfaceStuffing (more aggressive
+grading, better surface approximation, performance optimization), the QtmGLViewer library and the GL UI overlay output (mesh quality, progress indicator, etc.).
+I have thoroughly looked through the generated code, thrown another model at it to check for risks and things look plausible and work as expected.
 
 ## Changelog
+### 0.8.6_RC1 - 2026-10-25
+This is an exercise release to test making binary releases from Github workflows.
+I have also thrown more Copilot assistance at the project to see how fast it can improve things.
+
+* <b>New features:</b>
+  - Surface meshes can be rotated and scaled before tetrahedralization, with the scaling applied on the GPU.
+  - Tetrahedral meshes get a quality overlay and the tetra generation output is shown as an overlay in the viewer.
+  - Generic Isosurface Stuffing has better grading controls, a better initial cell size estimation and runs faster.
+  - The last used tetrahedralization method is remembered between sessions.
+  - GMSH `*.msh` import and export now use the GMSH library, with export to file format 4.1 and 2.2.
+  - GMSH files are loaded in a background job.
+  - The default model is now a Mobius strip instead of the spiral.
+  - Added a recent files entry and keyboard shortcuts in the View menu.
+* <b>Fixes:</b>
+  - Fixed the fTetWild tetrahedra orientation.
+  - Fixed the naming of the output artifacts (better version naming).
+* <b>Binary builds:</b>
+  - Windows (x64, portable ZIP and InnoSetup installer) is now built in a GitHub workflow with Qt 6.9.0 and Boost 1.74.0
+  - Linux AppImage uses Qt 6.2.4, assimp 5.2.2, Boost 1.74.0, CGAL 5.4-1, glibc 2.43 (built on Ubuntu 22.04.05)
+
 ### 0.8.5 - 2026-10-17
 * <b>New tetrahedralization methods:</b>
-  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results vary with mesh size and selected cell size) with no external dependencies
+  - Custom GenericIsoSurfaceStuffing implementation with optional graded tetrahedra (results depend on mesh size and selected cell size) with no external dependencies
   - Improved Tetgen integration
-  - GMSH integration (this one is sensitive to surface mesh quality...)
+  - GMSH integration (this one is very sensitive to surface mesh quality...)
   - ftetwild integration
 * Surface mesh quality check (basic test for usage with Tetgen and GMSH)
 * libQGLViewer replaced by the new lightweight QtmGLViewer (QOpenGLWidget, OpenGL 3.3 core profile, shaders and GPU buffers). Works natively in Wayland.
@@ -118,7 +143,7 @@ History + usage instructions: https://qtm.dennis2society.de
 ### 0.8.1 (Source only) - 2015-12-06
  * Migration to Github due to cancellation of Google Code
 
-### 0.8.1 - sometimes in 2014... (Googlecode's history is lost)
+### 0.8.1 - some day in 2014... (Googlecode's history is lost)
  * Drag & Drop supported mesh files on the main window to open files.
  * Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
 
