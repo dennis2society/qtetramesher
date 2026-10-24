@@ -126,7 +126,7 @@ cmake -S . -B build -DQTM_WITH_FTETWILD=OFF
 
 ## Windows
 
-The module is untested on Windows and therefore disabled by default.
+The module now works fine on Windows and therefore enabled by default in the CI bulild.
 
 1. Clone fTetWild, e.g. to `D:/devel/ftetwild_git`.
 2. Get GMP for MSVC, e.g. with vcpkg (`vcpkg install gmp:x64-windows`) or
