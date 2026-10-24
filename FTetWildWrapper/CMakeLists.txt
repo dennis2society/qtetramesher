@@ -94,6 +94,7 @@ target_link_libraries(
   PUBLIC
   TetraMeshTools::Headers
   PRIVATE
+  TetraMeshTools
   FloatTetwild
 )
 
@@ -108,7 +109,8 @@ add_custom_command(
 )
 
 # Copy the shared runtime dependencies next to QTetraMesher. Everything else
-# (geogram, libigl, spdlog, fmt, ...) is linked statically.
+# (libigl, spdlog, fmt, ...) is linked statically; the shared geogram is
+# copied by TetraMeshTools.
 if(TARGET TBB::tbb)
   get_target_property(FTETWILD_TBB_TARGET TBB::tbb ALIASED_TARGET)
   if(NOT FTETWILD_TBB_TARGET)

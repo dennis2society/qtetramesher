@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(QTetraMesher VERSION 0.8.6)
 # Optional identifier after the version, e.g. "_RC1" for 0.8.5_RC1 (project()
 # only accepts numbers). Used in the app and the package names.
-set(QTM_VERSION_SUFFIX "_RC1")
+set(QTM_VERSION_SUFFIX "")
 
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 OLD)
@@ -56,6 +56,46 @@ if(MSVC)
   add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
 endif()
 
+# geogram as one shared library for TetraMeshTools (surface repair) and
+# fTetWild, which skips its own static geogram when geogram::geogram exists.
+include(FetchContent)
+FetchContent_Declare(
+  geogram
+  GIT_REPOSITORY https://github.com/BrunoLevy/geogram
+  GIT_TAG v1.9.6
+)
+if(MSVC)
+  set(VORPALINE_PLATFORM "Win-vs-generic")
+  set(VORPALINE_ARCH_64 TRUE CACHE BOOL "" FORCE)
+elseif(APPLE)
+  set(VORPALINE_PLATFORM "Darwin-clang")
+else()
+  set(VORPALINE_PLATFORM "Linux64-gcc")
+endif()
+set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "Build geogram as shared library" FORCE)
+set(GEOGRAM_SUB_BUILD ON CACHE BOOL "" FORCE)
+set(GEOGRAM_LIB_ONLY ON CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_GRAPHICS OFF CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_LUA OFF CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_EXPLORAGRAM OFF CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_LEGACY_NUMERICS OFF CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_TRIANGLE OFF CACHE BOOL "" FORCE)
+set(GEOGRAM_WITH_TETGEN OFF CACHE BOOL "" FORCE)
+# optimizer for the Newton iterations of the remeshing
+set(GEOGRAM_WITH_HLBFGS ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(geogram)
+add_library(qtm_geogram INTERFACE)
+add_library(geogram::geogram ALIAS qtm_geogram)
+target_link_libraries(qtm_geogram INTERFACE geogram)
+# dllimport on Windows
+target_compile_definitions(qtm_geogram INTERFACE GEO_DYNAMIC_LIBS)
+target_include_directories(qtm_geogram SYSTEM INTERFACE
+                           "${geogram_SOURCE_DIR}/src/lib")
+if(NOT MSVC)
+  find_package(OpenMP REQUIRED)
+  target_link_libraries(qtm_geogram INTERFACE OpenMP::OpenMP_CXX)
+endif()
+
 add_subdirectory(QtmGLViewer)
 add_subdirectory(TetraMeshTools)
 add_subdirectory(SofaTetraStuffing)
@@ -64,15 +104,8 @@ add_subdirectory(TetgenWrapper)
 add_subdirectory(GMSHWrapper)
 add_subdirectory(GenericIsosurfaceStuffing)
 
-# Optional fTetWild module (off by default on Windows, where it is untested).
-# If fTetWild or one of its requirements is missing, the module is skipped.
-if(WIN32)
-  set(QTM_WITH_FTETWILD_DEFAULT OFF)
-else()
-  set(QTM_WITH_FTETWILD_DEFAULT ON)
-endif()
-option(QTM_WITH_FTETWILD "Build the optional fTetWild module"
-       ${QTM_WITH_FTETWILD_DEFAULT})
+# fTetWild module, skipped if fTetWild or one of its requirements is missing.
+option(QTM_WITH_FTETWILD "Build the fTetWild module" ON)
 if(QTM_WITH_FTETWILD)
   if(CMAKE_VERSION VERSION_LESS 3.20)
     message(WARNING "fTetWild needs CMake 3.20, building without fTetWild.")
@@ -107,6 +140,8 @@ add_executable(
   src/SurfaceVisWidget.cpp
   src/SurfaceTransformWidget.hpp
   src/SurfaceTransformWidget.cpp
+  src/SurfaceRepairWidget.hpp
+  src/SurfaceRepairWidget.cpp
   src/TetraVisWidget.hpp
   src/TetraVisWidget.cpp
   src/OctreeVisWidget.hpp

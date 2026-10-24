@@ -239,6 +239,11 @@ if ($ftetwildLicense -and (Test-Path $ftetwildLicense)) {
   New-Item -ItemType Directory -Force -Path (Join-Path $Destination 'licenses') | Out-Null
   Copy-Item $ftetwildLicense (Join-Path $Destination 'licenses\fTetWild_LICENSE.MPL2.txt') -Force
 }
+$geogramLicense = Join-Path $BuildDir '_deps\geogram-src\LICENSE'
+if (Test-Path $geogramLicense) {
+  New-Item -ItemType Directory -Force -Path (Join-Path $Destination 'licenses') | Out-Null
+  Copy-Item $geogramLicense (Join-Path $Destination 'licenses\geogram_LICENSE.txt') -Force
+}
 
 $size = (Get-ChildItem $Destination -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
 Write-Host ('Portable folder ready: {0:N1} MB' -f $size)

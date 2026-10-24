@@ -72,6 +72,9 @@ class QGLTetraViewer : public QtmGLViewer {
   /// QGLTetraMesh::PreviewSurfaceTransform().
   bool previewSurfaceTransform(float scale_, float xDeg_, float yDeg_,
                                float zDeg_);
+  /// see QGLTetraMesh::ReplaceSurface()
+  bool replaceSurface(const std::vector<Vec3f> &verts_,
+                      const std::vector<Triangle> &tris_);
 
  public slots:
   void ToggleTetraVis(bool drawWireframe_, bool drawSolid_);

@@ -23,6 +23,7 @@ add_library(
   include/TetraMeshTools/Vec3f.h
   include/TetraMeshTools/Vec3d.h
   include/TetraMeshTools/GeometryTypes.h
+  include/TetraMeshTools/GeogramUtils.h
   include/TetraMeshTools/MeshRepair.h
   include/TetraMeshTools/MeshTransform.h
   include/TetraMeshTools/Octree.h
@@ -33,6 +34,7 @@ add_library(
   include/TetraMeshTools/TriangleTopology.h
   include/TetraMeshTools/Vec2f.h
   src/BaseMeshLoader.cpp
+  src/GeogramUtils.cpp
   src/TopologyUtils.h
   src/MeshRepair.cpp
   src/MeshTransform.cpp
@@ -58,8 +60,11 @@ target_include_directories(TetraMeshToolsHeaders
 
 target_link_libraries(
   TetraMeshTools
+  PUBLIC
   TetraMeshTools::Headers
   assimp::assimp
+  PRIVATE
+  geogram::geogram
 )
 
 if(MSVC)
@@ -74,4 +79,16 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy
     "$<TARGET_FILE:TetraMeshTools>"
     "${CMAKE_BINARY_DIR}"
+)
+
+# the shared geogram (also used by fTetWild), on Linux with the soname link
+if(WIN32)
+  set(QTM_GEOGRAM_FILES "$<TARGET_FILE:geogram>")
+else()
+  set(QTM_GEOGRAM_FILES "$<TARGET_FILE:geogram>" "$<TARGET_SONAME_FILE:geogram>")
+endif()
+add_custom_command(
+  TARGET TetraMeshTools
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${QTM_GEOGRAM_FILES} "${CMAKE_BINARY_DIR}"
 )

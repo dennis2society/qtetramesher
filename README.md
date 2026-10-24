@@ -14,7 +14,16 @@ This is a tetrahedral mesh generator for Windows and Linux that combines multipl
 * Generic Isosurface Stuffing: this project's own implementation of [Labelle and Shewchuk's Isosurface Stuffing](http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf) (SIGGRAPH 2007), with optional graded tetrahedra
 * [Tetgen](https://wias-berlin.de/software/index.jsp?id=TetGen&lang=1): constrained Delaunay tetrahedralization
 * [GMSH](https://gmsh.info/): tetrahedral meshing with the GMSH library
-* [fTetWild](https://github.com/wildmeshing/fTetWild): robust tetrahedralization of imperfect surfaces (optional module, `QTM_WITH_FTETWILD=ON`)
+* [fTetWild](https://github.com/wildmeshing/fTetWild): robust tetrahedralization of imperfect surfaces (built by default, `QTM_WITH_FTETWILD=ON`, skipped if fTetWild is not found)
+
+<b>Surface mesh repair:</b>
+* Basic repair on load (duplicate vertices, degenerate/duplicate triangles, orientation, simple holes)
+* Surface Repair with [geogram](https://github.com/BrunoLevy/geogram): non-manifold edges, small parts, holes, self-intersections (keeps the outer hull) and optional isotropic remeshing
+
+<b>Dependencies:</b>
+* Qt6, CGAL (with Boost, GMP, MPFR), assimp, SOFA Framework, GMSH (SDK)
+* [geogram](https://github.com/BrunoLevy/geogram) 1.9.6 (BSD 3-clause): downloaded and built as a shared library by CMake (FetchContent), used by the surface repair and by fTetWild. A system installation of geogram is not used.
+* fTetWild sources (`FTETWILD_SOURCE_DIR`, default `/opt/ftetwild_git` or `D:/devel/ftetwild_git`); its other dependencies (libigl, Eigen, oneTBB, spdlog, fmt) are downloaded by CMake
 
 <b>Supported surface mesh formats (Load Surface Mesh / Export Surface):</b>
 * OBJ (`*.obj`), STL (`*.stl`), PLY (`*.ply`), 3DS (`*.3ds`), Collada (`*.dae`): load and export
@@ -42,6 +51,8 @@ I have also thrown more Copilot assistance at the project to see how fast it can
 
 * <b>New features:</b>
   - Surface meshes can be rotated and scaled before tetrahedralization, with the scaling applied on the GPU.
+  - Surface repair with geogram (self-intersections, non-manifold edges, small parts, holes, optional remeshing). geogram is now one shared library also used by fTetWild.
+  - fTetWild is built by default on Windows too.
   - Tetrahedral meshes get a quality overlay and the tetra generation output is shown as an overlay in the viewer.
   - Generic Isosurface Stuffing has better grading controls, a better initial cell size estimation and runs faster.
   - The last used tetrahedralization method is remembered between sessions.

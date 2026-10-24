@@ -552,6 +552,12 @@ QString QGLTetraViewer::helpHtml() const {
       "original is kept, <i>Reset Transform</i> restores it. A generated "
       "tetra mesh is removed when the surface changes. Export Surface saves "
       "the transformed mesh.</li>"
+      "<li><b>Surface Repair (geogram)</b>: fixes defects the repair on load "
+      "cannot fix: non-manifold edges, small disconnected parts, holes and "
+      "self-intersections (only the outer hull is kept). Optional remeshing "
+      "with a given number of vertices gives evenly shaped triangles, but "
+      "rounds sharp edges. The surface transform is kept, a generated tetra "
+      "mesh is removed.</li>"
       "<li><b>TetraMesh</b>: draw the wireframe and/or the solid tetrahedra, "
       "with their own colors. Tetrahedra on the surface share one color; with "
       "<i>Color Interior by Depth</i> the inner ones fade from the outer to "
@@ -626,6 +632,9 @@ QString QGLTetraViewer::helpString() const {
       "<li><a href=\"https://github.com/wildmeshing/fTetWild\">fTetWild</a> "
       "by Yixin Hu et al. (optional module): robust "
       "tetrahedral meshing</li>"
+      "<li><a href=\"https://github.com/BrunoLevy/geogram\">geogram</a> by "
+      "Bruno L&eacute;vy: surface repair and remeshing (also used by "
+      "fTetWild)</li>"
       "</ul>"
       "Generic Isosurface Stuffing is part of this program and was written for "
       "it.<br />";
@@ -704,6 +713,14 @@ bool QGLTetraViewer::previewSurfaceTransform(float scale_, float xDeg_,
                                              float yDeg_, float zDeg_) {
   if (!tMesh->PreviewSurfaceTransform(scale_, xDeg_, yDeg_, zDeg_))
     return false;
+  updateSceneFromMesh();
+  update();
+  return true;
+}
+
+bool QGLTetraViewer::replaceSurface(const std::vector<Vec3f> &verts_,
+                                    const std::vector<Triangle> &tris_) {
+  if (!tMesh->ReplaceSurface(verts_, tris_)) return false;
   updateSceneFromMesh();
   update();
   return true;

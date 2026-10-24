@@ -11,6 +11,7 @@
 // #include "ui_mainwindow.h"
 
 #include <QApplication>
+#include <QElapsedTimer>
 #include <QSettings>
 #include <QtConcurrent/QtConcurrent>
 #include <QFileInfo>
@@ -27,6 +28,7 @@ QTetraMesherMainWindow::QTetraMesherMainWindow(QWidget *parent)
     : QMainWindow(parent),
       surfaceVisWidget(this),
       surfaceTransformWidget(this),
+      surfaceRepairWidget(this),
       tetraVisWidget(this),
       octreeVisWidget(this),
       sofaTetraStuffingWidget(this),
@@ -155,6 +157,12 @@ void QTetraMesherMainWindow::setupUI() {
   optionsLayout.addWidget(f0);
   optionsLayout.addWidget(&surfaceTransformWidget);
   surfaceTransformWidget.setEnabled(false);
+  QFrame *fRepair = new QFrame(this);
+  fRepair->setFrameShape(QFrame::HLine);
+  fRepair->setFrameShadow(QFrame::Sunken);
+  optionsLayout.addWidget(fRepair);
+  optionsLayout.addWidget(&surfaceRepairWidget);
+  surfaceRepairWidget.setEnabled(false);
   // owned by this window (a local QFrame would be destroyed on return)
   QFrame *f1 = new QFrame(this);
   f1->setFrameShape(QFrame::HLine);
@@ -250,6 +258,8 @@ void QTetraMesherMainWindow::connectSlots() {
           this, &QTetraMesherMainWindow::surfaceTransformChanged);
   connect(&surfaceTransformWidget.resetButton, &QPushButton::clicked, this,
           &QTetraMesherMainWindow::resetSurfaceTransform);
+  connect(&surfaceRepairWidget.repairButton, &QPushButton::clicked, this,
+          &QTetraMesherMainWindow::repairSurfaceSlot);
   connect(&tetraVisWidget.drawWireframeCheckbox, SIGNAL(toggled(bool)), this,
           SLOT(tetraVisChangedSlot()));
   connect(&tetraVisWidget.drawSolidCheckbox, SIGNAL(toggled(bool)), this,
@@ -331,6 +341,9 @@ void QTetraMesherMainWindow::connectSlots() {
   connect(&surfaceCheckWatcher,
           &QFutureWatcher<std::shared_ptr<SurfaceCheckResult>>::finished, this,
           &QTetraMesherMainWindow::surfaceCheckFinished);
+  connect(&surfaceRepairWatcher,
+          &QFutureWatcher<std::shared_ptr<SurfaceRepairResult>>::finished, this,
+          &QTetraMesherMainWindow::surfaceRepairFinished);
 }
 
 // visualization slots
@@ -397,6 +410,73 @@ void QTetraMesherMainWindow::surfaceCheckFinished() {
     return;
   }
   showSurfaceCheckResult(*r);
+}
+
+void QTetraMesherMainWindow::repairSurfaceSlot() {
+  if (surfaceRepairWatcher.isRunning()) return;
+  QGLTetraMesh *mesh = viewer->tMesh;
+  if (mesh == NULL || mesh->GetSurface() == NULL ||
+      !mesh->CanTransformSurface()) {
+    QMessageBox::information(this, "Repair Surface",
+                             "Please load a surface mesh first.");
+    return;
+  }
+  // the thread repairs a copy, the transform is applied again afterwards
+  std::vector<Vec3f> verts = mesh->GetUntransformedSurfaceVertices();
+  std::vector<Triangle> tris = mesh->GetSurface()->GetTriangles();
+  const GeogramRepairOptions options = surfaceRepairWidget.options();
+  repairSurface = mesh->GetSurface();
+  viewer->beginTask("repair", options.remesh
+                                  ? "Repairing and remeshing the surface"
+                                  : "Repairing the surface");
+  surfaceRepairWatcher.setFuture(QtConcurrent::run(
+      [verts = std::move(verts), tris = std::move(tris), options]() mutable {
+        auto r = std::make_shared<SurfaceRepairResult>();
+        QElapsedTimer timer;
+        timer.start();
+        try {
+          r->report = RepairSurfaceMeshGeogram(verts, tris, options);
+          r->verts = std::move(verts);
+          r->tris = std::move(tris);
+          r->ok = true;
+        } catch (const std::exception &e) {
+          r->error = e.what();
+        }
+        r->elapsedMs = timer.elapsed();
+        return r;
+      }));
+  updateBusyState();
+}
+
+void QTetraMesherMainWindow::surfaceRepairFinished() {
+  viewer->endTask("repair");
+  const void *surface = repairSurface;
+  repairSurface = nullptr;
+  updateBusyState();
+  std::shared_ptr<SurfaceRepairResult> r = surfaceRepairWatcher.result();
+  if (!r || stopThreads) return;
+  if (!r->ok) {
+    std::cerr << "Surface repair failed: " << r->error << std::endl;
+    QMessageBox::warning(this, "Repair Surface",
+                         QString("The surface repair failed, the surface "
+                                 "mesh is unchanged.\n\n%1")
+                             .arg(QString::fromStdString(r->error)));
+    return;
+  }
+  if (viewer->tMesh->GetSurface() != surface) return;
+  const bool hadTetras = viewer->tMesh->GetTetraMesh() != NULL;
+  if (!viewer->replaceSurface(r->verts, r->tris)) return;
+  suggestMethodParameters();
+  const std::string summary = r->report.Summary();
+  std::cout << "Surface repair (" << r->elapsedMs << " ms): " << summary
+            << std::endl;
+  viewer->showNotice(
+      QString("Surface mesh repaired in %1 s").arg(r->elapsedMs / 1000.0, 0,
+                                                    'f', 1),
+      QString::fromStdString(summary), 10000);
+  if (hadTetras)
+    viewer->displayMessage("Tetra mesh removed: the surface mesh was repaired.",
+                           5000);
 }
 
 void QTetraMesherMainWindow::showSurfaceCheckResult(
@@ -549,6 +629,8 @@ void QTetraMesherMainWindow::loadSurfaceSlot() {
 
 void QTetraMesherMainWindow::surfaceLoaded() {
   resetSurfaceTransformWidget();
+  surfaceRepairWidget.setRemeshVertices(
+      viewer->tMesh->GetSurface()->GetVertices().size());
   updateCutplaneSliders();
   suggestMethodParameters();
   updateWindowTitle();
@@ -928,7 +1010,9 @@ void QTetraMesherMainWindow::updateBusyState() {
   const bool tetraRunning = tetraJob.isRunning();
   const bool octreeRunning = octreeWatcher.isRunning();
   const bool checkRunning = surfaceCheckWatcher.isRunning();
-  const bool busy = tetraRunning || octreeRunning || checkRunning;
+  const bool repairRunning = surfaceRepairWatcher.isRunning();
+  const bool busy =
+      tetraRunning || octreeRunning || checkRunning || repairRunning;
   // a GMSH load replaces the surface mesh when it is done
   const bool loading = !loadingGMSHFile.isEmpty();
   // loading would replace the surface mesh used by the background tasks
@@ -938,14 +1022,20 @@ void QTetraMesherMainWindow::updateBusyState() {
   recentSurfacesMenu.setEnabled(!busy);
   // keep the widget with the cancel button visible while a job runs
   tetraMeshMethodComboBox.setEnabled(!tetraRunning);
-  for (TetraMethodWidget *w : tetraMethodWidgets())
+  for (TetraMethodWidget *w : tetraMethodWidgets()) {
     w->setRunning(tetraRunning,
                   loading ? "Cancel Loading" : "Cancel Generation");
-  octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning && !loading);
-  surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning && !loading);
+    // the repair replaces the surface
+    w->generateButton().setEnabled(!repairRunning);
+  }
+  octreeVisWidget.octreeGenerateButton.setEnabled(!octreeRunning && !loading &&
+                                                  !repairRunning);
+  surfaceVisWidget.checkSurfaceButton.setEnabled(!checkRunning && !loading &&
+                                                 !repairRunning);
   // the background tasks read the surface mesh
   surfaceTransformWidget.setEnabled(!busy &&
                                     viewer->tMesh->CanTransformSurface());
+  surfaceRepairWidget.setEnabled(!busy && viewer->tMesh->CanTransformSurface());
 }
 
 void QTetraMesherMainWindow::stopBackgroundTasks() {
@@ -955,6 +1045,8 @@ void QTetraMesherMainWindow::stopBackgroundTasks() {
   stopThreads = true;
   octreeWatcher.waitForFinished();
   surfaceCheckWatcher.waitForFinished();
+  // geogram cannot be interrupted, the result is discarded
+  surfaceRepairWatcher.waitForFinished();
   if (octreePending) {
     // finished, but the result was never handed over to the mesh
     octreePending = false;
@@ -1031,6 +1123,20 @@ void QTetraMesherMainWindow::loadSettings() {
   settings.endGroup();
   repairOnLoadCheckBox.setChecked(
       settings.value("loading/repairOnLoad", true).toBool());
+  {
+    GeogramRepairOptions o = surfaceRepairWidget.options();
+    settings.beginGroup("repair");
+    o.removeSmallParts =
+        settings.value("removeSmallParts", o.removeSmallParts).toBool();
+    o.minPartArea = settings.value("minPartArea", o.minPartArea).toDouble();
+    o.fillHoles = settings.value("fillHoles", o.fillHoles).toBool();
+    o.resolveIntersections =
+        settings.value("resolveIntersections", o.resolveIntersections)
+            .toBool();
+    o.remesh = settings.value("remesh", o.remesh).toBool();
+    settings.endGroup();
+    surfaceRepairWidget.setOptions(o);
+  }
   // by id, the list of methods depends on the build (e.g. fTetWild)
   const QString methodId = settings.value("meshing/method").toString();
   const std::vector<TetraMethodWidget *> methods = tetraMethodWidgets();
@@ -1071,6 +1177,16 @@ void QTetraMesherMainWindow::saveSettings() {
   settings.setValue("showMeshQuality", actionShowMeshQuality.isChecked());
   settings.endGroup();
   settings.setValue("loading/repairOnLoad", repairOnLoadCheckBox.isChecked());
+  {
+    const GeogramRepairOptions o = surfaceRepairWidget.options();
+    settings.beginGroup("repair");
+    settings.setValue("removeSmallParts", o.removeSmallParts);
+    settings.setValue("minPartArea", o.minPartArea);
+    settings.setValue("fillHoles", o.fillHoles);
+    settings.setValue("resolveIntersections", o.resolveIntersections);
+    settings.setValue("remesh", o.remesh);
+    settings.endGroup();
+  }
   const int method = tetraMeshMethodComboBox.currentIndex();
   const std::vector<TetraMethodWidget *> methods = tetraMethodWidgets();
   if (method >= 0 && method < int(methods.size()))
