@@ -136,23 +136,7 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
                      .arg(os.y, 0, 'g', 4)
                      .arg(os.z, 0, 'g', 4),
                  c);
-        textY += 30;
       }
-    }
-    if (tMesh->GetTetraMesh() != NULL) {
-      ss << "Tetra Mesh: "
-         << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
-         << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
-      stdMSG = ss.str();
-      msg = QString::fromStdString(stdMSG);
-      drawText(10, textY, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
-      ss.str("");
-      ss << "Tetra Mesh: "
-         << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
-         << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
-      stdMSG = ss.str();
-      msg = QString::fromStdString(stdMSG);
-      drawText(10, textY + 15, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
     context.drawLines(mobiusOutline, Qt::black);
@@ -295,6 +279,10 @@ void QGLTetraViewer::drawQualityOverlay(QPainter &painter) {
                      normal});
   lines.push_back({QString("Tetras: %1  Vertices: %2")
                        .arg(count(q.numTetras), count(q.numVertices)),
+                   normal});
+  lines.push_back({QString("Triangles: %1  Edges: %2")
+                       .arg(count(tMesh->GetTetraMesh()->GetTriangles().size()),
+                            count(tMesh->GetTetraMesh()->GetEdges().size())),
                    normal});
   if (q.surfaceVolume > 0.0) {
     const double ratio = percent(q.tetraVolume, q.surfaceVolume);
