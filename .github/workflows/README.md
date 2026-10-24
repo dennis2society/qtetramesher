@@ -24,7 +24,7 @@ workflow, so no manual path setup is needed.
 
 | Dependency | Windows | Linux |
 | --- | --- | --- |
-| Qt 6 | `install-qt-action` (6.12) | `install-qt-action` (6.8) |
+| Qt 6 | `install-qt-action` (6.9) | apt (Ubuntu 22.04) (Qt 6.2.4) |
 | CGAL, assimp, Eigen, GMP, Boost | vcpkg (`x64-windows`) | apt (Ubuntu 22.04) |
 | SOFA | release zip `SOFA_v<ver>_Win64.zip` | release zip `SOFA_v<ver>_Linux_Python3.10.zip` |
 | GMSH | built from source with MSVC (the SDK is MinGW) | SDK tgz from gmsh.info |
