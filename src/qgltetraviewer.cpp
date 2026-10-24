@@ -916,6 +916,13 @@ void QGLTetraViewer::saveSurface() {
     if (!tMesh->SaveSurface(s.toStdString(),
                             QFileInfo(s).suffix().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
+    else
+      ShowStatusMessage(
+          QString("Surface saved (%1 vertices, %2 triangles): %3")
+              .arg(tMesh->GetSurface()->GetVertices().size())
+              .arg(tMesh->GetSurface()->GetTriangles().size())
+              .arg(QFileInfo(s).fileName()),
+          10000);
   } else {
     ShowStatusMessage("Saving Surface failed! No surface mesh present...",
                       10000);
