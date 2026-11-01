@@ -750,6 +750,25 @@ bool QGLTetraMesh::SetSurfaceTransform(float scale_, float xDeg_, float yDeg_,
   return true;
 }
 
+bool QGLTetraMesh::ReplaceSurface(const std::vector<Vec3f> &verts_,
+                                  const std::vector<Triangle> &tris_) {
+  if (surf == NULL || !surfaceTransform.HasOriginal() || verts_.empty() ||
+      tris_.empty())
+    return false;
+  std::unique_ptr<TetraTools::TriangleTopology> newSurf(
+      new TetraTools::TriangleTopology());
+  newSurf->Init(verts_, tris_, true);
+  newSurf->GenerateNormals();
+  const float scale = surfaceTransform.GetScale();
+  const Vec3f rotation = surfaceTransform.GetRotation();
+  isReady = false;
+  delete surf;
+  surf = newSurf.release();
+  BeginSurfaceTransform();
+  // also drops the tetra mesh and the octree
+  return SetSurfaceTransform(scale, rotation.x, rotation.y, rotation.z);
+}
+
 void QGLTetraMesh::generateOctree(const unsigned int depth_) {
   if (oct != NULL) {
     delete oct;

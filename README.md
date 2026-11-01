@@ -14,7 +14,16 @@ This is a tetrahedral mesh generator for Windows and Linux that combines multipl
 * Generic Isosurface Stuffing: this project's own implementation of [Labelle and Shewchuk's Isosurface Stuffing](http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf) (SIGGRAPH 2007), with optional graded tetrahedra
 * [Tetgen](https://wias-berlin.de/software/index.jsp?id=TetGen&lang=1): constrained Delaunay tetrahedralization
 * [GMSH](https://gmsh.info/): tetrahedral meshing with the GMSH library
-* [fTetWild](https://github.com/wildmeshing/fTetWild): robust tetrahedralization of imperfect surfaces (optional module, `QTM_WITH_FTETWILD=ON`)
+* [fTetWild](https://github.com/wildmeshing/fTetWild): robust tetrahedralization of imperfect surfaces (built by default, `QTM_WITH_FTETWILD=ON`, skipped if fTetWild is not found)
+
+<b>Surface mesh repair:</b>
+* Basic repair on load (duplicate vertices, degenerate/duplicate triangles, orientation, simple holes)
+* Surface Repair with [geogram](https://github.com/BrunoLevy/geogram): non-manifold edges, small parts, holes, self-intersections (keeps the outer hull) and optional isotropic remeshing
+
+<b>Dependencies:</b>
+* Qt6, CGAL (with Boost, GMP, MPFR), assimp, SOFA Framework, GMSH (SDK)
+* [geogram](https://github.com/BrunoLevy/geogram) 1.9.6 (BSD 3-clause): downloaded and built as a shared library by CMake (FetchContent), used by the surface repair and by fTetWild. A system installation of geogram is not used.
+* fTetWild sources (`FTETWILD_SOURCE_DIR`, default `/opt/ftetwild_git` or `D:/devel/ftetwild_git`); its other dependencies (libigl, Eigen, oneTBB, spdlog, fmt) are downloaded by CMake
 
 <b>Supported surface mesh formats (Load Surface Mesh / Export Surface):</b>
 * OBJ (`*.obj`), STL (`*.stl`), PLY (`*.ply`), 3DS (`*.3ds`), Collada (`*.dae`): load and export
@@ -42,7 +51,10 @@ I have also thrown more Copilot assistance at the project to see how fast it can
 
 * <b>New features:</b>
   - Surface meshes can be rotated and scaled before tetrahedralization, with the scaling applied on the GPU.
+  - Surface repair with geogram (self-intersections, non-manifold edges, small parts, holes, optional remeshing). geogram is now one shared library also used by fTetWild.
+  - fTetWild is built by default on Windows too.
   - Tetrahedral meshes get a quality overlay and the tetra generation output is shown as an overlay in the viewer.
+  - Improved surface mesh repair using Geogram's remeshing
   - Generic Isosurface Stuffing has better grading controls, a better initial cell size estimation and runs faster.
   - The last used tetrahedralization method is remembered between sessions.
   - GMSH `*.msh` import and export now use the GMSH library, with export to file format 4.1 and 2.2.
@@ -143,21 +155,9 @@ I have also thrown more Copilot assistance at the project to see how fast it can
 ### 0.8.1 (Source only) - 2015-12-06
  * Migration to Github due to cancellation of Google Code
 
-### 0.8.1 - some day in 2014... (Googlecode's history is lost)
+### 0.8.1 - some day in 2013... (Googlecode's history is lost)
  * Drag & Drop supported mesh files on the main window to open files.
  * Octree generation and visualization as a preparation for own Isosurface Stuffing implementation.
-
-## Features
- * As of 2024-06-01 this project can now be built with Qt6 (at least on Linux)
- * Runs on Windows and Linux (tested on Win7/10/11 (64 bit)) and Ubuntu 12.04/12.10/.../24.04, Arch based Manjaro >= 2024-05, Fedora >= 40 (Qt5 only)).
- * Integration of QGLViewer for easy mesh preview.
- * Surface mesh import and export for *.obj, *.ply, *.off, *.stl, 3ds (using assimp).
- * Import and export of tetrahedral meshes in (a simplified subset of the) GMSH format *.msh (compatible with the SOFA Framework).
- * Two different methods for tetrahedralization: Delaunay Triangulation (CGAL implementation) and Johnathan Shewchuk's Isosurface Stuffing: Fast Tetrahedral Meshes with Good Dihedral Angles (implementation taken from the SOFA Framework, non-graded variant only).
- * Wireframe and solid/shaded drawing.
- * 6-planes cutplane view for tetrahedral meshes.
- * Surface export of a tetrahedral mesh (GMSH: *.msh).
- * Automatic parameter guessing for tetrahedralization.
 
 ## License
 
@@ -174,4 +174,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see here: http://www.gnu.org/licenses/gpl.html
 
-Copyright (C) 2013-2024 Dennis Luebke, qtm (at) dennis2society.de
+Copyright (C) 2013-2026 Dennis Luebke, qtm (at) dennis2society.de

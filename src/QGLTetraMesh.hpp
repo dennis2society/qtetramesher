@@ -148,6 +148,14 @@ class QGLTetraMesh {
   bool PreviewSurfaceTransform(float scale_, float xDeg_, float yDeg_,
                                float zDeg_);
   bool IsPreviewingSurfaceTransform() const { return surfacePreviewing; }
+  /// The loaded surface without the transform (requires CanTransformSurface()).
+  const std::vector<Vec3f> &GetUntransformedSurfaceVertices() const {
+    return surfaceTransform.GetOriginal();
+  }
+  /// Replaces the loaded surface, e.g. by a repaired one, given untransformed
+  /// and keeps the current transform. Removes the tetra mesh and the octree.
+  bool ReplaceSurface(const std::vector<Vec3f> &verts_,
+                      const std::vector<Triangle> &tris_);
 
  private:
   std::string surfaceRepairSummary;

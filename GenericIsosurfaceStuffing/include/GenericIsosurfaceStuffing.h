@@ -3,7 +3,7 @@
  *
  *  A self-contained implementation of Jonathan Shewchuk's Isosurface Stuffing
  *  algorithm (http://www.cs.berkeley.edu/~jrs/papers/stuffing.pdf).
- *  No external dependencies — pure C++ using TetraMeshTools types.
+ *  No external dependencies - pure C++ using TetraMeshTools types.
  *
  *  The algorithm:
  *  1. Build a Body-Centered Cubic (BCC) lattice covering the bounding box.

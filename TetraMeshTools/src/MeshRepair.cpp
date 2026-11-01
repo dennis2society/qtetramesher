@@ -6,13 +6,26 @@
 
 #include "TetraMeshTools/MeshRepair.h"
 
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_fill_holes.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_preprocessing.h>
+#include <geogram/mesh/mesh_remesh.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_surface_intersection.h>
+#include <geogram/mesh/mesh_topology.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <sstream>
+#include <stdexcept>
 #include <tuple>
 #include <unordered_map>
+
+#include "TetraMeshTools/GeogramUtils.h"
 
 namespace {
 
@@ -408,5 +421,141 @@ MeshRepairReport RepairSurfaceMesh(std::vector<Vec3f> &verts,
     report.numNonManifoldEdges = std::size_t(
         std::unique(keys.begin(), keys.end()) - keys.begin());
   }
+  return report;
+}
+
+namespace {
+
+void toGeogram(const std::vector<Vec3f> &verts,
+               const std::vector<Triangle> &tris, GEO::Mesh &M) {
+  M.clear();
+  M.vertices.set_dimension(3);
+  M.vertices.create_vertices(GEO::index_t(verts.size()));
+  for (std::size_t i = 0; i < verts.size(); ++i) {
+    double *p = M.vertices.point_ptr(GEO::index_t(i));
+    p[0] = verts[i].x;
+    p[1] = verts[i].y;
+    p[2] = verts[i].z;
+  }
+  M.facets.create_triangles(GEO::index_t(tris.size()));
+  for (std::size_t i = 0; i < tris.size(); ++i)
+    for (GEO::index_t k = 0; k < 3; ++k)
+      M.facets.set_vertex(GEO::index_t(i), k, tris[i].index[k]);
+}
+
+void fromGeogram(const GEO::Mesh &M, std::vector<Vec3f> &verts,
+                 std::vector<Triangle> &tris) {
+  verts.resize(M.vertices.nb());
+  for (GEO::index_t v = 0; v < M.vertices.nb(); ++v) {
+    const double *p = M.vertices.point_ptr(v);
+    verts[v] = Vec3f(float(p[0]), float(p[1]), float(p[2]));
+  }
+  tris.clear();
+  tris.reserve(M.facets.nb());
+  // polygons (if any are left) as fans
+  for (GEO::index_t f = 0; f < M.facets.nb(); ++f)
+    for (GEO::index_t k = 1; k + 1 < M.facets.nb_vertices(f); ++k) {
+      Triangle t;
+      t.index[0] = M.facets.vertex(f, 0);
+      t.index[1] = M.facets.vertex(f, k);
+      t.index[2] = M.facets.vertex(f, k + 1);
+      tris.push_back(t);
+    }
+}
+
+const GEO::MeshRepairMode kGeoRepairMode = GEO::MeshRepairMode(
+    GEO::MESH_REPAIR_DEFAULT | GEO::MESH_REPAIR_QUIET);
+
+/// Splits all intersecting triangles and removes everything inside the
+/// outer hull. Returns true if the mesh changed.
+bool resolveIntersections(GEO::Mesh &M) {
+  const GEO::index_t before = M.facets.nb();
+  {
+    GEO::MeshSurfaceIntersection I(M);
+    I.set_verbose(false);
+    I.set_radial_sort(true);  // required by remove_internal_shells()
+    I.intersect();
+    I.remove_internal_shells();
+  }
+  GEO::mesh_repair(M, kGeoRepairMode);
+  return M.facets.nb() != before;
+}
+
+}  // namespace
+
+std::string GeogramRepairReport::Summary() const {
+  std::ostringstream ss;
+  ss << verticesBefore << " -> " << verticesAfter << " vertices, "
+     << trianglesBefore << " -> " << trianglesAfter << " triangles";
+  if (removedParts) ss << ", " << removedParts << " small parts removed";
+  if (intersectionsResolved) ss << ", self-intersections/inner parts removed";
+  if (remeshed) ss << ", remeshed";
+  const std::string details = final.Summary();
+  if (!details.empty()) ss << ", " << details;
+  if (final.numBoundaryEdges || final.numNonManifoldEdges)
+    ss << "; still " << final.numBoundaryEdges << " open and "
+       << final.numNonManifoldEdges << " non-manifold edges";
+  return ss.str();
+}
+
+GeogramRepairReport RepairSurfaceMeshGeogram(
+    std::vector<Vec3f> &verts, std::vector<Triangle> &tris,
+    const GeogramRepairOptions &options) {
+  GeogramRepairReport report;
+  report.verticesBefore = verts.size();
+  report.trianglesBefore = tris.size();
+  if (verts.empty() || tris.empty())
+    throw std::runtime_error("The surface mesh is empty.");
+  for (const Triangle &t : tris)
+    for (int k = 0; k < 3; ++k)
+      if (t.index[k] >= verts.size())
+        throw std::runtime_error("The surface mesh has invalid indices.");
+
+  TetraTools::InitGeogram();
+  GEO::Mesh M;
+  toGeogram(verts, tris, M);
+  // merges duplicates, removes degenerate triangles and splits non-manifold
+  // vertices and edges
+  GEO::mesh_repair(M, kGeoRepairMode,
+                   options.tolerance * GEO::bbox_diagonal(M));
+
+  if (options.removeSmallParts) {
+    const GEO::index_t before = GEO::mesh_nb_connected_components(M);
+    GEO::remove_small_connected_components(
+        M, options.minPartArea * GEO::Geom::mesh_area(M));
+    report.removedParts = before - GEO::mesh_nb_connected_components(M);
+  }
+  if (options.fillHoles)
+    GEO::fill_holes(M, std::numeric_limits<double>::max());
+  if (options.resolveIntersections)
+    report.intersectionsResolved = resolveIntersections(M);
+  if (options.remesh && M.facets.nb() > 0) {
+    GEO::Mesh remeshed;
+    GEO::remesh_smooth(M, remeshed,
+                       GEO::index_t(std::max<std::size_t>(
+                           options.remeshVertices, 4)),
+                       3);
+    M.copy(remeshed, false);
+    GEO::mesh_repair(M, kGeoRepairMode);
+    report.remeshed = true;
+    // the new triangles may intersect again in thin parts
+    if (options.resolveIntersections && resolveIntersections(M))
+      report.intersectionsResolved = true;
+  }
+  if (M.facets.nb() == 0)
+    throw std::runtime_error("The repair removed the whole surface.");
+
+  std::vector<Vec3f> newVerts;
+  std::vector<Triangle> newTris;
+  fromGeogram(M, newVerts, newTris);
+  // consistent outward orientation and the remaining defects
+  report.final = RepairSurfaceMesh(newVerts, newTris, options.fillHoles,
+                                   options.tolerance);
+  if (newTris.empty())
+    throw std::runtime_error("The repair removed the whole surface.");
+  verts.swap(newVerts);
+  tris.swap(newTris);
+  report.verticesAfter = verts.size();
+  report.trianglesAfter = tris.size();
   return report;
 }

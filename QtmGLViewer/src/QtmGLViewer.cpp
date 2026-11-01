@@ -269,14 +269,34 @@ void QtmGLViewer::drawTextOverlay() {
   painter.setRenderHint(QPainter::TextAntialiasing);
   painter.setFont(font());
   drawOverlay(painter);
+
+  const QFont &f = painter.font();
+  const double fontSize = f.pixelSize() > 0 ? f.pixelSize() : f.pointSizeF();
+  const QString fpsText = QStringLiteral("%1Hz").arg(
+      double(fps_), 0, 'f', fps_ < 10.0f ? 1 : 0);
+  const QFontMetrics metrics(painter.font());
+  auto textRect = [&metrics](int x, int y, const QString &s) {
+    return QRect(x, y - metrics.ascent(), metrics.horizontalAdvance(s),
+                 metrics.height());
+  };
+  // one dark frame behind all top left texts, like the other overlays
+  QRect frame;
+  if (fpsIsDisplayed_) frame = textRect(10, int(1.5 * fontSize), fpsText);
+  for (const OverlayText &t : overlayTexts_)
+    frame = frame.united(textRect(t.x, t.y, t.text));
+  if (!frame.isNull()) {
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(0, 0, 0, 170));
+    painter.drawRoundedRect(frame.adjusted(-8, -8, 8, 8), 6, 6);
+    painter.restore();
+  }
+
   if (fpsIsDisplayed_) {
     // same position as libQGLViewer's displayFPS()
-    const QFont &f = painter.font();
-    const double fontSize = f.pixelSize() > 0 ? f.pixelSize() : f.pointSizeF();
     painter.setPen(foregroundColor_);
-    painter.drawText(10, int(1.5 * fontSize),
-                     QStringLiteral("%1Hz").arg(double(fps_), 0, 'f',
-                                                fps_ < 10.0f ? 1 : 0));
+    painter.drawText(10, int(1.5 * fontSize), fpsText);
   }
   for (const OverlayText &t : overlayTexts_) {
     painter.setPen(t.color);

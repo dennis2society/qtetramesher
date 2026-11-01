@@ -4,13 +4,12 @@
 
 #include "FTetWildWrapper.h"
 
+#include <TetraMeshTools/GeogramUtils.h>
 #include <floattetwild/FloatTetwild.h>
 #include <floattetwild/Logger.hpp>
 #include <floattetwild/Parameters.h>
-#include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>
 
-#include <cstdlib>
 #include <stdexcept>
 
 #ifdef FLOAT_TETWILD_USE_TBB
@@ -31,14 +30,7 @@ void FTetWildWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
   if (verts.empty() || tris.empty())
     throw std::runtime_error("fTetWild: the surface mesh is empty.");
 
-  static bool geogramInitialized = false;
-  if (!geogramInitialized) {
-#ifndef _WIN32
-    setenv("GEO_NO_SIGNAL_HANDLER", "1", 1);
-#endif
-    GEO::initialize();
-    geogramInitialized = true;
-  }
+  TetraTools::InitGeogram();
   floatTetWild::Logger::init(true);
 
 #ifdef FLOAT_TETWILD_USE_TBB

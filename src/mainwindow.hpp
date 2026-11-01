@@ -9,6 +9,7 @@
 #define MAINWINDOW_H
 
 #include <CGALTetrahedralizeWidget.hpp>
+#include <CDTWidget.hpp>
 #include <GMSHWidget.hpp>
 #include <FTetWildWidget.hpp>
 #include <OctreeVisWidget.hpp>
@@ -28,6 +29,7 @@
 #include <QWidget>
 #include <GenericIsosurfaceStuffingWidget.hpp>
 #include <SofaTetraStuffingWidget.hpp>
+#include <SurfaceRepairWidget.hpp>
 #include <SurfaceTransformWidget.hpp>
 #include <SurfaceVisWidget.hpp>
 #include <TetgenWidget.hpp>
@@ -36,6 +38,16 @@
 #include "TetraJob.hpp"
 #include "TetraMeshTools/SurfaceChecker.h"
 #include "qgltetraviewer.hpp"
+
+/// result of the geogram surface repair thread
+struct SurfaceRepairResult {
+  bool ok = false;
+  std::string error;
+  std::vector<Vec3f> verts;  // untransformed
+  std::vector<Triangle> tris;
+  GeogramRepairReport report;
+  qint64 elapsedMs = 0;
+};
 
 class QTetraMesherMainWindow : public QMainWindow {
   Q_OBJECT
@@ -57,6 +69,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void surfaceColorButtonSlot();
   void surfaceWireframeColorButtonSlot();
   void checkSurfaceSlot();
+  void repairSurfaceSlot();
   void tetraVisChangedSlot();
   void tetraColorButtonSlot();
   void tetraOuterColorButtonSlot();
@@ -78,6 +91,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateGenericIsosurfaceStuffingSlot();
   void generateTetgenSlot();
   void generateGMSHSlot();
+  void generateCDTSlot();
   void generateFTetWildSlot();
 
  private:
@@ -117,6 +131,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   QCheckBox repairOnLoadCheckBox;
   SurfaceVisWidget surfaceVisWidget;
   SurfaceTransformWidget surfaceTransformWidget;
+  SurfaceRepairWidget surfaceRepairWidget;
   TetraVisWidget tetraVisWidget;
   OctreeVisWidget octreeVisWidget;
   // Tetra mesh methods widgets
@@ -127,6 +142,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   GenericIsosurfaceStuffingWidget genericIsosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
   GMSHWidget gmshWidget;
+  CDTWidget cdtWidget;
   FTetWildWidget ftetwildWidget;
 
   void setupUI();
@@ -171,6 +187,9 @@ class QTetraMesherMainWindow : public QMainWindow {
   const void *octreeSurface = nullptr;  // surface the octree is built from
   bool octreePending = false;
   QFutureWatcher<std::shared_ptr<SurfaceCheckResult>> surfaceCheckWatcher;
+  // works on a copy of the surface, which it replaces when done
+  QFutureWatcher<std::shared_ptr<SurfaceRepairResult>> surfaceRepairWatcher;
+  const void *repairSurface = nullptr;  // surface the repair started from
   // set when the window closes, stops the octree and surface check threads
   std::atomic<bool> stopThreads{false};
   void updateColorButtons();
@@ -186,6 +205,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void tetraJobFinished();
   void octreeFinished();
   void surfaceCheckFinished();
+  void surfaceRepairFinished();
   void on_viewer_onLoad();
 };
 

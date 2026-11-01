@@ -136,23 +136,7 @@ void QGLTetraViewer::draw(const qtm::RenderContext &context) {
                      .arg(os.y, 0, 'g', 4)
                      .arg(os.z, 0, 'g', 4),
                  c);
-        textY += 30;
       }
-    }
-    if (tMesh->GetTetraMesh() != NULL) {
-      ss << "Tetra Mesh: "
-         << "Vertices: " << tMesh->GetTetraMesh()->GetVertices().size()
-         << "; Tetras: " << tMesh->GetTetraMesh()->GetTetrahedra().size();
-      stdMSG = ss.str();
-      msg = QString::fromStdString(stdMSG);
-      drawText(10, textY, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
-      ss.str("");
-      ss << "Tetra Mesh: "
-         << "Triangles: " << tMesh->GetTetraMesh()->GetTriangles().size()
-         << "; Edges: " << tMesh->GetTetraMesh()->GetEdges().size();
-      stdMSG = ss.str();
-      msg = QString::fromStdString(stdMSG);
-      drawText(10, textY + 15, msg, QColor::fromRgbF(0.8f, 0.8f, 0.1f));
     }
   } else {
     context.drawLines(mobiusOutline, Qt::black);
@@ -295,6 +279,10 @@ void QGLTetraViewer::drawQualityOverlay(QPainter &painter) {
                      normal});
   lines.push_back({QString("Tetras: %1  Vertices: %2")
                        .arg(count(q.numTetras), count(q.numVertices)),
+                   normal});
+  lines.push_back({QString("Triangles: %1  Edges: %2")
+                       .arg(count(tMesh->GetTetraMesh()->GetTriangles().size()),
+                            count(tMesh->GetTetraMesh()->GetEdges().size())),
                    normal});
   if (q.surfaceVolume > 0.0) {
     const double ratio = percent(q.tetraVolume, q.surfaceVolume);
@@ -546,6 +534,12 @@ QString QGLTetraViewer::helpHtml() const {
       "<tr><td><b>GMSH Tetrahedralize</b></td><td>Meshing with GMSH. Parameters: "
       "Mesh Size Min and Max (0 = automatic) and the 3D algorithm (Delaunay or "
       "HXT).</td></tr>"
+      "<tr><td><b>CDT (Constrained Delaunay)</b></td><td>Exact constrained "
+      "Delaunay tetrahedrization that keeps the surface triangles unchanged "
+      "and only adds Steiner points where needed. No quality refinement. "
+      "Parameters: Interior Spacing (optional grid of interior points), "
+      "Remove outer tetrahedra, Add bounding box vertices and Verbose "
+      "output.</td></tr>"
       "<tr><td><b>fTetWild Tetrahedralize</b></td><td>Robust tetrahedral "
       "meshing that also works with imperfect surfaces (optional module, only "
       "available if QTetraMesher was built with fTetWild). Parameters: Edge "
@@ -564,6 +558,12 @@ QString QGLTetraViewer::helpHtml() const {
       "original is kept, <i>Reset Transform</i> restores it. A generated "
       "tetra mesh is removed when the surface changes. Export Surface saves "
       "the transformed mesh.</li>"
+      "<li><b>Surface Repair (geogram)</b>: fixes defects the repair on load "
+      "cannot fix: non-manifold edges, small disconnected parts, holes and "
+      "self-intersections (only the outer hull is kept). Optional remeshing "
+      "with a given number of vertices gives evenly shaped triangles, but "
+      "rounds sharp edges. The surface transform is kept, a generated tetra "
+      "mesh is removed.</li>"
       "<li><b>TetraMesh</b>: draw the wireframe and/or the solid tetrahedra, "
       "with their own colors. Tetrahedra on the surface share one color; with "
       "<i>Color Interior by Depth</i> the inner ones fade from the outer to "
@@ -620,7 +620,7 @@ QString QGLTetraViewer::helpString() const {
       "<a href=\"https://people.eecs.berkeley.edu/~jrs/papers/stuffing.pdf\">"
       "paper</a>) in SOFA Framework and in a generic implementation written for "
       "this program (with optional graded tetrahedra)<br />"
-      "Tetgen, GMSH and fTetWild (optional)<br /><br />"
+      "Tetgen, GMSH, CDT and fTetWild (optional)<br /><br />"
       "<b>Third-party libraries</b><br />"
       "<ul>"
       "<li><a href=\"https://www.qt.io\">Qt 6</a>: user interface, OpenGL "
@@ -635,9 +635,15 @@ QString QGLTetraViewer::helpString() const {
       "by Hang Si: constrained Delaunay tetrahedralization</li>"
       "<li><a href=\"https://gmsh.info\">GMSH</a> by Christophe Geuzaine and "
       "Jean-Francois Remacle: 3D mesh generation</li>"
+      "<li><a href=\"https://github.com/MarcoAttene/CDT\">CDT</a> by Lorenzo "
+      "Diazzi, Daniele Panozzo, Amir Vaxman and Marco Attene: constrained "
+      "Delaunay tetrahedrization</li>"
       "<li><a href=\"https://github.com/wildmeshing/fTetWild\">fTetWild</a> "
       "by Yixin Hu et al. (optional module): robust "
       "tetrahedral meshing</li>"
+      "<li><a href=\"https://github.com/BrunoLevy/geogram\">geogram</a> by "
+      "Bruno L&eacute;vy: surface repair and remeshing (also used by "
+      "fTetWild)</li>"
       "</ul>"
       "Generic Isosurface Stuffing is part of this program and was written for "
       "it.<br />";
@@ -716,6 +722,14 @@ bool QGLTetraViewer::previewSurfaceTransform(float scale_, float xDeg_,
                                              float yDeg_, float zDeg_) {
   if (!tMesh->PreviewSurfaceTransform(scale_, xDeg_, yDeg_, zDeg_))
     return false;
+  updateSceneFromMesh();
+  update();
+  return true;
+}
+
+bool QGLTetraViewer::replaceSurface(const std::vector<Vec3f> &verts_,
+                                    const std::vector<Triangle> &tris_) {
+  if (!tMesh->ReplaceSurface(verts_, tris_)) return false;
   updateSceneFromMesh();
   update();
   return true;
@@ -870,7 +884,7 @@ void QGLTetraViewer::saveTetgen() {
     const QString s = QFileDialog::getSaveFileName(
         this, "Select Tetgen Output File prefix", "", filter);
     if (s.isEmpty()) return;
-    // Strip the .node extension (if present) while keeping the directory —
+    // Strip the .node extension (if present) while keeping the directory -
     // TetgenWrapper::saveAsTetgen() expects a path/basename prefix without
     // any extension and will append ".node"/".ele" itself.
     QFileInfo fi(s);
@@ -911,6 +925,13 @@ void QGLTetraViewer::saveSurface() {
     if (!tMesh->SaveSurface(s.toStdString(),
                             QFileInfo(s).suffix().toStdString()))
       ShowStatusMessage("Saving Surface failed...", 10000);
+    else
+      ShowStatusMessage(
+          QString("Surface saved (%1 vertices, %2 triangles): %3")
+              .arg(tMesh->GetSurface()->GetVertices().size())
+              .arg(tMesh->GetSurface()->GetTriangles().size())
+              .arg(QFileInfo(s).fileName()),
+          10000);
   } else {
     ShowStatusMessage("Saving Surface failed! No surface mesh present...",
                       10000);
