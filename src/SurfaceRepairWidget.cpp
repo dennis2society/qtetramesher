@@ -45,7 +45,7 @@ SurfaceRepairWidget::SurfaceRepairWidget(QWidget *parent)
       "Replaces the triangles by evenly shaped ones (better input for Tetgen "
       "and GMSH). Sharp edges are rounded and small details may be lost.");
   remeshVerticesSpinBox.setRange(100, 2000000);
-  remeshVerticesSpinBox.setSingleStep(1000);
+  remeshVerticesSpinBox.setSingleStep(100);
   remeshVerticesSpinBox.setSuffix(" vertices");
   remeshVerticesSpinBox.setGroupSeparatorShown(true);
   grid.addWidget(&remeshCheckBox, 3, 0);

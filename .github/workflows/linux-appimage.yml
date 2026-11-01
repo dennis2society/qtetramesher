@@ -34,11 +34,13 @@ jobs:
             libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
             libxcb-xinerama0 libxcb-xkb1 libfuse2 file wget
 
+      # Ubuntu 22.04 ships Qt 6.2, so use the official Qt binaries instead
       - name: Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.8.*
+          version: 6.10.*
           arch: linux_gcc_64
+          aqtversion: '>=3.3.0'
           cache: true
 
       - name: GMSH SDK and SOFA

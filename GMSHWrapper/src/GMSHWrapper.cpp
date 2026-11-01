@@ -78,6 +78,7 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
 
   // Whether a patch can be parametrized depends on where GMSH cuts the surface,
   // so surfaces with holes (genus > 0) may need a different angle to succeed.
+  // A negative angle skips reparametrization and keeps the input surface mesh.
   auto attempt = [&](double classifyAngleDeg, bool lastAttempt) {
     gmsh::initialize(0, nullptr, false);
     // Failed intermediate attempts are reported by the retry loop instead.
@@ -119,24 +120,22 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     // This follows GMSH's own tutorial for remeshing an STL file without   //
     // an underlying CAD model (see tutorials/c++/t13.cpp):                 //
     //   classifySurfaces -> createGeometry -> geo::addSurfaceLoop/addVolume//
-    //                                                                      //
-    // The angle parameter must be a moderate threshold (e.g. 40 degrees),  //
-    // NOT 180 degrees. Using 180 keeps the whole closed surface as a       //
-    // single patch, which cannot be parametrized (a closed genus-0 surface //
-    // has no boundary curve to build a planar map from) and triggers       //
-    // "Invalid exterior boundary mesh for parametrization".                //
     // ------------------------------------------------------------------ //
-    const double classifyAngle = classifyAngleDeg * M_PI / 180.0;
-    
+    // Smooth surfaces (e.g. a sphere) have no sharp edges, so the angle alone
+    // yields one closed patch that cannot be parametrized; forReparametrization
+    // splits it into patches that can each be mapped to the plane.
+    if (classifyAngleDeg > 0.0) {
+      const double classifyAngle = classifyAngleDeg * M_PI / 180.0;
 #if GMSH_API_VERSION_MAJOR >= 5
-    // API 5 added the old/new surface tag maps as required output arguments.
-    std::vector<int> oldSurfaceTags, newSurfaceTags;
-    gmsh::model::mesh::classifySurfaces(classifyAngle, oldSurfaceTags,
-                                        newSurfaceTags, true, false);
+      // API 5 added the old/new surface tag maps as required output arguments.
+      std::vector<int> oldSurfaceTags, newSurfaceTags;
+      gmsh::model::mesh::classifySurfaces(classifyAngle, oldSurfaceTags,
+                                          newSurfaceTags, true, true);
 #else
-    gmsh::model::mesh::classifySurfaces(classifyAngle, true, false);
+      gmsh::model::mesh::classifySurfaces(classifyAngle, true, true);
 #endif
-    gmsh::model::mesh::createGeometry();
+      gmsh::model::mesh::createGeometry();
+    }
 
     // Collect all dim-2 entities produced by classification.
     gmsh::vectorpair surfs;
@@ -218,7 +217,7 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     gmsh::finalize();
   };
 
-  const double anglesDeg[] = {40.0, 20.0, 60.0, 30.0, 90.0, 15.0, 120.0};
+  const double anglesDeg[] = {40.0, 20.0, 60.0, 90.0, -1.0};
   std::string lastError;
   for (const double angle : anglesDeg) {
     const bool isLast = (angle == anglesDeg[std::size(anglesDeg) - 1]);
