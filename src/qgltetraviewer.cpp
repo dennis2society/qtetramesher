@@ -875,7 +875,7 @@ void QGLTetraViewer::saveTetgen() {
     const QString s = QFileDialog::getSaveFileName(
         this, "Select Tetgen Output File prefix", "", filter);
     if (s.isEmpty()) return;
-    // Strip the .node extension (if present) while keeping the directory —
+    // Strip the .node extension (if present) while keeping the directory -
     // TetgenWrapper::saveAsTetgen() expects a path/basename prefix without
     // any extension and will append ".node"/".ele" itself.
     QFileInfo fi(s);

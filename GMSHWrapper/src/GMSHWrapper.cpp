@@ -104,7 +104,7 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     }
     gmsh::model::mesh::addNodes(2, 1, nodeTags, nodeCoords);
 
-    // Triangles – element type 2 = 3-node triangle
+    // Triangles - element type 2 = 3-node triangle
     std::vector<std::size_t> triNodeTags;
     triNodeTags.reserve(tris.size() * 3);
     for (const auto &t : tris) {
@@ -229,7 +229,7 @@ void GMSHWrapper::GenerateFromSurface(const std::vector<Triangle> &tris,
     } catch (const std::exception &e) {
       lastError = e.what();
       std::cerr << "GMSHWrapper: attempt with classify angle " << angle
-                << " failed – " << lastError << std::endl;
+                << " failed - " << lastError << std::endl;
       if (gmsh::isInitialized())
         gmsh::finalize();
     } catch (...) {
@@ -304,7 +304,7 @@ bool GMSHWrapper::saveAsGMSH(const std::string &fileName,
     }
     gmsh::model::mesh::addNodes(3, 1, nodeTags, nodeCoords);
 
-    // Tetrahedra – element type 4 = 4-node tetrahedron
+    // Tetrahedra - element type 4 = 4-node tetrahedron
     std::vector<std::size_t> tetNodeTags;
     tetNodeTags.reserve(tetras.size() * 4);
     for (const Tetrahedron &t : tetras) {
@@ -339,7 +339,7 @@ bool GMSHWrapper::loadAsGMSH(const std::string &fileName) {
     GmshSession session("qtetramesher_import");
     gmsh::open(fileName);
 
-    // Tetrahedra – element type 4 = 4-node tetrahedron
+    // Tetrahedra - element type 4 = 4-node tetrahedron
     std::vector<std::size_t> elemTags, elemNodeTags;
     gmsh::model::mesh::getElementsByType(4, elemTags, elemNodeTags);
     if (elemNodeTags.empty()) {

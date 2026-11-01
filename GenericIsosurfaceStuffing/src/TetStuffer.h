@@ -2,7 +2,7 @@
  * TetStuffer.h
  *
  * Main coordinator for the Isosurface Stuffing algorithm.
- * Orchestrates: BCC lattice → SDF evaluation → Warping → Tet extraction →
+ * Orchestrates: BCC lattice -> SDF evaluation -> Warping -> Tet extraction ->
  * feature snapping and quality optimization.
  */
 
