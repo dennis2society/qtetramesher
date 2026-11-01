@@ -102,6 +102,7 @@ add_subdirectory(SofaTetraStuffing)
 add_subdirectory(CGALTetrahedralize)
 add_subdirectory(TetgenWrapper)
 add_subdirectory(GMSHWrapper)
+add_subdirectory(CDTWrapper)
 add_subdirectory(GenericIsosurfaceStuffing)
 
 # fTetWild module, skipped if fTetWild or one of its requirements is missing.
@@ -126,6 +127,7 @@ include_directories(
   GenericIsosurfaceStuffing/include
   TetgenWrapper/include
   GMSHWrapper/include
+  CDTWrapper/include
   ${Qt6Core_INCLUDE_DIRS}
   ${Qt6Widgets_INCLUDE_DIRS}
   ${Qt6Xml_INCLUDE_DIRS}
@@ -163,6 +165,8 @@ add_executable(
   src/TetgenWidget.cpp
   src/GMSHWidget.hpp
   src/GMSHWidget.cpp
+  src/CDTWidget.hpp
+  src/CDTWidget.cpp
   src/FTetWildWidget.hpp
   src/FTetWildWidget.cpp
   src/GenericIsosurfaceStuffingWidget.hpp
@@ -189,6 +193,7 @@ target_link_libraries(
   GenericIsosurfaceStuffing
   TetgenWrapper
   GMSHWrapper
+  CDTWrapper
   CGAL
   ${SofaCore}
   ${SofaComponentEngineGenerator}

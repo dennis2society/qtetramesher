@@ -9,6 +9,7 @@
 #define MAINWINDOW_H
 
 #include <CGALTetrahedralizeWidget.hpp>
+#include <CDTWidget.hpp>
 #include <GMSHWidget.hpp>
 #include <FTetWildWidget.hpp>
 #include <OctreeVisWidget.hpp>
@@ -90,6 +91,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   void generateGenericIsosurfaceStuffingSlot();
   void generateTetgenSlot();
   void generateGMSHSlot();
+  void generateCDTSlot();
   void generateFTetWildSlot();
 
  private:
@@ -140,6 +142,7 @@ class QTetraMesherMainWindow : public QMainWindow {
   GenericIsosurfaceStuffingWidget genericIsosurfaceStuffingWidget;
   TetgenWidget tetgenWidget;
   GMSHWidget gmshWidget;
+  CDTWidget cdtWidget;
   FTetWildWidget ftetwildWidget;
 
   void setupUI();

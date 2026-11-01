@@ -43,6 +43,7 @@
 #include <unistd.h>
 #endif
 
+#include "CDTWrapper.h"
 #include "CGALTetrahedralize.h"
 #include "GMSHWrapper.h"
 #include "GenericIsosurfaceStuffing.h"
@@ -244,6 +245,12 @@ void runMethod(const WorkerInput &in, std::vector<Vec3f> &vertices,
                           p.value("algorithm3D").toInt());
     usedParameters["meshSizeMin"] = w.GetMeshSizeMin();
     usedParameters["meshSizeMax"] = w.GetMeshSizeMax();
+    vertices = std::move(w.GetTetraVertices());
+    tetras = std::move(w.GetTetras());
+  } else if (in.methodId == "cdt") {
+    CDTWrapper w;
+    w.GenerateFromSurface(tris, verts, flag("innerOnly"), flag("boundingBox"),
+                          real("interiorSpacing"), flag("verbose"));
     vertices = std::move(w.GetTetraVertices());
     tetras = std::move(w.GetTetras());
 #ifdef QTM_HAVE_FTETWILD
